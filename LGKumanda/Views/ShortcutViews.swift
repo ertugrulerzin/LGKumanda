@@ -136,7 +136,9 @@ struct ShortcutEditor: View {
 
 struct HDMIHelpView: View {
     @EnvironmentObject private var client: TVClient
+    @EnvironmentObject private var box: BoxClient
     @Environment(\.dismiss) private var dismiss
+    @State private var boxSetup = false
     @State private var input = ""
     @State private var opening = false
     @State private var error: String?
@@ -157,6 +159,13 @@ struct HDMIHelpView: View {
                         }
                     }.frame(minHeight: 44).disabled(input.isEmpty || opening || client.state != .connected)
                 }
+                Section {
+                    Button { boxSetup = true } label: {
+                        LabeledContent("Wi-Fi ile kutu kumandası", value: box.box?.paired == true ? (box.box?.name ?? "Eşleşti") : "Kur")
+                    }.accessibilityIdentifier("openBoxSetup")
+                } footer: {
+                    Text("Tivibu gibi Android TV kutuları SIMPLINK olmadan, Wi-Fi üzerinden kumanda edilebilir.")
+                }
                 Section("SIMPLINK durumu") {
                     ForEach(client.inputs.filter { $0.id.uppercased().hasPrefix("HDMI") }) { item in
                         LabeledContent("\(item.title) · \(item.detail)", value: item.simplinkName ?? "Cihaz görünmüyor")
@@ -176,6 +185,7 @@ struct HDMIHelpView: View {
                 if let error { Section { Text(error).foregroundStyle(.red) } }
             }
             .navigationTitle("HDMI kutusu").navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $boxSetup) { BoxSetupView() }
             .refreshable { await client.refreshLibrary() }
             .task { await client.refreshLibrary(reportErrors: false) }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Bitti") { dismiss() } } }

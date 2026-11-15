@@ -22,15 +22,20 @@
 		64E6DBA7183D9748A4B83D88 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08A3C71907CF5EA7B5F8192 /* RootView.swift */; };
 		6E68745B950127C622E206D0 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */; };
 		6F0BE50DE8FDFCE17B1F1544 /* WebVideoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D110F90BCED48318863B6F1 /* WebVideoTests.swift */; };
+		6FED4D718C08D87E57168A17 /* BoxProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A240A1CCE44649993423D013 /* BoxProtocolTests.swift */; };
 		6FEF3D39F1003C43FDBA8574 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802D764DD010FCAA561EC6FF /* Models.swift */; };
 		7895CB7C85407C97939ADD25 /* BrowserAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCC81C20F6B46C320FEE176 /* BrowserAddressView.swift */; };
 		7BFC826B734E76C8EC0630AE /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9823705F61465DD5CFFBF99 /* DevicesView.swift */; };
+		7D2656882BC4D130DC6E7180 /* ProtoWire.swift in Sources */ = {isa = PBXBuildFile; fileRef = A347D7F04927C80BCAC85C97 /* ProtoWire.swift */; };
+		81A9CE7ECFF11E001A7EEAE0 /* BoxClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5EC3322ECBCF1737839C1D /* BoxClient.swift */; };
 		87D976D350B61805DFD23210 /* LGKumandaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */; };
 		8BC6FA1A8F16D4F17C4A3AC0 /* HDMIDiagnosticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B299E8FAB30A3F589B5137E8 /* HDMIDiagnosticTests.swift */; };
 		8E87E118B6CEDB36088FA04A /* NavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */; };
 		8F9C6C523957056D24901CBB /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */; };
+		93AAB5683334C0B6494AE648 /* BoxCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93FFEAA8DB27C116318A66E5 /* BoxCertificate.swift */; };
 		9DCD7FCC19D450868C6CF839 /* ShortcutViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */; };
 		A1DBAF1FB44F36790ED94CEF /* WebVideoLiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED291B2B594036CA08F48B74 /* WebVideoLiveTests.swift */; };
+		A385654954340541D56E830E /* BoxDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4B9A5DC450FE21B649C194 /* BoxDiscovery.swift */; };
 		A5161F4E416D6FD888F98049 /* DiscoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */; };
 		A6705BFA967F460B10277412 /* BrowserAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */; };
 		A9B5838B9425C22C6126C972 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */; };
@@ -39,7 +44,10 @@
 		CE2F795C318EEE72CB88474F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB2FA42BC65BB9471CAE932F /* Assets.xcassets */; };
 		D46FA35C05041E12831201C2 /* ProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832BE2A832A35E8D598903E4 /* ProtocolTests.swift */; };
 		E7251C2E4F3B16DEA8EA9A26 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8684CA02FB86C77877C10FA8 /* LibraryView.swift */; };
+		EACDD33B32664AA19A58DAC6 /* BoxSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91E2A1C787CD0241665E7C /* BoxSetupView.swift */; };
 		ED2894E7A7B81FCF35B2735D /* LiveTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */; };
+		F9502B73347078C5EEFE9425 /* BoxLiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18B0B08207864C3A929E75BF /* BoxLiveTests.swift */; };
+		F9561C27A440C5F2208761B6 /* BoxConnection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C196E1EC0C6666A07590C8AB /* BoxConnection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -63,11 +71,15 @@
 		0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVDiscovery.swift; sourceTree = "<group>"; };
 		0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutViews.swift; sourceTree = "<group>"; };
 		159A8A03F3DD884FACEEDD6D /* PhoneBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneBrowserView.swift; sourceTree = "<group>"; };
+		18B0B08207864C3A929E75BF /* BoxLiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxLiveTests.swift; sourceTree = "<group>"; };
 		20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryTests.swift; sourceTree = "<group>"; };
 		24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeOnLAN.swift; sourceTree = "<group>"; };
 		2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		2F5EC3322ECBCF1737839C1D /* BoxClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxClient.swift; sourceTree = "<group>"; };
 		311AAADF9BE4046BB505615C /* WebFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebFocus.swift; sourceTree = "<group>"; };
 		3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserAddress.swift; sourceTree = "<group>"; };
+		3C4B9A5DC450FE21B649C194 /* BoxDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxDiscovery.swift; sourceTree = "<group>"; };
+		3F91E2A1C787CD0241665E7C /* BoxSetupView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxSetupView.swift; sourceTree = "<group>"; };
 		43062E8919163E1720B45BBF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		5AC1A0A7AE90EA326A05E526 /* LGKumanda.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LGKumanda.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C172EC879F4E0F59762FDF1 /* WebVideo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebVideo.swift; sourceTree = "<group>"; };
@@ -80,7 +92,10 @@
 		832BE2A832A35E8D598903E4 /* ProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolTests.swift; sourceTree = "<group>"; };
 		8684CA02FB86C77877C10FA8 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		8824910ED5A5787B4F050D4D /* LocalSubnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSubnet.swift; sourceTree = "<group>"; };
+		93FFEAA8DB27C116318A66E5 /* BoxCertificate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxCertificate.swift; sourceTree = "<group>"; };
 		9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTests.swift; sourceTree = "<group>"; };
+		A240A1CCE44649993423D013 /* BoxProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxProtocolTests.swift; sourceTree = "<group>"; };
+		A347D7F04927C80BCAC85C97 /* ProtoWire.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtoWire.swift; sourceTree = "<group>"; };
 		A9823705F61465DD5CFFBF99 /* DevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesView.swift; sourceTree = "<group>"; };
 		ACCC81C20F6B46C320FEE176 /* BrowserAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserAddressView.swift; sourceTree = "<group>"; };
 		B299E8FAB30A3F589B5137E8 /* HDMIDiagnosticTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDMIDiagnosticTests.swift; sourceTree = "<group>"; };
@@ -89,6 +104,7 @@
 		BEDB94840A944FDD61623627 /* WebVideoSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebVideoSheet.swift; sourceTree = "<group>"; };
 		BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVClient.swift; sourceTree = "<group>"; };
 		BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutStore.swift; sourceTree = "<group>"; };
+		C196E1EC0C6666A07590C8AB /* BoxConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxConnection.swift; sourceTree = "<group>"; };
 		C2509A981B771E29DD3631F7 /* LGKumandaUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LGKumandaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LGKumandaApp.swift; sourceTree = "<group>"; };
 		ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
@@ -126,6 +142,7 @@
 		449E1A195BB3F55674E72206 /* Views */ = {
 			isa = PBXGroup;
 			children = (
+				3F91E2A1C787CD0241665E7C /* BoxSetupView.swift */,
 				ACCC81C20F6B46C320FEE176 /* BrowserAddressView.swift */,
 				A9823705F61465DD5CFFBF99 /* DevicesView.swift */,
 				ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */,
@@ -153,8 +170,21 @@
 				24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */,
 				311AAADF9BE4046BB505615C /* WebFocus.swift */,
 				5C172EC879F4E0F59762FDF1 /* WebVideo.swift */,
+				4E81C2605BE4D2E274245AD2 /* AndroidTV */,
 			);
 			path = Core;
+			sourceTree = "<group>";
+		};
+		4E81C2605BE4D2E274245AD2 /* AndroidTV */ = {
+			isa = PBXGroup;
+			children = (
+				93FFEAA8DB27C116318A66E5 /* BoxCertificate.swift */,
+				2F5EC3322ECBCF1737839C1D /* BoxClient.swift */,
+				C196E1EC0C6666A07590C8AB /* BoxConnection.swift */,
+				3C4B9A5DC450FE21B649C194 /* BoxDiscovery.swift */,
+				A347D7F04927C80BCAC85C97 /* ProtoWire.swift */,
+			);
+			path = AndroidTV;
 			sourceTree = "<group>";
 		};
 		5FAF408AE388EA8258BC170E /* LGKumandaUITests */ = {
@@ -179,6 +209,8 @@
 		7EF0EC6BEEDB3E46395D9511 /* LGKumandaTests */ = {
 			isa = PBXGroup;
 			children = (
+				18B0B08207864C3A929E75BF /* BoxLiveTests.swift */,
+				A240A1CCE44649993423D013 /* BoxProtocolTests.swift */,
 				FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */,
 				20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */,
 				B299E8FAB30A3F589B5137E8 /* HDMIDiagnosticTests.swift */,
@@ -307,6 +339,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F9502B73347078C5EEFE9425 /* BoxLiveTests.swift in Sources */,
+				6FED4D718C08D87E57168A17 /* BoxProtocolTests.swift in Sources */,
 				B149F1AF63F6E8118B6D54D7 /* ClickDiagnosticTests.swift in Sources */,
 				A5161F4E416D6FD888F98049 /* DiscoveryTests.swift in Sources */,
 				8BC6FA1A8F16D4F17C4A3AC0 /* HDMIDiagnosticTests.swift in Sources */,
@@ -322,6 +356,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				93AAB5683334C0B6494AE648 /* BoxCertificate.swift in Sources */,
+				81A9CE7ECFF11E001A7EEAE0 /* BoxClient.swift in Sources */,
+				F9561C27A440C5F2208761B6 /* BoxConnection.swift in Sources */,
+				A385654954340541D56E830E /* BoxDiscovery.swift in Sources */,
+				EACDD33B32664AA19A58DAC6 /* BoxSetupView.swift in Sources */,
 				A6705BFA967F460B10277412 /* BrowserAddress.swift in Sources */,
 				7895CB7C85407C97939ADD25 /* BrowserAddressView.swift in Sources */,
 				BD6E80040CB3D3D4B3812377 /* ControlRouting.swift in Sources */,
@@ -333,6 +372,7 @@
 				0CF6070CDF51649B9661AB01 /* LocalSubnet.swift in Sources */,
 				6FEF3D39F1003C43FDBA8574 /* Models.swift in Sources */,
 				3A1E30C0EDC55B4044D35119 /* PhoneBrowserView.swift in Sources */,
+				7D2656882BC4D130DC6E7180 /* ProtoWire.swift in Sources */,
 				64E6DBA7183D9748A4B83D88 /* RootView.swift in Sources */,
 				8F9C6C523957056D24901CBB /* ShortcutStore.swift in Sources */,
 				9DCD7FCC19D450868C6CF839 /* ShortcutViews.swift in Sources */,

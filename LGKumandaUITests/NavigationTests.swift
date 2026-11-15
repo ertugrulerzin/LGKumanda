@@ -40,6 +40,11 @@ final class NavigationTests: XCTestCase {
         app.buttons["HDMI kutusu yardımı"].tap()
         XCTAssertTrue(app.navigationBars["HDMI kutusu"].waitForExistence(timeout:3))
         capture("HDMI kutusu kontrolü")
+        app.buttons["openBoxSetup"].tap()
+        XCTAssertTrue(app.navigationBars["Wi-Fi ile kutu kumandası"].waitForExistence(timeout:3))
+        XCTAssertTrue(app.staticTexts["Bulunan kutular"].exists || app.staticTexts["Kutunun bağlı olduğu giriş"].exists)
+        capture("Wi-Fi ile kutu kumandası")
+        app.navigationBars["Wi-Fi ile kutu kumandası"].buttons["Bitti"].tap()
         app.navigationBars["HDMI kutusu"].buttons["Bitti"].tap()
     }
     func testDiscoverTVOnLocalNetwork() throws {

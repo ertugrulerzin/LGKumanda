@@ -64,6 +64,7 @@ struct PressStyle: ButtonStyle {
 
 struct RemoteView: View {
     @EnvironmentObject private var client: TVClient
+    @EnvironmentObject private var box: BoxClient
     let openDevices: () -> Void
     @State private var mode = 0
     @State private var keyboard = false
@@ -86,15 +87,22 @@ struct RemoteView: View {
                             Button { client.notice = nil } label: { Image(systemName: "xmark").frame(width: 44, height: 44) }.accessibilityLabel("Bilgiyi kapat")
                         }.foregroundStyle(.secondary)
                     }
-                    if connected, let input = client.activeInputWithoutSimplink {
+                    if connected, let input = client.activeInputWithoutSimplink, !box.handles(foregroundAppID: client.foregroundAppID) {
                         Button { hdmiHelp = true } label: {
                             HStack(alignment: .top, spacing: 10) {
                                 Image(systemName: "exclamationmark.triangle")
-                                Text("\(input.title) girişindeki cihaz SIMPLINK'te görünmüyor. Yön ve OK tuşları bu kutuya ulaşmayabilir. Ayrıntılar için dokun.")
+                                Text("\(input.title) girişindeki cihaz SIMPLINK'te görünmüyor. Yön ve OK tuşları bu kutuya ulaşmayabilir. Kutuyu Wi-Fi ile kumanda etmek için dokun.")
                                     .font(.footnote).multilineTextAlignment(.leading)
                                 Spacer(minLength: 0)
                             }.foregroundStyle(.orange).frame(maxWidth: .infinity, alignment: .leading)
                         }.buttonStyle(.plain).accessibilityIdentifier("simplinkWarning")
+                    }
+                    if connected, box.handles(foregroundAppID: client.foregroundAppID) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "wifi")
+                            Text(box.statusText).font(.footnote)
+                            Spacer(minLength: 0)
+                        }.foregroundStyle(.secondary).accessibilityIdentifier("boxStatus")
                     }
                     HStack(spacing: 12) {
                         RemoteButton(title: connected ? "Kapat" : "Uyandır", symbol: "power", color: Theme.accent) {

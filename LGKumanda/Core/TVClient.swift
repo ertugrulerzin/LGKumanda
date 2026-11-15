@@ -245,7 +245,10 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     /// Arrows and OK move a highlight between links in the TV browser instead of needing the pointer (see WebFocus).
     var webFocusEnabled: Bool { UserDefaults.standard.object(forKey: "webFocus") as? Bool ?? true }
     private var webFocusQueue: Task<Void, Never>?
+    /// Lets another controller (an HDMI box over Wi-Fi) take keys; returns true when it handled the key.
+    var keyRouter: ((RemoteKey) -> Bool)?
     func key(_ key: RemoteKey) {
+        if keyRouter?(key) == true { return }
         if isBrowserActive, webFocusEnabled, let app = browserAppID, let action = WebFocus.action(for: key) {
             let previous = webFocusQueue
             webFocusQueue = Task { [weak self] in

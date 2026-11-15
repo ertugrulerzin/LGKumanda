@@ -3,6 +3,7 @@ import SwiftUI
 @main struct LGKumandaApp: App {
     @StateObject private var client = TVClient()
     @StateObject private var shortcuts = ShortcutStore()
+    @StateObject private var box = BoxClient()
     var body: some Scene {
         WindowGroup {
             Group {
@@ -14,6 +15,13 @@ import SwiftUI
                 RootView()
                 #endif
             }.environmentObject(client)
+                .environmentObject(box)
+                .onAppear {
+                    client.keyRouter = { [weak client, weak box] key in
+                        guard let client, let box, box.handles(foregroundAppID: client.foregroundAppID) else { return false }
+                        return box.send(key)
+                    }
+                }
                 .environmentObject(shortcuts)
                 .tint(Theme.accent)
                 .preferredColorScheme(.light)

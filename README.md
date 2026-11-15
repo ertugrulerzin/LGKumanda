@@ -43,7 +43,7 @@ TV'de bir video oynat düğmesine veya güvenlik doğrulamasına basmak gerekti�
 - **iOS 17 veya üzeri bir iPhone** ve yerel ağ üzerinden kumanda bağlantısını destekleyen bir **LG webOS TV** gerekir.
 - Telefon ile TV aynı yerel ağda olmalı; ilk bağlantıda TV ekranındaki eşleştirme isteği kabul edilmelidir.
 - Tuşlar, metin girişi ve medya kontrolleri TV modeline, yazılımına ve açık uygulamanın desteğine göre değişebilir.
-- HDMI kutularına komut iletimi SIMPLINK/HDMI-CEC desteğine bağlıdır. Uygulama kızılötesi kumanda göndermez.
+- HDMI kutularına komut iletimi SIMPLINK/HDMI-CEC desteğine bağlıdır. Tivibu gibi Android TV kutuları ise Wi-Fi üzerinden doğrudan kumanda edilebilir (iPhone). Uygulama kızılötesi kumanda göndermez.
 - Uyandırma için TV'nin ilgili ağ/güç ayarları ve iPhone'daki gerekli ağ yetkileri sağlanmalıdır; ayrıntılar aşağıdadır.
 
 TV kumanda bağlantısı yerel ağ üzerinden kurulur; eşleştirme anahtarları iPhone'un Keychain alanında saklanır. Uygulama LG Electronics'in resmi ürünü değildir.

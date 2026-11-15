@@ -27,8 +27,12 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSBonjourServices</key>
+	<array>
+		<string>_androidtvremote2._tcp</string>
+	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>LG televizyonunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.</string>
+	<string>LG televizyonunu ve HDMI kutusunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
