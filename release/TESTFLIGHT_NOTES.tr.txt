@@ -1,0 +1,6 @@
+LG Kumanda 1.0 (11)
+
+- AirPlay seçeneği kaldırıldı; video TV'nin tarayıcısında oynatılır.
+- TV'de dokunmatik paneli yenilendi: işaretçi parmağını takip eder (atlamaz), böylece oynat düğmesine getirmek kolaylaşır.
+- İnce ayar için ok düğmeleri: işaretçiyi küçük adımlarla kaydırır, basılı tutunca devam eder.
+- Büyük "Tıkla" düğmesi: işaretçi düğmenin üzerindeyken dokun.

@@ -1,0 +1,25 @@
+.DS_Store
+.build/
+build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+.impeccable/runtime/
+
+# Local review artifacts and distribution reports
+.impeccable/
+release/*
+!release/TESTFLIGHT_NOTES.tr.txt
+
+# Signing credentials and local configuration
+.env
+.env.*
+!.env.example
+*.p8
+*.p12
+*.pem
+*.key
+*.mobileprovision
+*.ipa
+*.xcarchive/
+*.xcresult/

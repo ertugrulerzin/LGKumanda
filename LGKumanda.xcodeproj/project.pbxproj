@@ -1,0 +1,629 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0CF6070CDF51649B9661AB01 /* LocalSubnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8824910ED5A5787B4F050D4D /* LocalSubnet.swift */; };
+		0E4C84BE9B8C01F1A1ABB6D8 /* ShortcutAndRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */; };
+		13B9C8248DC276A31A1F8E47 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */; };
+		26D57391B1C809AD12D845B9 /* TVClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */; };
+		31E370B22551F982505FBE27 /* WebFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311AAADF9BE4046BB505615C /* WebFocus.swift */; };
+		3A1E30C0EDC55B4044D35119 /* PhoneBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159A8A03F3DD884FACEEDD6D /* PhoneBrowserView.swift */; };
+		3B7D38BE39B54A5BCA78AE4A /* TVDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */; };
+		3B945621BDEE9CF833779DD6 /* WakeOnLAN.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */; };
+		41C718858F7AFFB0777A2DFC /* PhoneBrowserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F432E84BEC25AB5FB920DB8D /* PhoneBrowserTests.swift */; };
+		5A182C752D7993BCBE86F25D /* TrackpadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8214599D0C6E5600A6246A0F /* TrackpadView.swift */; };
+		64E6DBA7183D9748A4B83D88 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08A3C71907CF5EA7B5F8192 /* RootView.swift */; };
+		6E68745B950127C622E206D0 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */; };
+		6FEF3D39F1003C43FDBA8574 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802D764DD010FCAA561EC6FF /* Models.swift */; };
+		7895CB7C85407C97939ADD25 /* BrowserAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCC81C20F6B46C320FEE176 /* BrowserAddressView.swift */; };
+		7BFC826B734E76C8EC0630AE /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9823705F61465DD5CFFBF99 /* DevicesView.swift */; };
+		87D976D350B61805DFD23210 /* LGKumandaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */; };
+		8BC6FA1A8F16D4F17C4A3AC0 /* HDMIDiagnosticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B299E8FAB30A3F589B5137E8 /* HDMIDiagnosticTests.swift */; };
+		8E87E118B6CEDB36088FA04A /* NavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */; };
+		8F9C6C523957056D24901CBB /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */; };
+		9DCD7FCC19D450868C6CF839 /* ShortcutViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */; };
+		A5161F4E416D6FD888F98049 /* DiscoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */; };
+		A6705BFA967F460B10277412 /* BrowserAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */; };
+		A9B5838B9425C22C6126C972 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */; };
+		B149F1AF63F6E8118B6D54D7 /* ClickDiagnosticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */; };
+		BD6E80040CB3D3D4B3812377 /* ControlRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B391A0D1456234881FF34889 /* ControlRouting.swift */; };
+		CE2F795C318EEE72CB88474F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB2FA42BC65BB9471CAE932F /* Assets.xcassets */; };
+		D46FA35C05041E12831201C2 /* ProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832BE2A832A35E8D598903E4 /* ProtocolTests.swift */; };
+		E7251C2E4F3B16DEA8EA9A26 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8684CA02FB86C77877C10FA8 /* LibraryView.swift */; };
+		ED2894E7A7B81FCF35B2735D /* LiveTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9C35A4855A8F2029A166DE8D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CC46FEFE9EE760C5718F163F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 81005887AADF4BCE0086DA78;
+			remoteInfo = LGKumanda;
+		};
+		BDD67DB7E01708C150B59C72 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = CC46FEFE9EE760C5718F163F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 81005887AADF4BCE0086DA78;
+			remoteInfo = LGKumanda;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVDiscovery.swift; sourceTree = "<group>"; };
+		0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutViews.swift; sourceTree = "<group>"; };
+		159A8A03F3DD884FACEEDD6D /* PhoneBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneBrowserView.swift; sourceTree = "<group>"; };
+		20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryTests.swift; sourceTree = "<group>"; };
+		24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeOnLAN.swift; sourceTree = "<group>"; };
+		2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		311AAADF9BE4046BB505615C /* WebFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebFocus.swift; sourceTree = "<group>"; };
+		3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserAddress.swift; sourceTree = "<group>"; };
+		43062E8919163E1720B45BBF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		5AC1A0A7AE90EA326A05E526 /* LGKumanda.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LGKumanda.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVTests.swift; sourceTree = "<group>"; };
+		7086847346EAC0CFB0E26BFD /* LGKumandaTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LGKumandaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAndRoutingTests.swift; sourceTree = "<group>"; };
+		802D764DD010FCAA561EC6FF /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		8214599D0C6E5600A6246A0F /* TrackpadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadView.swift; sourceTree = "<group>"; };
+		832BE2A832A35E8D598903E4 /* ProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolTests.swift; sourceTree = "<group>"; };
+		8684CA02FB86C77877C10FA8 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		8824910ED5A5787B4F050D4D /* LocalSubnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSubnet.swift; sourceTree = "<group>"; };
+		9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTests.swift; sourceTree = "<group>"; };
+		A9823705F61465DD5CFFBF99 /* DevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesView.swift; sourceTree = "<group>"; };
+		ACCC81C20F6B46C320FEE176 /* BrowserAddressView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserAddressView.swift; sourceTree = "<group>"; };
+		B299E8FAB30A3F589B5137E8 /* HDMIDiagnosticTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HDMIDiagnosticTests.swift; sourceTree = "<group>"; };
+		B391A0D1456234881FF34889 /* ControlRouting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlRouting.swift; sourceTree = "<group>"; };
+		BB2FA42BC65BB9471CAE932F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVClient.swift; sourceTree = "<group>"; };
+		BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutStore.swift; sourceTree = "<group>"; };
+		C2509A981B771E29DD3631F7 /* LGKumandaUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LGKumandaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LGKumandaApp.swift; sourceTree = "<group>"; };
+		ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
+		ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		F08A3C71907CF5EA7B5F8192 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		F432E84BEC25AB5FB920DB8D /* PhoneBrowserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneBrowserTests.swift; sourceTree = "<group>"; };
+		FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickDiagnosticTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		233A0830DFB04F2D6A62FB08 /* LGKumanda */ = {
+			isa = PBXGroup;
+			children = (
+				BB2FA42BC65BB9471CAE932F /* Assets.xcassets */,
+				43062E8919163E1720B45BBF /* Info.plist */,
+				D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */,
+				2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */,
+				478AD4DDFBA1430D154E672C /* Core */,
+				449E1A195BB3F55674E72206 /* Views */,
+			);
+			path = LGKumanda;
+			sourceTree = "<group>";
+		};
+		34B556DC63370AD36C5C83F4 = {
+			isa = PBXGroup;
+			children = (
+				233A0830DFB04F2D6A62FB08 /* LGKumanda */,
+				7EF0EC6BEEDB3E46395D9511 /* LGKumandaTests */,
+				5FAF408AE388EA8258BC170E /* LGKumandaUITests */,
+				77C8B716CF9ABB90C48E9F76 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		449E1A195BB3F55674E72206 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				ACCC81C20F6B46C320FEE176 /* BrowserAddressView.swift */,
+				A9823705F61465DD5CFFBF99 /* DevicesView.swift */,
+				ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */,
+				8684CA02FB86C77877C10FA8 /* LibraryView.swift */,
+				159A8A03F3DD884FACEEDD6D /* PhoneBrowserView.swift */,
+				F08A3C71907CF5EA7B5F8192 /* RootView.swift */,
+				0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */,
+				8214599D0C6E5600A6246A0F /* TrackpadView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		478AD4DDFBA1430D154E672C /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */,
+				B391A0D1456234881FF34889 /* ControlRouting.swift */,
+				ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */,
+				8824910ED5A5787B4F050D4D /* LocalSubnet.swift */,
+				802D764DD010FCAA561EC6FF /* Models.swift */,
+				BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */,
+				BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */,
+				0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */,
+				24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */,
+				311AAADF9BE4046BB505615C /* WebFocus.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		5FAF408AE388EA8258BC170E /* LGKumandaUITests */ = {
+			isa = PBXGroup;
+			children = (
+				9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */,
+				F432E84BEC25AB5FB920DB8D /* PhoneBrowserTests.swift */,
+			);
+			path = LGKumandaUITests;
+			sourceTree = "<group>";
+		};
+		77C8B716CF9ABB90C48E9F76 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5AC1A0A7AE90EA326A05E526 /* LGKumanda.app */,
+				7086847346EAC0CFB0E26BFD /* LGKumandaTests.xctest */,
+				C2509A981B771E29DD3631F7 /* LGKumandaUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7EF0EC6BEEDB3E46395D9511 /* LGKumandaTests */ = {
+			isa = PBXGroup;
+			children = (
+				FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */,
+				20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */,
+				B299E8FAB30A3F589B5137E8 /* HDMIDiagnosticTests.swift */,
+				64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */,
+				832BE2A832A35E8D598903E4 /* ProtocolTests.swift */,
+				7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */,
+			);
+			path = LGKumandaTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		52FF5E901BCBC79A3BEB265F /* LGKumandaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 99EED6F0C4FFA81AC525B96A /* Build configuration list for PBXNativeTarget "LGKumandaTests" */;
+			buildPhases = (
+				0D80B2E7A6EA58BCB17CB4C1 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				40E2B833405363735EA5523B /* PBXTargetDependency */,
+			);
+			name = LGKumandaTests;
+			packageProductDependencies = (
+			);
+			productName = LGKumandaTests;
+			productReference = 7086847346EAC0CFB0E26BFD /* LGKumandaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		81005887AADF4BCE0086DA78 /* LGKumanda */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DF1CE9B1D9A2A432FCBA1F41 /* Build configuration list for PBXNativeTarget "LGKumanda" */;
+			buildPhases = (
+				5C4657BEE4AE5E8D8919C0CD /* Sources */,
+				718D5B27A16A9C482E11E8EF /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = LGKumanda;
+			packageProductDependencies = (
+			);
+			productName = LGKumanda;
+			productReference = 5AC1A0A7AE90EA326A05E526 /* LGKumanda.app */;
+			productType = "com.apple.product-type.application";
+		};
+		92F0B6D5A6F82B6C6A8FADD8 /* LGKumandaUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 70BBD4B86E474B5F276B8AF4 /* Build configuration list for PBXNativeTarget "LGKumandaUITests" */;
+			buildPhases = (
+				CCA83E2FFB2AB2F06B8BBB99 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F5A6F5D77EB972DC7A6A09AF /* PBXTargetDependency */,
+			);
+			name = LGKumandaUITests;
+			packageProductDependencies = (
+			);
+			productName = LGKumandaUITests;
+			productReference = C2509A981B771E29DD3631F7 /* LGKumandaUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		CC46FEFE9EE760C5718F163F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					52FF5E901BCBC79A3BEB265F = {
+						DevelopmentTeam = PBY9P5GVFB;
+					};
+					81005887AADF4BCE0086DA78 = {
+						DevelopmentTeam = PBY9P5GVFB;
+					};
+					92F0B6D5A6F82B6C6A8FADD8 = {
+						DevelopmentTeam = PBY9P5GVFB;
+						TestTargetID = 81005887AADF4BCE0086DA78;
+					};
+				};
+			};
+			buildConfigurationList = BD7B2C4E3A2DF85B3A7CA9A3 /* Build configuration list for PBXProject "LGKumanda" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 34B556DC63370AD36C5C83F4;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 77C8B716CF9ABB90C48E9F76 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				81005887AADF4BCE0086DA78 /* LGKumanda */,
+				52FF5E901BCBC79A3BEB265F /* LGKumandaTests */,
+				92F0B6D5A6F82B6C6A8FADD8 /* LGKumandaUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		718D5B27A16A9C482E11E8EF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE2F795C318EEE72CB88474F /* Assets.xcassets in Resources */,
+				13B9C8248DC276A31A1F8E47 /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0D80B2E7A6EA58BCB17CB4C1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B149F1AF63F6E8118B6D54D7 /* ClickDiagnosticTests.swift in Sources */,
+				A5161F4E416D6FD888F98049 /* DiscoveryTests.swift in Sources */,
+				8BC6FA1A8F16D4F17C4A3AC0 /* HDMIDiagnosticTests.swift in Sources */,
+				ED2894E7A7B81FCF35B2735D /* LiveTVTests.swift in Sources */,
+				D46FA35C05041E12831201C2 /* ProtocolTests.swift in Sources */,
+				0E4C84BE9B8C01F1A1ABB6D8 /* ShortcutAndRoutingTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5C4657BEE4AE5E8D8919C0CD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A6705BFA967F460B10277412 /* BrowserAddress.swift in Sources */,
+				7895CB7C85407C97939ADD25 /* BrowserAddressView.swift in Sources */,
+				BD6E80040CB3D3D4B3812377 /* ControlRouting.swift in Sources */,
+				7BFC826B734E76C8EC0630AE /* DevicesView.swift in Sources */,
+				A9B5838B9425C22C6126C972 /* KeyboardView.swift in Sources */,
+				6E68745B950127C622E206D0 /* KeychainStore.swift in Sources */,
+				87D976D350B61805DFD23210 /* LGKumandaApp.swift in Sources */,
+				E7251C2E4F3B16DEA8EA9A26 /* LibraryView.swift in Sources */,
+				0CF6070CDF51649B9661AB01 /* LocalSubnet.swift in Sources */,
+				6FEF3D39F1003C43FDBA8574 /* Models.swift in Sources */,
+				3A1E30C0EDC55B4044D35119 /* PhoneBrowserView.swift in Sources */,
+				64E6DBA7183D9748A4B83D88 /* RootView.swift in Sources */,
+				8F9C6C523957056D24901CBB /* ShortcutStore.swift in Sources */,
+				9DCD7FCC19D450868C6CF839 /* ShortcutViews.swift in Sources */,
+				26D57391B1C809AD12D845B9 /* TVClient.swift in Sources */,
+				3B7D38BE39B54A5BCA78AE4A /* TVDiscovery.swift in Sources */,
+				5A182C752D7993BCBE86F25D /* TrackpadView.swift in Sources */,
+				3B945621BDEE9CF833779DD6 /* WakeOnLAN.swift in Sources */,
+				31E370B22551F982505FBE27 /* WebFocus.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CCA83E2FFB2AB2F06B8BBB99 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E87E118B6CEDB36088FA04A /* NavigationTests.swift in Sources */,
+				41C718858F7AFFB0777A2DFC /* PhoneBrowserTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		40E2B833405363735EA5523B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 81005887AADF4BCE0086DA78 /* LGKumanda */;
+			targetProxy = BDD67DB7E01708C150B59C72 /* PBXContainerItemProxy */;
+		};
+		F5A6F5D77EB972DC7A6A09AF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 81005887AADF4BCE0086DA78 /* LGKumanda */;
+			targetProxy = 9C35A4855A8F2029A166DE8D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		036D67A54D303E6E95CCA6D3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 11;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = PBY9P5GVFB;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		10288E13A76EE8535CE3FED2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LGKumanda/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.LGKumanda;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		7CC4895469F955727E7586DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.LGKumandaTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LGKumanda.app/LGKumanda";
+			};
+			name = Release;
+		};
+		8936AB6B2800832865FE2F2B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.LGKumandaTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/LGKumanda.app/LGKumanda";
+			};
+			name = Debug;
+		};
+		AC1B9D786FC61CB07C29EBEC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.LGKumandaUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LGKumanda;
+			};
+			name = Release;
+		};
+		B53F15E3405ED30E5B9DBFE9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = LGKumanda/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.LGKumanda;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		DA56E5726D0F9DF08BAE308A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 11;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = PBY9P5GVFB;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		F7978039334D3147B08EB285 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.LGKumandaUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = LGKumanda;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		70BBD4B86E474B5F276B8AF4 /* Build configuration list for PBXNativeTarget "LGKumandaUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F7978039334D3147B08EB285 /* Debug */,
+				AC1B9D786FC61CB07C29EBEC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		99EED6F0C4FFA81AC525B96A /* Build configuration list for PBXNativeTarget "LGKumandaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8936AB6B2800832865FE2F2B /* Debug */,
+				7CC4895469F955727E7586DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		BD7B2C4E3A2DF85B3A7CA9A3 /* Build configuration list for PBXProject "LGKumanda" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				036D67A54D303E6E95CCA6D3 /* Debug */,
+				DA56E5726D0F9DF08BAE308A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DF1CE9B1D9A2A432FCBA1F41 /* Build configuration list for PBXNativeTarget "LGKumanda" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				10288E13A76EE8535CE3FED2 /* Debug */,
+				B53F15E3405ED30E5B9DBFE9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = CC46FEFE9EE760C5718F163F /* Project object */;
+}
