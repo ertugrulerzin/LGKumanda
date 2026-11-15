@@ -14,7 +14,8 @@ dependencies:
   xml: ^7.1.0
   flutter_secure_storage: ^11.2.0
   shared_preferences: ^2.5.6
-  flutter_inappwebview: ^6.1.5
+  # Upstream prerelease includes the AGP 9 compatibility fix.
+  flutter_inappwebview: 6.2.0-beta.3
   path_provider: ^2.1.6
 dev_dependencies:
   flutter_test:

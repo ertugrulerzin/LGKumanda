@@ -46,7 +46,7 @@ flutter build windows --release
 flutter build apk --debug
 ```
 
-Android Studio’nun Java 25 kurulumu seçiliyorsa JDK 17’yi `flutter config --jdk-dir=<JDK-17-dizini>` ile seç. Android tarayıcı eklentisinin kararlı sürümü nedeniyle Gradle 8.14.3 / Android Gradle Plugin 8.13.2 kullanılır.
+Android Studio’nun Java 25 kurulumu seçiliyorsa JDK 17’yi `flutter config --jdk-dir=<JDK-17-dizini>` ile seç. Gradle 9.5 / Android Gradle Plugin 9.3.1 kullanılır. Tarayıcı eklentisi, AGP 9 uyumluluk düzeltmesini içeren yayımlayıcının `flutter_inappwebview 6.2.0-beta.3` sürümüne sabitlenmiştir. Bu bağımlılık ön sürümdür; platform derlemeleri ve arayüz testleriyle kontrol edilir.
 
 APK geliştirme anahtarıyla imzalanan **deneme sürümüdür**; mağaza dağıtımı değildir. macOS çıktısı Developer ID ile imzalanmış/noterlenmiş dağıtım paketi değildir. Windows çıktısında EXE ile birlikte DLL ve `data` klasörlerini de taşı. Mağaza ve son kullanıcı dağıtımı için ilgili platformun imzalama işlemleri ayrıca yapılmalıdır.
 
