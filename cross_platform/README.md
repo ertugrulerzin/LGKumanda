@@ -52,7 +52,7 @@ Android Studio’nun Java 25 kurulumu seçiliyorsa JDK 17’yi `flutter config -
 
 APK geliştirme anahtarıyla imzalanan **deneme sürümüdür**; mağaza dağıtımı değildir. macOS çıktısı Developer ID ile imzalanmış/noterlenmiş dağıtım paketi değildir. Windows çıktısında EXE ile birlikte DLL ve `data` klasörlerini de taşı. Mağaza ve son kullanıcı dağıtımı için ilgili platformun imzalama işlemleri ayrıca yapılmalıdır.
 
-GitHub’daki **Mac Windows Android** iş akışı her platformu kendi işletim sisteminde analiz eder, test eder ve derler. Başarılı çalışmanın **Artifacts** bölümünde APK, DMG ve Windows kurulum EXE’si üretilir. Yayımlanan paketler herkesin indirebilmesi için GitHub Releases bölümüne eklenir. İş akışı dosyası: [`multiplatform.yml`](../.github/workflows/multiplatform.yml).
+GitHub’daki **Mac Windows Android** iş akışı her platformu kendi işletim sisteminde analiz eder, test eder ve derler. Elle başlatırken yalnızca Windows seçilebilir; yerel C++ derleme önbelleği tekrar derlemeleri hızlandırır. Başarılı çalışmanın **Artifacts** bölümünde APK, DMG ve Windows kurulum EXE’si üretilir. Yayımlanan paketler herkesin indirebilmesi için GitHub Releases bölümüne eklenir. İş akışı dosyası: [`multiplatform.yml`](../.github/workflows/multiplatform.yml).
 
 ## Bağlantı ve güvenlik
 
@@ -64,7 +64,7 @@ Keşif, yerel IPv4 arayüzlerinin bulunduğu /24 aralıklarını tarar; en fazla
 
 ## Tarayıcı ve HDMI sınırları
 
-Tarayıcı sayfa adreslerini eşler; ekran yansıtma yapmaz. Cihazın ve TV’nin oturumları, çerezleri, doğrulamaları ve sayfa içi düğme tıklamaları birbirinden bağımsızdır. Uygulama içi tarayıcı geçici oturum kullanır. Video cihazda durdurulur; TV’de oynatmak için **TV’de dokunmatik** paneli açılır. Bu davranışın web siteleriyle uyumu ayrıca denenmelidir. AirPlay bağımlılığı yoktur.
+Tarayıcı sayfa adreslerini eşler; ekran yansıtma yapmaz. Google sonuçları Mac ve TV’de farklı sıra veya içerikle görünebilir: Google cihaz türü, dil ve konum gibi bağlamlara göre sonuçları değiştirebilir ([Google açıklaması](https://support.google.com/websearch/answer/12412910?hl=tr)). TV’de açılacak sayfayı bu cihazdaki listeden seçtiğinde ilgili sayfanın adresi TV’ye gönderilir. Cihazın ve TV’nin oturumları, çerezleri, doğrulamaları ve sayfa içi düğme tıklamaları birbirinden bağımsızdır. Uygulama içi tarayıcı geçici oturum kullanır. Video cihazda durdurulur; TV’de oynatmak için **TV’de dokunmatik** paneli açılır. Bu davranışın web siteleriyle uyumu ayrıca denenmelidir. AirPlay bağımlılığı yoktur.
 
 **Deneysel işaretçisiz web gezinmesi** varsayılan kapalıdır. Son Claude oturumundaki JavaScript yaklaşımını taşır; özellikle cross-origin iframe oynatıcılarında ve sitelerin içerik güvenlik kurallarında tamamlanmış uyumluluk doğrulaması yoktur. Normal yön/OK gezinmesiyle bu deneyi karıştırma. Oturum özeti ve sıradaki doğrulama: [`SESSION_HANDOFF.tr.md`](SESSION_HANDOFF.tr.md).
 
@@ -75,3 +75,5 @@ HDMI kutusunun komut alması SIMPLINK/HDMI-CEC desteğine bağlıdır. HDMI aç�
 Birim testleri kayıt/onay akışını, güvenli saklama hatalarını, sertifika kapsamını, bağlantı yarışlarını ve zaman aşımını, HDMI kanal yönlendirmesini, keşif ayrıştırmasını, adres doğrulamayı ve Wake-on-LAN paketini kapsar. Arayüz testleri 390 ve 1280 piksel genişliklerinde ilk kullanım, cihaz doğrulaması, bağlı kumanda ve metin gönderimini sahte TV yanıtlarıyla sınar.
 
 Bu yeni uygulamanın testleri kendi başına gerçek TV’ye komut göndermez. iPhone uygulamasının önceki canlı TV sonuçları bu üç platformun doğrulaması sayılmaz.
+
+Ayrıntılı ilk sürüm kontrol kaydı: [`VALIDATION.tr.md`](VALIDATION.tr.md).

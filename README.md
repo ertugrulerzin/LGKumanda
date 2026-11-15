@@ -6,6 +6,10 @@ Türkçe, açık renkli, SwiftUI ile yazılmış yerel iPhone uygulaması. iOS 1
 
 ## Mac, Windows ve Android
 
+**[Deneme sürümünü indir](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.1):** [Android APK](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.1/LGKumanda-Android-preview.apk) · [Mac DMG](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.1/LGKumanda-macOS.dmg) · [Windows kurulum EXE](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.1/LGKumanda-Windows-Setup.exe).
+
+Bunlar ilk önizleme paketleridir; imzalama ve cihaz doğrulama sınırları sürüm notlarında açıklanır.
+
 Bu platformlar için ortak Flutter uygulaması **[`cross_platform/`](cross_platform/README.md)** dizinindedir. Kumanda, klavye/fare, uygulama ve HDMI listeleri, kanallar, kısayollar ve TV tarayıcısı içerir. Kurulum, deneme paketleri ve doğrulama sınırları için platform kılavuzuna bak. Aşağıdaki Xcode adımları iPhone uygulamasına aittir.
 
 Claude’un son oturumunda nerede kalındığı ve tamamlanmamış işaretçisiz tarayıcı deneyi [`oturum devri notunda`](cross_platform/SESSION_HANDOFF.tr.md) açıklanmıştır.
