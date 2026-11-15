@@ -1,0 +1,37 @@
+name: Windows installer structure check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  installer:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: cross_platform
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create synthetic installation fixture
+        run: |
+          $root = 'build/windows/x64/runner/Release'
+          New-Item "$root/data/flutter_assets" -ItemType Directory -Force | Out-Null
+          foreach ($file in @('lg_kumanda.exe', 'flutter_windows.dll', 'msvcp140.dll', 'vcruntime140.dll', 'data/flutter_assets/fixture.txt')) {
+            Set-Content (Join-Path $root $file) 'Synthetic installer fixture; not an application binary.'
+          }
+      - name: Compile and test installer structure
+        run: |
+          $compiler = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (!(Test-Path $compiler)) { choco install innosetup -y --no-progress }
+          & $compiler packaging/windows.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $installDir = Join-Path $env:RUNNER_TEMP 'LGKumanda-installer-fixture'
+          $setup = Start-Process 'build/LGKumanda-Windows-Setup.exe' -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$installDir`"" -Wait -PassThru
+          if ($setup.ExitCode -ne 0) { throw "Installer exit code: $($setup.ExitCode)" }
+          foreach ($file in @('lg_kumanda.exe', 'flutter_windows.dll', 'msvcp140.dll', 'vcruntime140.dll', 'data/flutter_assets/fixture.txt')) {
+            if (!(Test-Path (Join-Path $installDir $file))) { throw "Missing fixture file: $file" }
+          }
+          $uninstall = Start-Process (Join-Path $installDir 'unins000.exe') -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Uninstaller exit code: $($uninstall.ExitCode)" }
+          # Synthetic files are never uploaded or attached to a Release.
