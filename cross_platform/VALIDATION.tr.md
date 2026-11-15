@@ -2,6 +2,15 @@
 
 15 Kasım 2026 — `v1.0.0-preview.1`. Ortak uygulama kodu: `1ac9186`. Windows çalışma zamanı paketleme düzeltmesi: `527fd1d`.
 
+## Üçüncü önizleme (`v1.0.0-preview.3`)
+
+15 Kasım 2026 — kaynak `13859ca`, CI çalıştırması `43742390529`.
+
+- Düzeltme: 1311 açıklama portu kapalı webOS TV’ler (ör. OLED55C64LA) ağ aramasında bulunamıyordu. Arama artık 3001 portundaki LG imzalı TLS sertifikasına da bakıyor.
+- `flutter test` 23 test (yeni: LG sertifika tanıma). Canlı sertifika testi gerçek TV’ye karşı geçti.
+- Android telefonda (yerel arm64 release derlemesi) “Ağda LG TV ara” TV’yi buldu ve bağlandı; kullanıcı onayladı.
+- Paketler CI’da derlendi; yayımlanan paketlere ayrıca elle cihaz kurulumu yapılmadı.
+
 ## İkinci önizleme (`v1.0.0-preview.2`)
 
 15 Kasım 2026 — kaynak `0eef978`, CI çalıştırması `43737861834`.
