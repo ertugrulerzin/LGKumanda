@@ -108,3 +108,22 @@ final class PointerJumpTests: XCTestCase {
         XCTAssertEqual(PointerJump.steps(dx: 99_999, dy: 0).reduce(0) { $0 + $1.0 }, PointerJump.limit)
     }
 }
+
+final class WebFocusTests: XCTestCase {
+    func testScriptSurvivesBeingJoinedIntoOneJavascriptURL() throws {
+        let source = WebFocus.script.replacingOccurrences(of: "https?:", with: "")
+        XCTAssertFalse(source.contains("//"), "A // comment would swallow the rest of the one-line script")
+        XCTAssertFalse(WebFocus.script.contains("%"))
+        XCTAssertFalse(WebFocus.script.contains("#"))
+        let url = WebFocus.url(.down)
+        XCTAssertTrue(url.hasPrefix("javascript:"))
+        XCTAssertFalse(url.contains(" ") || url.contains("\n") || url.contains("#"))
+        XCTAssertTrue(url.removingPercentEncoding!.hasSuffix("('down')"))
+    }
+    func testOnlyArrowsAndOKAreRouted() {
+        XCTAssertEqual(WebFocus.action(for: .left), .left)
+        XCTAssertEqual(WebFocus.action(for: .enter), .arm)
+        XCTAssertNil(WebFocus.action(for: .back))
+        XCTAssertNil(WebFocus.action(for: .play))
+    }
+}

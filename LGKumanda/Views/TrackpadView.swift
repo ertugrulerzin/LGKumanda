@@ -54,11 +54,12 @@ struct PointerModePicker: View {
     @AppStorage("cursorless") private var cursorless = true
     @AppStorage("browserUsesPointerV2") private var browserUsesPointer = false
     @AppStorage("quietPointer") private var quietPointer = true
+    @AppStorage("webFocus") private var webFocus = true
     private var mouseActive: Bool { (client.isBrowserActive && browserUsesPointer) || !cursorless }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if client.isBrowserActive && browserUsesPointer {
-                Text("Web tarayıcısı: fare kullanılıyor. İşaretçisiz gezinmek için bağlantıları Klavye sekmesindeki web adresi ekranından telefonda seç.")
+                Text("Web tarayıcısı: fare kullanılıyor. İşaretçisiz gezinmek için fareyi kapat; yön tuşları bağlantıları seçer.")
                     .font(.caption).foregroundStyle(.secondary)
             } else {
                 Picker("Dokunmatik alanın davranışı", selection: $cursorless) {
@@ -67,6 +68,8 @@ struct PointerModePicker: View {
                 }.pickerStyle(.segmented)
             }
             if client.isBrowserActive {
+                Toggle("Web'de yön tuşlarıyla bağlantı seç", isOn: $webFocus).font(.subheadline)
+                    .accessibilityIdentifier("webFocus")
                 Toggle("Web'de fare kullan", isOn: $browserUsesPointer).font(.subheadline)
                     .accessibilityIdentifier("browserUsesPointer")
             }

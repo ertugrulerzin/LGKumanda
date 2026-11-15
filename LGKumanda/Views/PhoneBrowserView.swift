@@ -7,51 +7,70 @@ struct PhoneBrowserView: View {
     @EnvironmentObject private var client: TVClient
     let start: URL
     @State private var page = PhoneBrowserPage()
-    @State private var failure: String?
     /// Why the TV touch pad is open; nil when closed.
     @State private var touchPad: TouchPadReason?
     var body: some View {
         PhoneWebView(start: start, page: page, mediaBlocked: {
-            if touchPad == nil { touchPad = .video }
+            if touchPad == nil { touchPad = .videos }
         }) { url in
-            Task {
-                do { try await client.openBrowser(url); failure = nil }
-                catch { failure = error.localizedDescription }
-            }
+            if !page.isPresentingPlayer { page.forward(url, client:client) }
         }
         .safeAreaInset(edge: .top, spacing: 0) {
             HStack(spacing: 8) {
                 Image(systemName: "tv").foregroundStyle(.secondary)
-                Text(failure ?? "Dokunduğun bağlantı TV'de açılır. TV doğrulama isterse imleç düğmesine dokun.").font(.footnote)
-                    .foregroundStyle(failure == nil ? Color.secondary : Color.red).lineLimit(2)
+                Text(page.forwardingFailure ?? (page.forwarding ? "Sayfa TV'ye gönderiliyor…" : "Bağlantıyı telefonda seç. Video için Videolar düğmesini kullan.")).font(.footnote)
+                    .foregroundStyle(page.forwardingFailure == nil ? Color.secondary : Color.red).lineLimit(3)
                 Spacer(minLength: 0)
             }.padding(.horizontal, 16).padding(.vertical, 8).background(Theme.surface)
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
-            HStack(spacing: 4) {
-                Button { page.webView?.goBack() } label: { Image(systemName: "chevron.backward").frame(width: 44, height: 44) }
-                    .disabled(!page.canGoBack).accessibilityLabel("Telefonda geri")
-                Button { page.webView?.goForward() } label: { Image(systemName: "chevron.forward").frame(width: 44, height: 44) }
-                    .disabled(!page.canGoForward).accessibilityLabel("Telefonda ileri")
-                Spacer()
-                Button { touchPad = .button } label: { Image(systemName: "cursorarrow.rays").frame(width: 44, height: 44) }
-                    .disabled(!client.pointerReady).accessibilityLabel("TV'de dokunmatik")
-                Text("TV'de kaydır").font(.caption).foregroundStyle(.secondary)
-                Button { client.key(.up) } label: { Image(systemName: "chevron.up").frame(width: 52, height: 44) }
-                    .buttonStyle(.bordered).accessibilityLabel("TV sayfasını yukarı kaydır").disabled(!client.pointerReady)
-                Button { client.key(.down) } label: { Image(systemName: "chevron.down").frame(width: 52, height: 44) }
-                    .buttonStyle(.bordered).accessibilityLabel("TV sayfasını aşağı kaydır").disabled(!client.pointerReady)
-            }.padding(.horizontal, 12).padding(.vertical, 6).background(Theme.surface)
+            VStack(spacing:4) {
+                HStack(spacing:8) {
+                    Button { page.webView?.goBack() } label: { Image(systemName:"chevron.backward").frame(width:44,height:44) }
+                        .disabled(!page.canGoBack).accessibilityLabel("Telefonda geri")
+                    Button { page.webView?.goForward() } label: { Image(systemName:"chevron.forward").frame(width:44,height:44) }
+                        .disabled(!page.canGoForward).accessibilityLabel("Telefonda ileri")
+                    Spacer(minLength:8)
+                    Button { touchPad = .videos } label: {
+                        Label(page.catalog.videos.isEmpty ? "Videolar" : "Videolar (\(page.catalog.videos.count))",systemImage:"play.rectangle")
+                            .font(.subheadline).frame(minHeight:44)
+                    }.accessibilityIdentifier("webVideos")
+                    Button { touchPad = .button } label: { Image(systemName:"cursorarrow.rays").frame(width:44,height:44) }
+                        .disabled(!client.pointerReady).accessibilityLabel("TV'de dokunmatik")
+                }
+                HStack(spacing:8) {
+                    Text("TV").font(.caption).foregroundStyle(.secondary)
+                    Spacer(minLength:0)
+                    browserKey(.left,"chevron.left","TV'de sola")
+                    browserKey(.up,"chevron.up","TV'de yukarı")
+                    Button { client.key(.enter) } label: { Text("OK").font(.subheadline.weight(.semibold)).frame(minWidth:44,minHeight:44) }
+                        .disabled(!client.pointerReady).accessibilityLabel("TV'de OK")
+                    browserKey(.down,"chevron.down","TV'de aşağı")
+                    browserKey(.right,"chevron.right","TV'de sağa")
+                }.buttonStyle(.bordered)
+            }.padding(.horizontal,12).padding(.vertical,6).background(Theme.surface)
         }
-        .sheet(item: $touchPad, onDismiss: { client.stopPointerMotion() }) { reason in TVTouchPadSheet(playHint: reason == .video) }
+        .sheet(item: $touchPad, onDismiss: { client.stopPointerMotion() }) { reason in
+            if reason == .videos {
+                WebVideoSheet(page:page)
+                    .onAppear { page.isPresentingPlayer = true }
+                    .onDisappear { page.isPresentingPlayer = false }
+            }
+            else { TVTouchPadSheet() }
+        }
         .navigationTitle(page.title.isEmpty ? "Web" : page.title).navigationBarTitleDisplayMode(.inline)
+        .onDisappear { page.cancelForwarding() }
+    }
+    private func browserKey(_ key: RemoteKey, _ symbol: String, _ title: String) -> some View {
+        Button { client.key(key) } label: { Image(systemName:symbol).frame(minWidth:36,minHeight:36) }
+            .disabled(!client.pointerReady).accessibilityLabel(title)
     }
 }
 
-enum TouchPadReason: Identifiable { case button, video; var id: Self { self } }
+enum TouchPadReason: Identifiable { case button, videos; var id: Self { self } }
 
 /// Temporary mouse pad for things only the TV can do, such as a Cloudflare "verify you are human" box.
-private struct TVTouchPadSheet: View {
+struct TVTouchPadSheet: View {
     @EnvironmentObject private var client: TVClient
     @Environment(\.dismiss) private var dismiss
     var playHint = false
@@ -86,11 +105,34 @@ private struct TVTouchPadSheet: View {
     }
 }
 
-@Observable final class PhoneBrowserPage {
+@MainActor @Observable final class PhoneBrowserPage {
     weak var webView: WKWebView?
     var title = ""
     var canGoBack = false
     var canGoForward = false
+    var url: URL?
+    let catalog = WebVideoCatalog()
+    var isPresentingPlayer = false
+    var forwarding = false
+    var forwardingFailure: String?
+    @ObservationIgnored private(set) var forwardingTask: Task<Void,Never>?
+    @ObservationIgnored private var forwardToken = UUID()
+
+    func forward(_ url: URL, client: TVClient) {
+        let token = UUID(); forwardToken = token
+        let previous = forwardingTask
+        forwarding = true; forwardingFailure = nil
+        forwardingTask = Task { @MainActor [weak self] in
+            await previous?.value
+            guard let self, self.forwardToken == token, !Task.isCancelled else { return }
+            defer { if self.forwardToken == token { self.forwarding = false } }
+            do { try await client.openBrowser(url) }
+            catch { if self.forwardToken == token { self.forwardingFailure = error.localizedDescription } }
+        }
+    }
+    func cancelForwarding() {
+        forwardToken = UUID(); forwardingTask?.cancel(); forwardingTask = nil; forwarding = false
+    }
 }
 
 private struct PhoneWebView: UIViewRepresentable {
@@ -104,16 +146,9 @@ private struct PhoneWebView: UIViewRepresentable {
         configuration.websiteDataStore = .nonPersistent()
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = .all
-        // Videos belong on the TV: pause any playback on the phone (all frames, including embedded players) and tell the app.
-        let pause = """
-        document.addEventListener('play', function (e) {
-          var media = e.target; if (!media || !media.pause) return;
-          media.pause(); media.muted = true;
-          try { window.webkit.messageHandlers.mediaPlay.postMessage(1); } catch (_) {}
-        }, true);
-        """
-        configuration.userContentController.addUserScript(WKUserScript(source: pause, injectionTime: .atDocumentStart, forMainFrameOnly: false))
-        configuration.userContentController.add(context.coordinator, name: "mediaPlay")
+        configuration.userContentController.addUserScript(WKUserScript(source: WebVideoDiscovery.script, injectionTime:.atDocumentStart, forMainFrameOnly:false))
+        configuration.userContentController.add(context.coordinator, name:"mediaPlay")
+        configuration.userContentController.add(context.coordinator, name:"videoSource")
         let view = WKWebView(frame: .zero, configuration: configuration)
         view.navigationDelegate = context.coordinator
         view.uiDelegate = context.coordinator
@@ -127,6 +162,10 @@ private struct PhoneWebView: UIViewRepresentable {
     func updateUIView(_ uiView: WKWebView, context: Context) { context.coordinator.parent = self }
     static func dismantleUIView(_ uiView: WKWebView, coordinator: Coordinator) {
         uiView.configuration.userContentController.removeScriptMessageHandler(forName: "mediaPlay")
+        uiView.configuration.userContentController.removeScriptMessageHandler(forName: "videoSource")
+        uiView.stopLoading()
+        uiView.navigationDelegate = nil
+        uiView.uiDelegate = nil
     }
 
     final class Coordinator: NSObject, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
@@ -136,6 +175,11 @@ private struct PhoneWebView: UIViewRepresentable {
         var lastMediaBlock = Date.distantPast
         init(_ parent: PhoneWebView) { self.parent = parent }
         func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
+            guard message.webView === parent.page.webView else { return }
+            if message.name == "videoSource" {
+                parent.page.catalog.receive(message.body)
+                return
+            }
             guard Date().timeIntervalSince(lastMediaBlock) > 3 else { return }
             lastMediaBlock = Date()
             parent.mediaBlocked()
@@ -143,16 +187,27 @@ private struct PhoneWebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, decidePolicyFor action: WKNavigationAction,
                      decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             let scheme = action.request.url?.scheme?.lowercased() ?? ""
+            if [.linkActivated,.backForward].contains(action.navigationType),
+               action.targetFrame?.isMainFrame != false, ["http","https"].contains(scheme),
+               let url = action.request.url, url != sent {
+                sent = url
+                parent.openOnTV(url)
+            }
             decisionHandler(["http", "https", "about", "blob", "data"].contains(scheme) ? .allow : .cancel)
+        }
+        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+            parent.page.catalog.reset()
         }
         func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) { refresh(webView) }
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { firstLoad = false }
         func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) { firstLoad = false }
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             refresh(webView)
+            let initial = firstLoad
+            firstLoad = false
             guard let url = webView.url, ["http", "https"].contains(url.scheme?.lowercased() ?? ""), url != sent else { return }
             sent = url
-            if firstLoad { firstLoad = false; return } // the TV already opened the starting page and follows its redirects itself
+            if initial { return } // The TV follows the initial page's redirects itself.
             parent.openOnTV(url)
         }
         /// Links that would open a new window load in the same view, so the TV still follows.
@@ -163,6 +218,7 @@ private struct PhoneWebView: UIViewRepresentable {
         }
         private func refresh(_ webView: WKWebView) {
             parent.page.title = webView.title ?? ""
+            parent.page.url = webView.url
             parent.page.canGoBack = webView.canGoBack
             parent.page.canGoForward = webView.canGoForward
         }

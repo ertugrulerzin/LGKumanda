@@ -61,6 +61,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     }
     @Published var error: String?
     @Published var notice: String?
+    @Published private(set) var webVideoSession: WebVideoSession?
     private var session: URLSession?
     private var socket: URLSessionWebSocketTask?
     private var pointer: URLSessionWebSocketTask?
@@ -113,6 +114,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         connect(to: tv)
     }
     func disconnect() {
+        webVideoSession = nil
         stopPointerMotion()
         generation = UUID()
         receiver?.cancel(); pointerReceiver?.cancel(); deadline?.cancel(); heartbeat?.cancel()
@@ -277,7 +279,23 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             throw Failure.message("TV'nin web tarayıcısı bulunamadı veya web adresi geçersiz. Uygulama listesini yenile.")
         }
         _ = try await request("system.launcher/open", ["target": url.absoluteString])
+        webVideoSession = nil
         foregroundAppID = app
+    }
+    func openWebVideo(_ video: WebVideo) async throws {
+        let token = generation
+        let response = try await request("media.viewer/open", video.openPayload)
+        guard token == generation, state == .connected else { throw Failure.message("TV bağlantısı değişti. Yeniden dene.") }
+        webVideoSession = WebVideoSession(video: video, viewerID: response["id"] as? String, sessionID: response["sessionId"] as? String)
+        if let id = webVideoSession?.viewerID { foregroundAppID = id }
+    }
+    func controlWebVideo(_ action: MediaAction) async throws {
+        guard state == .connected else { throw Failure.message("Önce bir TV'ye bağlan.") }
+        if webVideoSession != nil { _ = try await request("media.controls/\(action.rawValue)") }
+        else {
+            guard pointerReady else { throw Failure.message("TV tuş bağlantısı hazır değil. Yeniden bağlan.") }
+            pointerMessage(action.key.wireMessage)
+        }
     }
     func switchInput(_ id: String) async throws {
         guard inputs.contains(where: { $0.id == id }) else { throw Failure.message("Giriş bu TV'de bulunamadı. Giriş listesini yenile.") }

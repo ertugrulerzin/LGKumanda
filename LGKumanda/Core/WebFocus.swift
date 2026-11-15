@@ -8,6 +8,8 @@ import Foundation
 /// clickable element in that direction, or scrolls when there is none. OK first "arms" the script, then a real ENTER
 /// key is sent, so the activation happens inside a trusted key event (video players accept it as a user gesture).
 /// Cross-origin players cannot be reached from the page, so OK on such a frame opens the player page itself.
+/// Frames are only highlighted, never focused: a focused cross-origin frame would swallow the keys.
+/// The script is joined into one line, so it must not contain `//` comments, `%` or `#`.
 enum WebFocus {
     enum Action: String { case up, down, left, right, arm }
 
@@ -70,8 +72,7 @@ enum WebFocus {
         N.set = function (e) {
           N.cur = e;
           if (e.tabIndex < 0 && !e.hasAttribute('tabindex')) { e.setAttribute('tabindex', '-1'); e.__lg = 1; }
-          // A focused cross-origin frame would swallow the keys; frames are only highlighted, OK opens them.
-          if (e.tagName == 'IFRAME') { if (d.activeElement && d.activeElement.blur) d.activeElement.blur(); }
+          if (e.tagName == 'IFRAME') { var ae = d.activeElement; if (ae && ae.tagName == 'IFRAME') ae.blur(); try { w.focus(); } catch (x) {} }
           else { try { e.focus({ preventScroll: true }); } catch (x) {} }
           var r = e.getBoundingClientRect();
           if (r.top < 0 || r.bottom > innerHeight || r.left < 0 || r.right > innerWidth) e.scrollIntoView({ block: 'center', inline: 'center' });
@@ -100,20 +101,26 @@ enum WebFocus {
           var v = innerHeight * 0.6, h = innerWidth * 0.6;
           scrollBy(dir == 'left' ? -h : dir == 'right' ? h : 0, dir == 'up' ? -v : dir == 'down' ? v : 0);
         };
+        N.act = function (e, ev) {
+          var t = e.tagName;
+          if (t == 'IFRAME') { if (/^https?:/.test(e.src)) { if (ev) ev.preventDefault(); location.href = e.src; } return; }
+          if (t == 'VIDEO') { if (ev) ev.preventDefault(); if (e.paused) e.play(); else e.pause(); return; }
+          if (ev && /^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(t) && d.activeElement === e) return;
+          if (ev) ev.preventDefault();
+          e.click();
+        };
         d.addEventListener('keydown', function (ev) {
           if (ev.key != 'Enter' || !N.armed) return;
           N.armed = 0;
-          var e = N.cur;
-          if (!e || !e.isConnected) return;
-          var t = e.tagName;
-          if (t == 'IFRAME') { if (/^https?:/.test(e.src)) { ev.preventDefault(); location.href = e.src; } return; }
-          if (t == 'VIDEO') { ev.preventDefault(); if (e.paused) e.play(); else e.pause(); return; }
-          if (/^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(t) && d.activeElement === e) return;
-          ev.preventDefault();
-          e.click();
+          if (N.cur && N.cur.isConnected) N.act(N.cur, ev);
         }, true);
       }
-      if (a == 'arm') { N.armed = 1; if (!N.cur || !N.cur.isConnected) N.armed = 0; }
+      if (a == 'arm') {
+        var cur = N.cur && N.cur.isConnected ? N.cur : null;
+        N.armed = 0;
+        if (cur && (cur.tagName == 'IFRAME' || !d.hasFocus())) N.act(cur, null);
+        else if (cur) N.armed = 1;
+      }
       else N.move(a);
     })
     """

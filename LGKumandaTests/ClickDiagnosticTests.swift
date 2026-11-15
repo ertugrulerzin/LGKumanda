@@ -22,14 +22,9 @@ final class ClickDiagnosticTests: XCTestCase {
             for _ in 0..<6 { client.pointerMessage("type:move\ndx:10\ndy:5\ndown:0\n\n"); try await sleep(0.05) }
             try await sleep(0.8)
         }
-        let app = try XCTUnwrap(client.browserAppID)
-        func js(_ code: String) async { _ = try? await client.request("system.launcher/launch", ["id": app, "params": ["target": "javascript:void(" + code + ")"]]) }
-        client.key(.down); try await sleep(2)
-        await js("new Image().src='http://192.168.1.111:8771/hit?DBG_cur_'+(window.__lgnav&&__lgnav.cur?__lgnav.cur.tagName:'none')+'_active_'+document.activeElement.tagName+'_hasFocus_'+document.hasFocus()")
-        try await sleep(1.5)
-        client.key(.enter); try await sleep(3)
-        await js("new Image().src='http://192.168.1.111:8771/hit?DBG2_armed_'+__lgnav.armed+'_active_'+document.activeElement.tagName+'_hasFocus_'+document.hasFocus()+'_href_'+encodeURIComponent(location.href)")
-        try await sleep(1.5)
+        for (i, key) in [RemoteKey.down, .right, .down, .down, .enter].enumerated() {
+            await mark("K\(i)_\(key.rawValue)"); client.key(key); try await sleep(1.5)
+        }
         await mark("END")
         if let original, let input = client.inputs.first(where: { ControlRouting.appID(forInput: $0.id) == original }) {
             try? await client.switchInput(input.id)
