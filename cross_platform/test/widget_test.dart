@@ -89,6 +89,44 @@ void main() {
       await tester.tap(find.byTooltip('Metni TV’ye gönder'));
       await tester.pumpAndSettle();
       expect(find.text('Metin TV’ye gönderildi.'), findsOneWidget);
+      void selectCatalog(int index) {
+        if (find.byType(NavigationBar).evaluate().isNotEmpty) {
+          tester
+              .widget<NavigationBar>(find.byType(NavigationBar))
+              .onDestinationSelected!(index);
+        } else {
+          tester
+              .widget<NavigationRail>(find.byType(NavigationRail))
+              .onDestinationSelected!(index);
+        }
+      }
+
+      selectCatalog(1);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).first, 'Netflix');
+      await tester.pumpAndSettle();
+      selectCatalog(2);
+      await tester.pumpAndSettle();
+      expect(find.text('Test kanalı'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+      selectCatalog(1);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('HDMI / Girişler'));
+      await tester.pumpAndSettle();
+      expect(find.text('Kutu'), findsOneWidget);
+      selectCatalog(2);
+      await tester.pumpAndSettle();
+      expect(find.text('Test kanalı'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+      final channelRow = find.ancestor(
+        of: find.text('Test kanalı'),
+        matching: find.byType(ListTile),
+      );
+      expect(
+        find.descendant(of: channelRow, matching: find.byIcon(Icons.live_tv)),
+        findsOneWidget,
+      );
+
       expect(tester.takeException(), isNull);
     });
   }

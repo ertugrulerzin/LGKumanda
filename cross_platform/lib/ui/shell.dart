@@ -36,8 +36,12 @@ class _RemoteShellState extends State<RemoteShell> {
             client: client,
             openDevices: () => setState(() => index = 4),
           ),
-          1 => LibraryPage(client: client),
-          2 => LibraryPage(client: client, channels: true),
+          1 => LibraryPage(key: const ValueKey('apps'), client: client),
+          2 => LibraryPage(
+            key: const ValueKey('channels'),
+            client: client,
+            channels: true,
+          ),
           3 => KeyboardPage(client: client),
           _ => DevicesPage(client: client),
         };
