@@ -61,6 +61,18 @@ jobs:
           if (!(Test-Path $compiler)) { choco install innosetup -y --no-progress }
           & $compiler packaging/windows.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify Windows installer
+        if: matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          $installDir = Join-Path $env:RUNNER_TEMP 'LGKumanda-smoke'
+          $setup = Start-Process 'build/LGKumanda-Windows-Setup.exe' -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/DIR=`"$installDir`"" -Wait -PassThru
+          if ($setup.ExitCode -ne 0) { throw "Installer exit code: $($setup.ExitCode)" }
+          foreach ($file in @('lg_kumanda.exe', 'flutter_windows.dll', 'msvcp140.dll', 'vcruntime140.dll', 'data/flutter_assets')) {
+            if (!(Test-Path (Join-Path $installDir $file))) { throw "Missing installed file: $file" }
+          }
+          $uninstall = Start-Process (Join-Path $installDir 'unins000.exe') -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw "Uninstaller exit code: $($uninstall.ExitCode)" }
       - run: flutter build apk --debug
         if: matrix.target == 'android'
       - run: cp build/app/outputs/flutter-apk/app-debug.apk build/LGKumanda-Android-preview.apk
