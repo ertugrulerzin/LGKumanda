@@ -1,6 +1,5 @@
-LG Kumanda 1.0 (12)
+LG Kumanda 1.0 (13)
 
-- İşaretçisiz web gezinme: TV'nin web tarayıcısında yön tuşları artık bağlantılar, düğmeler ve oynatıcılar arasında pembe bir çerçeveyle gezer; OK seçer. Ekranda fare işaretçisi çıkmaz.
-- Video oynatıcısı sayfanın içinde ayrı bir çerçevedeyse OK oynatıcıyı tam sayfa açar; sonra yön tuşlarıyla oynat düğmesini seçip OK'ye bas.
-- Gidecek bağlantı yoksa yön tuşları sayfayı kaydırır.
-- Kapatmak için: Dokunmatik bölümündeki "Web'de yön tuşlarıyla bağlantı seç" ayarı.
+- Tivibu kutusunu Wi-Fi ile kumanda et: Kontrol hedefi > HDMI kutusu yardımı > Wi-Fi ile kutu kumandası. Kutuyu listeden seç, kutunun ekranındaki 6 karakterlik kodu yaz, bağlı olduğu HDMI girişini seç (HDMI 3).
+- TV o girişteyken yön, OK, geri, ana ekran, kanal, rakam ve oynatma tuşları SIMPLINK'e gerek kalmadan kutuya gider. Ses TV'de kalır.
+- Web sayfasından video bulup TV oynatıcısında açma (deneysel).
