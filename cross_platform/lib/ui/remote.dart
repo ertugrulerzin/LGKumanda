@@ -1,9 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
+import '../core/android_tv/box_client.dart';
 import '../core/protocol.dart';
 import '../core/storage.dart';
 import '../core/tv_client.dart';
+import 'box_setup.dart';
 import 'browser.dart';
 import 'devices.dart';
 import 'shell.dart';
@@ -139,12 +141,33 @@ class RemotePage extends StatelessWidget {
                 ],
                 onChanged: client.connected ? (m) => client.setMode(m!) : null,
               ),
-              if (client.hdmiWithoutCEC != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 12),
-                  child: Text(
-                    '${client.hdmiWithoutCEC!.title} girişinde SIMPLINK cihazı görünmüyor. Kutu yön tuşlarına yanıt vermeyebilir.',
-                  ),
+              if (BoxClient.shared case final box? when client.isHDMI)
+                ListenableBuilder(
+                  listenable: box,
+                  builder: (context, _) {
+                    final handled = box.handles(client.foreground);
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (!handled && client.hdmiWithoutCEC != null)
+                            Text(
+                              '${client.hdmiWithoutCEC!.title} girişinde SIMPLINK cihazı görünmüyor. Kutu yön tuşlarına yanıt vermeyebilir.',
+                            ),
+                          if (handled) Row(children: [const Icon(Icons.wifi, size: 18), const SizedBox(width: 8), Expanded(child: Text(box.status))]),
+                          TextButton.icon(
+                            key: const Key('openBoxSetup'),
+                            onPressed: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(builder: (_) => BoxSetupPage(box: box, client: client)),
+                            ),
+                            icon: const Icon(Icons.router_outlined),
+                            label: Text(box.box?.paired == true ? 'Wi-Fi ile kutu kumandası' : 'Kutuyu Wi-Fi ile kumanda et'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
               const SizedBox(height: 24),
               Center(

@@ -17,6 +17,7 @@ dependencies:
   # Upstream prerelease includes the AGP 9 compatibility fix.
   flutter_inappwebview: 6.2.0-beta.3
   path_provider: ^2.1.6
+  pointycastle: ^4.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

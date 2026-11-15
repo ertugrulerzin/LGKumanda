@@ -463,7 +463,11 @@ class TVClient extends ChangeNotifier {
     _pointer!.send(text);
   }
 
+  /// Lets another controller (an HDMI box over Wi-Fi) take keys; returns true when it handled the key.
+  bool Function(String name)? keyRouter;
+
   Future<void> key(String name) {
+    if (keyRouter?.call(name) == true) return Future.value();
     final generation = _generation;
     final next = _keyQueue.catchError((Object _) {}).then((_) async {
       if (generation != _generation) return;

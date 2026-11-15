@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
+import 'core/android_tv/box_client.dart';
 import 'core/storage.dart';
 import 'core/tv_client.dart';
 import 'ui/shell.dart';
@@ -10,6 +11,10 @@ Future<void> main() async {
   final client = TVClient(storage: const DeviceStorage());
   client.webFocusScript = await rootBundle.loadString('assets/web_focus.js');
   await client.initialize();
+  final box = BoxClient(storage: const DeviceStorage());
+  await box.initialize();
+  BoxClient.shared = box;
+  client.keyRouter = (name) => box.handles(client.foreground) && box.send(name);
   runApp(RemoteApp(client: client));
 }
 

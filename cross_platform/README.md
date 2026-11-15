@@ -68,7 +68,7 @@ Tarayıcı sayfa adreslerini eşler; ekran yansıtma yapmaz. Google sonuçları 
 
 **Deneysel işaretçisiz web gezinmesi** varsayılan kapalıdır. Son Claude oturumundaki JavaScript yaklaşımını taşır; özellikle cross-origin iframe oynatıcılarında ve sitelerin içerik güvenlik kurallarında tamamlanmış uyumluluk doğrulaması yoktur. Normal yön/OK gezinmesiyle bu deneyi karıştırma. Oturum özeti ve sıradaki doğrulama: [`SESSION_HANDOFF.tr.md`](SESSION_HANDOFF.tr.md).
 
-HDMI kutusunun komut alması SIMPLINK/HDMI-CEC desteğine bağlıdır. HDMI açıkken telefon klavyesi ve fare devre dışıdır. Otomatik kontrol hedefinde kanal/medya komutları ön plandaki TV kanalı veya uygulamaya göre yönlendirilir. Hiçbir fiziksel TV veya kutu için bütün komutların çalıştığı iddia edilmez.
+HDMI kutusunun komut alması SIMPLINK/HDMI-CEC desteğine bağlıdır. Tivibu gibi Android TV kutuları ise Wi-Fi üzerinden doğrudan kumanda edilebilir: HDMI girişindeyken kumanda ekranındaki **Kutuyu Wi-Fi ile kumanda et** bağlantısından kutuyu bul, ekrandaki kodla bir kez eşleştir ve bağlı olduğu girişi seç. O girişteyken yön, OK, geri, ana ekran, kanal, rakam ve oynatma tuşları kutuya gider; ses TV’de kalır. Bu akış gerçek Tivibu kutusuyla Mac üzerinden doğrulandı. HDMI açıkken telefon klavyesi ve fare devre dışıdır. Otomatik kontrol hedefinde kanal/medya komutları ön plandaki TV kanalı veya uygulamaya göre yönlendirilir. Hiçbir fiziksel TV veya kutu için bütün komutların çalıştığı iddia edilmez.
 
 ## Doğrulama kapsamı
 
