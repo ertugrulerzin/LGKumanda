@@ -39,6 +39,37 @@ import 'network_access.dart';
   }
 }
 
+/// True when a TLS certificate subject or issuer belongs to an LG webOS TV
+/// (e.g. `/O=LG Electronics Inc./CN=LGE TV SSG`).
+bool isLGTelevisionCertificate(String subject, String issuer) {
+  bool lg(String value) => value.toLowerCase().contains('lg electronics');
+  return lg(subject) || lg(issuer);
+}
+
+/// Some webOS TVs keep the 1311 description server closed. They still serve
+/// their LG-signed certificate on the remote-control port 3001.
+Future<bool> answersAsLGTelevision(String host, {int port = 3001}) async {
+  X509Certificate? certificate;
+  SecureSocket? socket;
+  try {
+    socket = await SecureSocket.connect(
+      host,
+      port,
+      timeout: const Duration(seconds: 1),
+      onBadCertificate: (c) {
+        certificate = c;
+        return true;
+      },
+    ).timeout(const Duration(seconds: 2));
+    final peer = certificate ?? socket.peerCertificate;
+    return peer != null && isLGTelevisionCertificate(peer.subject, peer.issuer);
+  } catch (_) {
+    return false;
+  } finally {
+    socket?.destroy();
+  }
+}
+
 class TVDiscovery extends ChangeNotifier {
   bool searching = false;
   int checked = 0, total = 0, _generation = 0;
@@ -103,32 +134,12 @@ class TVDiscovery extends ChangeNotifier {
         while (next < hosts.length && generation == _generation) {
           final host = hosts[next++];
           try {
-            final request = await http
-                .getUrl(Uri.http('$host:1311', '/'))
-                .timeout(const Duration(seconds: 1));
-            request.followRedirects = false;
-            final response = await request.close().timeout(
-              const Duration(seconds: 1),
-            );
-            if (response.statusCode != 200) continue;
-            final data = <int>[];
-            await for (final chunk in response.timeout(
-              const Duration(seconds: 1),
-            )) {
-              data.addAll(chunk);
-              if (data.length > 65536) {
-                throw const FormatException('Yanıt çok büyük.');
-              }
-            }
-            final description = deviceDescription(utf8.decode(data));
+            if (await _identify(http, host, generation, identities)) continue;
             if (generation != _generation) return;
-            if (description != null &&
-                (description.identity == null ||
-                    identities.add(description.identity!))) {
-              found.add(Television(host: host, name: description.name));
+            if (await answersAsLGTelevision(host) && generation == _generation &&
+                !found.any((t) => t.host == host)) {
+              found.add(Television(host: host));
             }
-          } catch (_) {
-            /* Other LAN devices are expected not to expose webOS. */
           } finally {
             if (generation == _generation) {
               checked++;
@@ -151,6 +162,39 @@ class TVDiscovery extends ChangeNotifier {
         _http = null;
         _emit();
       }
+    }
+  }
+
+  /// Reads the UPnP description on port 1311. Returns true when that port
+  /// answered with an LG description (added to [found]).
+  Future<bool> _identify(
+    HttpClient http,
+    String host,
+    int generation,
+    Set<String> identities,
+  ) async {
+    try {
+      final request = await http
+          .getUrl(Uri.http('$host:1311', '/'))
+          .timeout(const Duration(seconds: 1));
+      request.followRedirects = false;
+      final response = await request.close().timeout(
+        const Duration(seconds: 1),
+      );
+      if (response.statusCode != 200) return false;
+      final data = <int>[];
+      await for (final chunk in response.timeout(const Duration(seconds: 1))) {
+        data.addAll(chunk);
+        if (data.length > 65536) return false;
+      }
+      final description = deviceDescription(utf8.decode(data));
+      if (description == null || generation != _generation) return false;
+      if (description.identity == null || identities.add(description.identity!)) {
+        found.add(Television(host: host, name: description.name));
+      }
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 
