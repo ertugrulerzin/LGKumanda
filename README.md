@@ -4,6 +4,40 @@ LG webOS televizyonlar için ücretsiz ve açık kaynak iPhone kumandası. Kayna
 
 Türkçe, açık renkli, SwiftUI ile yazılmış yerel iPhone uygulaması. iOS 17 ve üzeri; harici Swift paketi gerektirmez.
 
+## Neler yapabilir?
+
+LG Kumanda, iPhone'unu aynı ağdaki LG webOS televizyonun için bir kumandaya dönüştürür. Günlük kullanımda ses ve kanal değiştirebilir, uygulama açabilir, HDMI girişleri arasında geçiş yapabilir ve TV'ye telefondan yazı gönderebilirsin.
+
+| Özellik | Ne işe yarar? |
+| --- | --- |
+| **Günlük kumanda** | Ses aç/kıs, sessize al, kanal değiştir; yön tuşları, OK, geri ve ana ekran ile TV menülerinde gezin. |
+| **Medya tuşları** | Destekleyen uygulamalarda oynat, duraklat, durdur ve ileri/geri sar. |
+| **Uygulamalar ve kanallar** | TV'de kurulu uygulamaları ve kanal listesini görüntüle, ara ve istediğini aç. |
+| **HDMI girişleri** | TV'ye bağlı cihazların girişlerini seç. Uyumlu kutularda yön ve medya komutlarını SIMPLINK/HDMI-CEC üzerinden kullan. |
+| **Ana ekran kısayolları** | Netflix, YouTube, tarayıcı veya HDMI girişlerini sabitle; adlarını ve sıralarını düzenle. Kısayollar her TV için ayrı saklanır. |
+| **Telefon klavyesi** | TV'nin desteklediği metin alanlarına iPhone klavyesiyle yazı gönder; Enter ve son karakteri sil komutlarını kullan. |
+| **Dokunmatik kumanda** | Telefon ekranını fare alanı olarak kullan; dokunarak tıkla ve iki parmakla kaydır. Hassasiyeti ayarla. |
+| **İşaretçisiz gezinme** | TV'de fare hareketi üretmeden kaydırarak yön, dokunarak OK komutu gönder. |
+| **Web'de gezinme** | Adres veya arama kelimeleri yaz; telefonda açılan sayfadaki bağlantılara dokunarak aynı adresi TV tarayıcısında aç. |
+| **Birden fazla TV** | Ağdaki LG TV'leri bul veya IP adresiyle ekle; kayıtlı TV'ler arasında geçiş yap ve yeniden bağlan. |
+| **Güç kontrolü** | TV'yi kapat; uyumlu TV ve ağ ayarlarıyla MAC adresi üzerinden Wake-on-LAN paketi göndererek uyandırmayı dene. |
+
+### Web tarayıcısı nasıl çalışır?
+
+Örneğin bir web adresini telefona yazıp TV'de açabilir, ardından telefonda gördüğün bağlantılara dokunarak TV'yi aynı sayfalara yönlendirebilirsin. Bu özellik sayfa adreslerini TV'ye gönderir; ekran yansıtma yapmaz. Telefon ve TV'deki oturumlar, çerezler ve sayfa içi işlemler birbirinden bağımsızdır.
+
+TV'de bir video oynat düğmesine veya güvenlik doğrulamasına basmak gerektiğinde **TV'de dokunmatik** alanını açabilirsin. Bu alanda fareyi hareket ettirme, küçük adımlarla hedefleme ve tıklama kontrolleri bulunur. Video oynatma, ilgili sitenin LG TV tarayıcısıyla uyumuna bağlıdır; her sitede çalışacağı garanti edilmez.
+
+### Gerekenler ve destek sınırları
+
+- **iOS 17 veya üzeri bir iPhone** ve yerel ağ üzerinden kumanda bağlantısını destekleyen bir **LG webOS TV** gerekir.
+- Telefon ile TV aynı yerel ağda olmalı; ilk bağlantıda TV ekranındaki eşleştirme isteği kabul edilmelidir.
+- Tuşlar, metin girişi ve medya kontrolleri TV modeline, yazılımına ve açık uygulamanın desteğine göre değişebilir.
+- HDMI kutularına komut iletimi SIMPLINK/HDMI-CEC desteğine bağlıdır. Uygulama kızılötesi kumanda göndermez.
+- Uyandırma için TV'nin ilgili ağ/güç ayarları ve iPhone'daki gerekli ağ yetkileri sağlanmalıdır; ayrıntılar aşağıdadır.
+
+TV kumanda bağlantısı yerel ağ üzerinden kurulur; eşleştirme anahtarları iPhone'un Keychain alanında saklanır. Uygulama LG Electronics'in resmi ürünü değildir.
+
 ## Çalıştırma
 
 `LGKumanda.xcodeproj` dosyasını Xcode'da aç, `LGKumanda` scheme'ini ve bir iPhone simülatörünü seç, Run'a bas. Gerçek iPhone için Signing & Capabilities bölümünde kendi Apple geliştirme takımını seç ve benzersiz bir Bundle Identifier kullan.
