@@ -6,6 +6,12 @@ on:
   pull_request:
     paths: ['cross_platform/**', '!cross_platform/**/*.md', '.github/workflows/multiplatform.yml']
   workflow_dispatch:
+    inputs:
+      target:
+        description: Build all platforms or only Windows
+        type: choice
+        default: all
+        options: [all, windows]
 permissions:
   contents: read
 concurrency:
@@ -16,13 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-latest
-            target: macos
-          - os: windows-latest
-            target: windows
-          - os: ubuntu-latest
-            target: android
+        include: ${{ fromJSON(inputs.target == 'windows' && '[{"os":"windows-latest","target":"windows"}]' || '[{"os":"macos-latest","target":"macos"},{"os":"windows-latest","target":"windows"},{"os":"ubuntu-latest","target":"android"}]') }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
     defaults:
@@ -40,6 +40,11 @@ jobs:
           flutter-version: '3.50.0'
           channel: stable
           cache: true
+      - uses: actions/cache@v4
+        if: matrix.target == 'windows'
+        with:
+          path: cross_platform/build/windows/x64
+          key: windows-native-flutter350-${{ hashFiles('cross_platform/pubspec.lock', 'cross_platform/windows/**') }}
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test
@@ -51,8 +56,15 @@ jobs:
           ln -s /Applications build/dmg-root/Applications
           hdiutil create -volname 'LG Kumanda' -srcfolder build/dmg-root -ov -format UDZO build/LGKumanda-macOS.dmg
         if: matrix.target == 'macos'
-      - run: flutter build windows --release
+      - name: Build Windows application
         if: matrix.target == 'windows'
+        shell: pwsh
+        run: |
+          flutter build windows --release
+          if ($LASTEXITCODE -ne 0) {
+            cmake --install build/windows/x64 --config Release --verbose
+            exit 1
+          }
       - name: Build Windows installer
         if: matrix.target == 'windows'
         shell: pwsh
