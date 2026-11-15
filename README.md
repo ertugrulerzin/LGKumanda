@@ -6,7 +6,7 @@ Türkçe, açık renkli, SwiftUI ile yazılmış yerel iPhone uygulaması. iOS 1
 
 ## Mac, Windows ve Android
 
-**[Deneme sürümünü indir](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.1):** [Android APK](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.1/LGKumanda-Android-preview.apk) · [Mac DMG](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.1/LGKumanda-macOS.dmg) · [Windows kurulum EXE](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.1/LGKumanda-Windows-Setup.exe).
+**[Deneme sürümünü indir](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.2):** [Android APK](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.2/LGKumanda-Android-preview.apk) · [Mac DMG](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.2/LGKumanda-macOS.dmg) · [Windows kurulum EXE](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.2/LGKumanda-Windows-Setup.exe).
 
 Bunlar ilk önizleme paketleridir; imzalama ve cihaz doğrulama sınırları sürüm notlarında açıklanır.
 

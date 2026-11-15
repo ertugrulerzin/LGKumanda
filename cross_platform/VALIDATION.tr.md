@@ -2,6 +2,15 @@
 
 15 Kasım 2026 — `v1.0.0-preview.1`. Ortak uygulama kodu: `1ac9186`. Windows çalışma zamanı paketleme düzeltmesi: `527fd1d`.
 
+## İkinci önizleme (`v1.0.0-preview.2`)
+
+15 Kasım 2026 — kaynak `0eef978`, CI çalıştırması `43737861834`.
+
+- Yeni: Tivibu gibi Android TV kutularının Wi-Fi ile kumandası (Android TV Remote v2: 6467 eşleştirme, 6466 kumanda).
+- `flutter analyze` temiz; `flutter test` 21 test (protokol çerçeveleme, eşleştirme sırrı test vektörü, sertifika üretimi ve SecurityContext kabulü, tuş eşleme).
+- Gerçek Tivibu kutusunda Mac’ten Flutter istemcisiyle eşleştirme (kod `8D417A`) ve tuş gönderimi hatasız tamamlandı. Tuşların kutu ekranındaki etkisi henüz kullanıcı tarafından onaylanmadı.
+- Paketler CI’da derlendi; ayrıca elle cihaz kurulumu yapılmadı.
+
 ## Yerel kontroller
 
 - `flutter analyze`: temiz.
