@@ -38,8 +38,10 @@ class RemotePage extends StatelessWidget {
       onPressed: () => key(name),
     );
     return Focus(
+      key: const ValueKey('remote-keyboard-focus'),
       autofocus: true,
-      onKeyEvent: (_, event) {
+      onKeyEvent: (node, event) {
+        if (!node.hasPrimaryFocus) return KeyEventResult.ignored;
         if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
           return KeyEventResult.ignored;
         }
