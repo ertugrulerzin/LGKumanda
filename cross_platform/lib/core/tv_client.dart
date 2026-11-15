@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 
 import 'protocol.dart';
+import 'network_access.dart';
 import 'storage.dart';
 import 'transport.dart';
 
@@ -12,10 +13,12 @@ class TVClient extends ChangeNotifier {
   TVClient({
     required this.storage,
     this.openSocket = openTVSocket,
+    this.ensureNetworkAccess = requireNetworkAccess,
     this.requestTimeout = const Duration(seconds: 10),
   });
   final TVStorage storage;
   final SocketFactory openSocket;
+  final Future<void> Function() ensureNetworkAccess;
   final Duration requestTimeout;
   List<Television> televisions = [];
   Television? selected;
@@ -163,6 +166,8 @@ class TVClient extends ChangeNotifier {
     state = LinkState.connecting;
     _emit();
     try {
+      await ensureNetworkAccess();
+      if (generation != _generation) return;
       await storage.write('selected', tv.host);
       final key = await storage.readSecret('key.${tv.host}');
       final pin = await storage.readSecret('cert.${tv.host}');
@@ -196,12 +201,13 @@ class TVClient extends ChangeNotifier {
         const Duration(seconds: 20),
         'TV’ye ulaşılamadı. IP adresini ve ağ izinlerini kontrol et.',
       );
-    } catch (_) {
+    } catch (e) {
       if (generation != _generation) return;
       disconnect();
-      error =
-          'Bağlantı kurulamadı. TV’nin açık olduğunu, aynı ağda olduğunu ve ağ izinlerini kontrol et. '
-          'Sertifika değiştiyse cihazı doğruladıktan sonra yeniden eşleştir.';
+      error = e is LocalNetworkDenied
+          ? e.toString()
+          : 'Bağlantı kurulamadı. TV’nin açık olduğunu, aynı ağda olduğunu ve ağ izinlerini kontrol et. '
+                'Sertifika değiştiyse cihazı doğruladıktan sonra yeniden eşleştir.';
       _emit();
     }
   }
@@ -629,6 +635,7 @@ class TVClient extends ChangeNotifier {
   Future<void> wake() async {
     final tv = selected;
     if (tv == null) throw StateError('Önce bir TV seç.');
+    await ensureNetworkAccess();
     final packet = magicPacket(tv.mac);
     if (InternetAddress.tryParse(tv.broadcast)?.type !=
             InternetAddressType.IPv4 ||

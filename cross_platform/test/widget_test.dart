@@ -2,7 +2,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:lg_kumanda/main.dart';
 import 'package:lg_kumanda/core/tv_client.dart';
+
 import 'helpers.dart';
+
 import 'package:lg_kumanda/core/protocol.dart';
 
 void main() {
@@ -27,7 +29,9 @@ void main() {
       expect(find.text('Geçerli bir yerel IPv4 adresi gir.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
-    testWidgets('connected remote and keyboard remain usable at $size', (tester) async {
+    testWidgets('connected remote and keyboard remain usable at $size', (
+      tester,
+    ) async {
       tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.resetPhysicalSize);
@@ -37,12 +41,15 @@ void main() {
       addTearDown(client.dispose);
       await tester.runAsync(() async {
         await client.connect(const Television(host: '192.168.1.50'));
-        server.approve(); await flush();
+        server.approve();
+        await flush();
       });
-      await tester.pumpWidget(RemoteApp(client: client)); await tester.pumpAndSettle();
+      await tester.pumpWidget(RemoteApp(client: client));
+      await tester.pumpAndSettle();
       expect(find.text('OK'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.tap(find.text('Klavye').last); await tester.pumpAndSettle();
+      await tester.tap(find.text('Klavye').last);
+      await tester.pumpAndSettle();
       expect(find.text('İşaretçisiz'), findsOneWidget);
       await tester.enterText(find.byType(TextField).first, 'Merhaba');
       await tester.tap(find.byTooltip('Metni TV’ye gönder'));

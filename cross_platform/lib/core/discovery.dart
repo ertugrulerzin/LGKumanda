@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:xml/xml.dart';
 
 import 'protocol.dart';
+import 'network_access.dart';
 
 ({String name, String? identity})? deviceDescription(String body) {
   try {
@@ -71,6 +72,8 @@ class TVDiscovery extends ChangeNotifier {
     http.findProxy = (_) => 'DIRECT';
     _http = http;
     try {
+      await requireNetworkAccess();
+      if (generation != _generation) return;
       final interfaces = await NetworkInterface.list(
         type: InternetAddressType.IPv4,
       );

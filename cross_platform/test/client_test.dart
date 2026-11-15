@@ -6,10 +6,34 @@ import 'package:lg_kumanda/core/protocol.dart';
 import 'package:lg_kumanda/core/tv_client.dart';
 
 import 'helpers.dart';
+
+import 'package:lg_kumanda/core/network_access.dart';
 import 'package:lg_kumanda/core/transport.dart';
 
 void main() {
   const tv = Television(host: '192.168.1.50');
+  test(
+    'denied local-network permission stops before opening a socket',
+    () async {
+      var opened = false;
+      final client = TVClient(
+        storage: MemoryStorage(),
+        ensureNetworkAccess: () async {
+          throw const LocalNetworkDenied();
+        },
+        openSocket: (uri, pin) async {
+          opened = true;
+          return FakeSocket();
+        },
+      );
+      addTearDown(client.dispose);
+      await client.connect(tv);
+      expect(opened, isFalse);
+      expect(client.state, LinkState.disconnected);
+      expect(client.error, contains('Yerel ağ izni verilmedi'));
+    },
+  );
+
   test(
     'approved pairing saves secrets securely and loads actual TV catalogs',
     () async {

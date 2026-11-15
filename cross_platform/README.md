@@ -2,6 +2,8 @@
 
 LG webOS televizyonlar için Türkçe, ücretsiz ve MIT lisanslı kumanda. Bu dizindeki Flutter uygulaması üç platform için ortak kaynak kodu kullanır. Ana dizindeki SwiftUI iPhone uygulaması bağımsız olarak korunur.
 
+**[APK, DMG ve Windows kurulum EXE’sini indir → GitHub Releases](https://github.com/ertugrulerzin/LGKumanda/releases)**
+
 ## Özellikler
 
 - Aynı yerel ağda LG TV arama veya IP adresiyle ekleme; birden fazla kayıtlı TV.
@@ -21,11 +23,11 @@ Flutter **3.50.0** / Dart **3.14**, Android derlemesi için **JDK 17**. Bağıml
 
 | Platform | Derleme ortamı | Çıktı |
 | --- | --- | --- |
-| macOS | Mac, Xcode, CocoaPods | `build/macos/Build/Products/Release/LG Kumanda.app` |
+| macOS | Mac, Xcode, CocoaPods (bu projede Swift Package Manager kapalı) | `build/macos/Build/Products/Release/LG Kumanda.app` |
 | Windows | Windows, Visual Studio C++ masaüstü araçları | `build/windows/x64/runner/Release/` klasörünün tamamı |
 | Android | Android SDK, JDK 17 | `build/app/outputs/flutter-apk/app-debug.apk` |
 
-Windows uygulama içi tarayıcısı için **Microsoft Edge WebView2 Runtime** gerekir. TV ve kumanda cihazı aynı yerel ağda bulunmalıdır. macOS yerel ağ izni veya Windows güvenlik duvarı bağlantıyı engelliyorsa izin ver. Android’de internet/ağ yetkileri manifestte tanımlıdır; eski TV ve keşif HTTP bağlantıları için yerel açık metin trafiğine izin verilir. Ana TV bağlantısı varsayılan olarak WSS kullanır.
+Windows uygulama içi tarayıcısı için **Microsoft Edge WebView2 Runtime** gerekir. TV ve kumanda cihazı aynı yerel ağda bulunmalıdır. macOS yerel ağ izni veya Windows güvenlik duvarı bağlantıyı engelliyorsa izin ver. Android 17 ve üzerinde arama, bağlantı veya uyandırmadan önce yerel ağ izni istenir; reddedilirse ayarlardan açılması gerekir ([Android belgesi](https://developer.android.com/privacy-and-security/local-network-permission)). Android’de internet/ağ yetkileri manifestte tanımlıdır; eski TV ve keşif HTTP bağlantıları için yerel açık metin trafiğine izin verilir. Ana TV bağlantısı varsayılan olarak WSS kullanır.
 
 ## Çalıştırma ve derleme
 
@@ -50,7 +52,7 @@ Android Studio’nun Java 25 kurulumu seçiliyorsa JDK 17’yi `flutter config -
 
 APK geliştirme anahtarıyla imzalanan **deneme sürümüdür**; mağaza dağıtımı değildir. macOS çıktısı Developer ID ile imzalanmış/noterlenmiş dağıtım paketi değildir. Windows çıktısında EXE ile birlikte DLL ve `data` klasörlerini de taşı. Mağaza ve son kullanıcı dağıtımı için ilgili platformun imzalama işlemleri ayrıca yapılmalıdır.
 
-GitHub’daki **Mac Windows Android** iş akışı her platformu kendi işletim sisteminde analiz eder, test eder ve derler. Başarılı çalışmanın **Artifacts** bölümünden deneme paketleri indirilebilir. İş akışı dosyası: [`multiplatform.yml`](../.github/workflows/multiplatform.yml).
+GitHub’daki **Mac Windows Android** iş akışı her platformu kendi işletim sisteminde analiz eder, test eder ve derler. Başarılı çalışmanın **Artifacts** bölümünde APK, DMG ve Windows kurulum EXE’si üretilir. Yayımlanan paketler herkesin indirebilmesi için GitHub Releases bölümüne eklenir. İş akışı dosyası: [`multiplatform.yml`](../.github/workflows/multiplatform.yml).
 
 ## Bağlantı ve güvenlik
 
