@@ -4,6 +4,12 @@ LG webOS televizyonlar için ücretsiz ve açık kaynak iPhone kumandası. Kayna
 
 Türkçe, açık renkli, SwiftUI ile yazılmış yerel iPhone uygulaması. iOS 17 ve üzeri; harici Swift paketi gerektirmez.
 
+## Mac, Windows ve Android
+
+Bu platformlar için ortak Flutter uygulaması **[`cross_platform/`](cross_platform/README.md)** dizinindedir. Kumanda, klavye/fare, uygulama ve HDMI listeleri, kanallar, kısayollar ve TV tarayıcısı içerir. Kurulum, deneme paketleri ve doğrulama sınırları için platform kılavuzuna bak. Aşağıdaki Xcode adımları iPhone uygulamasına aittir.
+
+Claude’un son oturumunda nerede kalındığı ve tamamlanmamış işaretçisiz tarayıcı deneyi [`oturum devri notunda`](cross_platform/SESSION_HANDOFF.tr.md) açıklanmıştır.
+
 ## Neler yapabilir?
 
 LG Kumanda, iPhone'unu aynı ağdaki LG webOS televizyonun için bir kumandaya dönüştürür. Günlük kullanımda ses ve kanal değiştirebilir, uygulama açabilir, HDMI girişleri arasında geçiş yapabilir ve TV'ye telefondan yazı gönderebilirsin.
