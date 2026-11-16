@@ -48,6 +48,8 @@ Television? wakeIdentity(Television tv, Json info, Json status) {
       final mask = network['netmask'];
       return Television(
         host: tv.host,
+        deviceUUID: tv.deviceUUID,
+        id: tv.storageID,
         name: tv.name,
         secure: tv.secure,
         mac: mac,
@@ -60,6 +62,8 @@ Television? wakeIdentity(Television tv, Json info, Json status) {
   if (candidates.length != 1 || status.isNotEmpty) return null;
   return Television(
     host: tv.host,
+    deviceUUID: tv.deviceUUID,
+    id: tv.storageID,
     name: tv.name,
     secure: tv.secure,
     mac: candidates.single,

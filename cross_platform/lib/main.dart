@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -10,12 +12,17 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final client = TVClient(storage: const DeviceStorage());
   client.webFocusScript = await rootBundle.loadString('assets/web_focus.js');
+  client.videoDiscoveryScript = await rootBundle.loadString(
+    'assets/web_video.js',
+  );
   await client.initialize();
   final box = BoxClient(storage: const DeviceStorage());
   await box.initialize();
   BoxClient.shared = box;
-  client.keyRouter = (name) => box.handles(client.foreground) && box.send(name);
+  box.onCommandError = client.reportError;
+  client.keyRouter = (name) => box.route(name, client.foreground);
   runApp(RemoteApp(client: client));
+  if (client.selected != null) unawaited(client.connect(client.selected!));
 }
 
 class RemoteApp extends StatelessWidget {

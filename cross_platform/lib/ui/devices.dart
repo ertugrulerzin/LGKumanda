@@ -1,6 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../core/discovery.dart';
+import '../core/android_tv/box_client.dart';
+import 'box_setup.dart';
 import '../core/protocol.dart';
 import '../core/tv_client.dart';
 
@@ -29,6 +31,54 @@ class _DevicesPageState extends State<DevicesPage> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            if (BoxClient.shared case final box?)
+              ListenableBuilder(
+                listenable: box,
+                builder: (context, _) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Android TV kutuları',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    for (final saved in box.boxes)
+                      ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        leading: const Icon(Icons.router_outlined),
+                        title: Text(saved.title(widget.client.inputs)),
+                        subtitle: Text(
+                          '${saved.host} · ${saved.paired ? "Eşleşti" : "Eşleştirme gerekli"}',
+                        ),
+                        trailing: const Icon(Icons.settings_outlined),
+                        onTap: () => Navigator.push<void>(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => BoxSetupPage(
+                              box: box,
+                              client: widget.client,
+                              boxID: saved.id,
+                            ),
+                          ),
+                        ),
+                      ),
+                    OutlinedButton.icon(
+                      onPressed: () => Navigator.push<void>(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BoxSetupPage(
+                            box: box,
+                            client: widget.client,
+                            adding: true,
+                          ),
+                        ),
+                      ),
+                      icon: const Icon(Icons.add),
+                      label: const Text('Android TV kutusu ekle'),
+                    ),
+                    const Divider(height: 32),
+                  ],
+                ),
+              ),
             Text(
               'TV’ni bağla',
               style: Theme.of(context).textTheme.headlineSmall,
@@ -90,8 +140,13 @@ class _DevicesPageState extends State<DevicesPage> {
                   title: Text(tv.name),
                   subtitle: Text(tv.host),
                   trailing: TextButton(
-                    onPressed: () => editDevice(context, widget.client, tv),
-                    child: const Text('Ekle'),
+                    onPressed: () async {
+                      final saved = await widget.client.savedForDiscovered(tv, discovery.fingerprints[tv.host]);
+                      if (!context.mounted) return;
+                      if (saved != null) { await widget.client.connect(saved); }
+                      else { await editDevice(context, widget.client, tv); }
+                    },
+                    child: const Text('Bağlan'),
                   ),
                 ),
             ],
@@ -327,6 +382,8 @@ class _DeviceEditorState extends State<_DeviceEditor> {
             Navigator.pop(
               context,
               Television(
+                id: widget.tv?.storageID,
+                deviceUUID: widget.tv?.deviceUUID,
                 host: host.text.trim(),
                 name: name.text.trim(),
                 secure: secure,

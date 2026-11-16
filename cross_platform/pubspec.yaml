@@ -1,7 +1,7 @@
 name: lg_kumanda
 description: LG webOS televizyonlar için Mac, Windows ve Android kumandası.
 publish_to: none
-version: 1.0.0+1
+version: 1.0.0+22
 environment:
   sdk: ^3.14.0
 dependencies:
@@ -28,3 +28,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/web_focus.js
+    - assets/web_video.js

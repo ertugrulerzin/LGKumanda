@@ -83,11 +83,17 @@ jobs:
           foreach ($file in @('lg_kumanda.exe', 'flutter_windows.dll', 'msvcp140.dll', 'vcruntime140.dll', 'data/flutter_assets')) {
             if (!(Test-Path (Join-Path $installDir $file))) { throw "Missing installed file: $file" }
           }
+          $application = Start-Process (Join-Path $installDir 'lg_kumanda.exe') -WorkingDirectory $installDir -PassThru
+          try {
+            if ($application.WaitForExit(5000)) { throw "Application exited during startup: $($application.ExitCode)" }
+          } finally {
+            if (!$application.HasExited) { Stop-Process -Id $application.Id -Force }
+          }
           $uninstall = Start-Process (Join-Path $installDir 'unins000.exe') -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
           if ($uninstall.ExitCode -ne 0) { throw "Uninstaller exit code: $($uninstall.ExitCode)" }
-      - run: flutter build apk --debug
+      - run: flutter build apk --release
         if: matrix.target == 'android'
-      - run: cp build/app/outputs/flutter-apk/app-debug.apk build/LGKumanda-Android-preview.apk
+      - run: cp build/app/outputs/flutter-apk/app-release.apk build/LGKumanda-Android-preview.apk
         if: matrix.target == 'android'
       - uses: actions/upload-artifact@v4
         with:

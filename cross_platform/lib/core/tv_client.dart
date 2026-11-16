@@ -8,6 +8,7 @@ import 'network_access.dart';
 import 'storage.dart';
 import 'transport.dart';
 import 'wake_on_lan.dart';
+import 'discovery.dart';
 
 class TVClient extends ChangeNotifier {
   TVClient({
@@ -15,11 +16,24 @@ class TVClient extends ChangeNotifier {
     this.openSocket = openTVSocket,
     this.ensureNetworkAccess = requireNetworkAccess,
     this.requestTimeout = const Duration(seconds: 10),
+    this.readIdentity = readTVIdentity,
+    this.findAddress = findMovedTV,
   });
   final TVStorage storage;
   final SocketFactory openSocket;
   final Future<void> Function() ensureNetworkAccess;
   final Duration requestTimeout;
+  final Future<String?> Function(String, String) readIdentity;
+  final Future<Television?> Function(Television, String) findAddress;
+  TVPowerState powerState = TVPowerState.unknown;
+  String get connectionLabel =>
+      powerState == TVPowerState.standby ? 'TV kapalı' : state.label;
+  Timer? _powerTimer, _wakeTimer;
+  bool _polling = false,
+      _queryPower = true,
+      _allowRecovery = true,
+      _wakeActive = false;
+  DateTime? _wakeDeadline;
   List<Television> televisions = [];
   Television? selected;
   LinkState state = LinkState.disconnected;
@@ -31,6 +45,7 @@ class TVClient extends ChangeNotifier {
   ControlMode mode = ControlMode.automatic;
   bool webFocusEnabled = false;
   String webFocusScript = '';
+  String videoDiscoveryScript = '';
   TVSocket? _socket, _pointer;
   Timer? _deadline;
   int _generation = 0, _sequence = 0, _wakeAttempt = 0;
@@ -69,11 +84,12 @@ class TVClient extends ChangeNotifier {
                 .toList();
       final host = await storage.read('selected');
       selected =
+          televisions.where((t) => t.storageID == host).firstOrNull ??
           televisions.where((t) => t.host == host).firstOrNull ??
           televisions.firstOrNull;
       if (selected != null) {
         shortcuts = Shortcut.decode(
-          await storage.read('shortcuts.${selected!.host}'),
+          await storage.read('shortcuts.${selected!.storageID}'),
         );
       }
     } catch (_) {
@@ -86,7 +102,10 @@ class TVClient extends ChangeNotifier {
     if (!isLocalHost(tv.host)) {
       throw const FormatException('Geçerli bir yerel IPv4 adresi gir.');
     }
-    final updated = [...televisions.where((e) => e.host != tv.host), tv];
+    final updated = [
+      ...televisions.where((e) => e.storageID != tv.storageID),
+      tv,
+    ];
     await storage.write(
       'televisions',
       jsonEncode(updated.map((e) => e.toJson()).toList()),
@@ -95,20 +114,30 @@ class TVClient extends ChangeNotifier {
     _emit();
   }
 
+  Future<Television?> savedForDiscovered(Television tv, String? fingerprint) async {
+    if (tv.deviceUUID == null || fingerprint == null) return null;
+    final matches = <Television>[];
+    for (final saved in televisions.where((t) => t.deviceUUID == tv.deviceUUID && t.secure)) {
+      if (await storage.readSecret('cert.${saved.storageID}') == fingerprint) matches.add(saved);
+    }
+    return matches.length == 1 ? copyTelevision(matches.single, host: tv.host) : null;
+  }
   Future<void> removeTV(Television tv) async {
-    if (selected?.host == tv.host) {
+    if (selected?.storageID == tv.storageID) {
       disconnect();
       selected = null;
       shortcuts = [];
     }
-    await storage.deleteSecret('key.${tv.host}');
-    await storage.deleteSecret('cert.${tv.host}');
-    final updated = televisions.where((e) => e.host != tv.host).toList();
+    await storage.deleteSecret('key.${tv.storageID}');
+    await storage.deleteSecret('cert.${tv.storageID}');
+    final updated = televisions
+        .where((e) => e.storageID != tv.storageID)
+        .toList();
     await storage.write(
       'televisions',
       jsonEncode(updated.map((e) => e.toJson()).toList()),
     );
-    await storage.write('shortcuts.${tv.host}', '[]');
+    await storage.write('shortcuts.${tv.storageID}', '[]');
     televisions = updated;
     _emit();
   }
@@ -117,12 +146,22 @@ class TVClient extends ChangeNotifier {
     final tv = selected;
     if (tv == null) return;
     disconnect();
-    await storage.deleteSecret('key.${tv.host}');
-    await storage.deleteSecret('cert.${tv.host}');
+    await storage.deleteSecret('key.${tv.storageID}');
+    await storage.deleteSecret('cert.${tv.storageID}');
     await connect(tv);
   }
 
-  void disconnect() {
+  void disconnect({bool preserveWake = false}) {
+    _powerTimer?.cancel();
+    _powerTimer = null;
+    _polling = false;
+    powerState = TVPowerState.unknown;
+    if (!preserveWake) {
+      _wakeTimer?.cancel();
+      _wakeTimer = null;
+      _wakeActive = false;
+      _wakeAttempt++;
+    }
     _generation++;
     _deadline?.cancel();
     _motionTimer?.cancel();
@@ -150,8 +189,15 @@ class TVClient extends ChangeNotifier {
     _emit();
   }
 
-  Future<void> connect(Television tv) async {
-    disconnect();
+  Future<void> connect(
+    Television tv, {
+    bool allowRecovery = true,
+    String? credentialID,
+    bool fromWake = false,
+  }) async {
+    disconnect(preserveWake: fromWake);
+    _allowRecovery = allowRecovery;
+    final source = credentialID ?? tv.storageID;
     error = null;
     notice = null;
     if (!isLocalHost(tv.host)) {
@@ -168,14 +214,21 @@ class TVClient extends ChangeNotifier {
     try {
       await ensureNetworkAccess();
       if (generation != _generation) return;
-      await storage.write('selected', tv.host);
-      final key = await storage.readSecret('key.${tv.host}');
-      final pin = await storage.readSecret('cert.${tv.host}');
+      await storage.write('selected', tv.storageID);
+      final key = await storage.readSecret('key.$source');
+      final pin = await storage.readSecret('cert.$source');
       final savedShortcuts = Shortcut.decode(
-        await storage.read('shortcuts.${tv.host}'),
+        await storage.read('shortcuts.$source'),
       );
       if (generation != _generation) return;
       shortcuts = savedShortcuts;
+      if (tv.secure && tv.deviceUUID != null && pin != null) {
+        final uuid = await readIdentity(tv.host, pin);
+        if (generation != _generation) return;
+        if (uuid != tv.deviceUUID) {
+          throw StateError('Kayıtlı TV bu adreste doğrulanamadı.');
+        }
+      }
       final socket = await openSocket(
         Uri(
           scheme: tv.secure ? 'wss' : 'ws',
@@ -190,7 +243,7 @@ class TVClient extends ChangeNotifier {
       }
       _socket = socket;
       socket.messages.listen(
-        (data) => unawaited(_consume(data, generation, tv, socket)),
+        (data) => unawaited(_consume(data, generation, tv, socket, source)),
         onError: (Object e) => _lost(generation),
         onDone: () => _lost(generation),
         cancelOnError: true,
@@ -203,6 +256,14 @@ class TVClient extends ChangeNotifier {
       );
     } catch (e) {
       if (generation != _generation) return;
+      if (e is! LocalNetworkDenied && _allowRecovery && tv.deviceUUID != null) {
+        await _recover(tv, generation);
+        return;
+      }
+      if (_wakeActive) {
+        disconnect(preserveWake: true);
+        return;
+      }
       disconnect();
       error = e is LocalNetworkDenied
           ? e.toString()
@@ -214,6 +275,17 @@ class TVClient extends ChangeNotifier {
 
   void _lost(int generation) {
     if (generation != _generation) return;
+    final tv = selected;
+    if (_allowRecovery &&
+        tv?.deviceUUID != null &&
+        state != LinkState.pairing) {
+      unawaited(_recover(tv!, generation));
+      return;
+    }
+    if (_wakeActive) {
+      disconnect(preserveWake: true);
+      return;
+    }
     disconnect();
     error = 'TV bağlantısı kesildi. TV açılınca yeniden bağlan.';
     _emit();
@@ -223,6 +295,17 @@ class TVClient extends ChangeNotifier {
     _deadline?.cancel();
     _deadline = Timer(duration, () {
       if (generation != _generation) return;
+      if (_wakeActive) {
+        disconnect(preserveWake: true);
+        return;
+      }
+      final tv = selected;
+      if (_allowRecovery &&
+          state != LinkState.pairing &&
+          tv?.deviceUUID != null) {
+        unawaited(_recover(tv!, generation));
+        return;
+      }
       disconnect();
       error = message;
       _emit();
@@ -234,6 +317,7 @@ class TVClient extends ChangeNotifier {
     int generation,
     Television tv,
     TVSocket socket,
+    String source,
   ) async {
     if (generation != _generation) return;
     try {
@@ -248,16 +332,28 @@ class TVClient extends ChangeNotifier {
         if (key is! String || key.isEmpty) {
           throw StateError('Eşleştirme anahtarı yok.');
         }
-        await storage.writeSecret('key.${tv.host}', key);
+        await storage.writeSecret('key.${tv.storageID}', key);
         if (tv.secure) {
           if (socket.fingerprint == null) {
             throw StateError('TV sertifikası doğrulanamadı.');
           }
-          await storage.writeSecret('cert.${tv.host}', socket.fingerprint!);
+          await storage.writeSecret(
+            'cert.${tv.storageID}',
+            socket.fingerprint!,
+          );
         }
         if (generation != _generation) return;
+        if (televisions.any(
+          (t) => t.storageID == tv.storageID && t.host != tv.host,
+        )) {
+          await saveTV(tv);
+          if (generation != _generation) return;
+          notice = 'TV’nin IP adresi otomatik güncellendi.';
+        }
         _deadline?.cancel();
+        _allowRecovery = true;
         state = LinkState.connected;
+        _startPowerMonitor(generation);
         _emit();
         unawaited(_bootstrap(generation));
       } else if (id == 'register' &&
@@ -280,6 +376,8 @@ class TVClient extends ChangeNotifier {
         volume = audio['volume'] as int? ?? volume;
         muted = audio['mute'] as bool? ?? audio['muted'] as bool? ?? muted;
         _emit();
+      } else if (id == 'power') {
+        if (type != 'error') _updatePower(p);
       } else if (id == 'foreground') {
         foreground = p['appId'] as String?;
         _emit();
@@ -288,7 +386,7 @@ class TVClient extends ChangeNotifier {
         if (c != null && !c.isCompleted) {
           if (type == 'error' || p['returnValue'] == false) {
             c.completeError(
-              StateError(
+              TVCommandRejected(
                 'TV komutu reddetti: ${j['error'] ?? p['errorText'] ?? 'İşlem desteklenmiyor.'}',
               ),
             );
@@ -306,14 +404,18 @@ class TVClient extends ChangeNotifier {
     }
   }
 
-  Future<Json> request(String uri, [Json payload = const {}]) async {
+  Future<Json> request(
+    String uri, [
+    Json payload = const {},
+    Duration? timeout,
+  ]) async {
     if (!connected || _socket == null) {
       throw StateError('Önce bir TV’ye bağlan.');
     }
     final id = 'request-${++_sequence}';
     final c = Completer<Json>();
     _pending[id] = c;
-    final timer = Timer(requestTimeout, () {
+    final timer = Timer(timeout ?? requestTimeout, () {
       if (_pending.remove(id) != null) {
         c.completeError(TimeoutException('TV komuta yanıt vermedi.'));
       }
@@ -328,6 +430,16 @@ class TVClient extends ChangeNotifier {
   }
 
   Future<void> _bootstrap(int generation) async {
+    _socket?.send(
+      encodeMessage(
+        requestMessage(
+          'power',
+          'com.webos.service.tvpower/power/getPowerState',
+          {},
+          true,
+        ),
+      ),
+    );
     _socket?.send(
       encodeMessage(requestMessage('audio', 'audio/getVolume', {}, true)),
     );
@@ -373,8 +485,127 @@ class TVClient extends ChangeNotifier {
     if (generation == _generation) {
       _emit();
       await refreshLibrary();
+      await _captureUUID(generation);
       await _captureWakeIdentity(generation);
     }
+  }
+
+  void reportError(String reason) {
+    error = reason;
+    _emit();
+  }
+
+  Future<void> _recover(Television tv, int generation) async {
+    if (generation != _generation) return;
+    final waking = _wakeActive;
+    disconnect(preserveWake: waking);
+    final token = _generation;
+    state = LinkState.connecting;
+    notice = 'TV’nin güncel ağ adresi aranıyor…';
+    _emit();
+    try {
+      final pin = await storage.readSecret('cert.${tv.storageID}');
+      if (token != _generation) return;
+      final found = pin == null ? null : await findAddress(tv, pin);
+      if (token != _generation) return;
+      if (found != null) {
+        await connect(
+          found,
+          credentialID: tv.storageID,
+          allowRecovery: false,
+          fromWake: waking,
+        );
+        return;
+      }
+      if (waking) {
+        disconnect(preserveWake: true);
+        return;
+      }
+      disconnect();
+      notice = null;
+      error = 'Kayıtlı TV ağda bulunamadı. TV açık ve aynı ağda olmalı.';
+      _emit();
+    } catch (e) {
+      if (token != _generation) return;
+      disconnect();
+      notice = null;
+      error = '$e';
+      _emit();
+    }
+  }
+
+  Future<void> _captureUUID(int generation) async {
+    final tv = selected;
+    if (tv == null || !tv.secure) return;
+    final pin = await storage.readSecret('cert.${tv.storageID}');
+    if (pin == null || generation != _generation) return;
+    final uuid = await readIdentity(tv.host, pin);
+    if (uuid == null || generation != _generation || tv.deviceUUID == uuid) {
+      return;
+    }
+    final updated = copyTelevision(tv, deviceUUID: uuid);
+    if (!televisions.any((t) => t.storageID == tv.storageID)) return;
+    await saveTV(updated);
+    if (generation == _generation && selected?.storageID == tv.storageID) {
+      selected = updated;
+      _emit();
+    }
+  }
+
+  void _updatePower(Json payload) {
+    final power = readPowerState(payload);
+    if (power == TVPowerState.unknown) return;
+    if (power == TVPowerState.standby) {
+      final waking = _wakeActive;
+      disconnect(preserveWake: waking);
+      powerState = power;
+      notice = waking
+          ? 'TV açılıyor…'
+          : 'TV kapalı. Uyandır’ı kullanabilirsin.';
+    } else {
+      powerState = power;
+      if (_wakeActive && connected) {
+        _wakeTimer?.cancel();
+        _wakeTimer = null;
+        _wakeActive = false;
+        notice = power == TVPowerState.active
+            ? 'TV açıldı ve bağlanıldı.'
+            : 'TV’ye bağlanıldı; ekran kapalı veya ekran koruyucu etkin.';
+      }
+    }
+    _emit();
+  }
+
+  void _startPowerMonitor(int generation) {
+    _queryPower = true;
+    _powerTimer?.cancel();
+    _powerTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
+      if (_polling || !connected || generation != _generation || !_queryPower) {
+        return;
+      }
+      _polling = true;
+      try {
+        final result = await request(
+          'com.webos.service.tvpower/power/getPowerState',
+          const {},
+          const Duration(seconds: 3),
+        );
+        if (generation == _generation) _updatePower(result);
+      } on TVCommandRejected {
+        _queryPower = false;
+        if (_wakeActive) {
+          _wakeTimer?.cancel();
+          _wakeTimer = null;
+          _wakeActive = false;
+          notice = 'TV’ye bağlanıldı. Bu model güç durumunu bildirmiyor.';
+          _emit();
+        }
+      } catch (_) {
+        _lost(generation);
+      } finally {
+        if (generation == _generation) _polling = false;
+      }
+    });
   }
 
   Future<void> _captureWakeIdentity(int generation) async {
@@ -390,7 +621,7 @@ class TVClient extends ChangeNotifier {
         /* Older firmware may not expose network status. */
       }
       if (generation != _generation ||
-          selected?.host != tv.host ||
+          selected?.storageID != tv.storageID ||
           selected!.mac.isNotEmpty) {
         return;
       }
@@ -400,7 +631,7 @@ class TVClient extends ChangeNotifier {
         return;
       }
       await saveTV(updated);
-      if (generation == _generation && selected?.host == tv.host) {
+      if (generation == _generation && selected?.storageID == tv.storageID) {
         selected = updated;
         _emit();
       }
@@ -632,7 +863,7 @@ class TVClient extends ChangeNotifier {
   }
 
   Future<void> pin(Shortcut item, {bool remove = false}) async {
-    final host = selected?.host;
+    final host = selected?.storageID;
     if (host == null) return;
     final updated = shortcuts.where((s) => s.id != item.id).toList();
     if (!remove) updated.add(item);
@@ -640,20 +871,20 @@ class TVClient extends ChangeNotifier {
       'shortcuts.$host',
       jsonEncode(updated.map((s) => s.toJson()).toList()),
     );
-    if (selected?.host == host) {
+    if (selected?.storageID == host) {
       shortcuts = updated;
       _emit();
     }
   }
 
   Future<void> reorderShortcuts(List<Shortcut> items) async {
-    final host = selected?.host;
+    final host = selected?.storageID;
     if (host == null) return;
     await storage.write(
       'shortcuts.$host',
       jsonEncode(items.map((s) => s.toJson()).toList()),
     );
-    if (selected?.host == host) {
+    if (selected?.storageID == host) {
       shortcuts = items;
       _emit();
     }
@@ -674,7 +905,9 @@ class TVClient extends ChangeNotifier {
     if (tv == null) throw StateError('Önce bir TV seç.');
     final generation = _generation;
     await ensureNetworkAccess();
-    if (generation != _generation || selected?.host != tv.host) return;
+    if (generation != _generation || selected?.storageID != tv.storageID) {
+      return;
+    }
     if (tv.mac.isEmpty) {
       throw StateError(
         "Uyandırma için TV'nin MAC adresi kayıtlı olmalı. TV'ye bir kez açıkken bağlan; otomatik alınamazsa Cihazı düzenle bölümüne etkin Wi-Fi veya Ethernet MAC adresini gir.",
@@ -682,7 +915,7 @@ class TVClient extends ChangeNotifier {
     }
     final attempt = ++_wakeAttempt;
     error = null;
-    notice = 'Uyandırma paketleri gönderiliyor…';
+    notice = 'TV açılıyor…';
     _emit();
     try {
       await sendWakePackets(
@@ -695,7 +928,22 @@ class TVClient extends ChangeNotifier {
       rethrow;
     }
     if (generation != _generation || attempt != _wakeAttempt) return;
-    notice = "Uyandırma paketleri gönderildi; TV'nin açıldığı henüz doğrulanmadı. Birkaç saniye sonra yeniden bağlan. Yanıt yoksa TV'de Mobil ile TV Açma ayarını kontrol et.";
+    _wakeActive = true;
+    _wakeDeadline = DateTime.now().add(const Duration(seconds: 60));
+    _wakeTimer?.cancel();
+    _wakeTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+      if (!_wakeActive || _disposed) return;
+      if (DateTime.now().isAfter(_wakeDeadline!)) {
+        disconnect();
+        notice = null;
+        error = 'TV’nin açıldığı doğrulanamadı. Mobil ile TV Açma ayarını, MAC adresini ve ağ bağlantısını kontrol et.';
+        _emit();
+        return;
+      }
+      if (state == LinkState.disconnected && selected != null) {
+        unawaited(connect(selected!, fromWake: true));
+      }
+    });
     _emit();
   }
 
@@ -705,4 +953,11 @@ class TVClient extends ChangeNotifier {
     disconnect();
     super.dispose();
   }
+}
+
+class TVCommandRejected implements Exception {
+  const TVCommandRejected(this.message);
+  final String message;
+  @override
+  String toString() => message;
 }

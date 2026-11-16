@@ -1,4 +1,13 @@
-# Claude oturumundan devam
+# 22. sürüm aktarımı
+
+17 Kasım 2026: iPhone 1.0 (22), `f9395b2`, Android/Mac/Windows ortak Flutter uygulamasına aktarıldı. Güncel çoklu kutu modeli ve sekmeler `lib/core/android_tv/box_client.dart`, `ui/remote.dart`, `ui/box_remote.dart` ve `ui/box_setup.dart` içindedir. Eski tek kutu kaydı otomatik korunur; eşleştirmeler cihazlar arasında taşınmaz.
+
+TV gücü, uyandırma doğrulaması ve UUID/sertifika ile adres kurtarma `lib/core/tv_client.dart` içindedir. TV depolama kimliği adres değişse de aynı kalır; eski IP tabanlı anahtar adları korunur. Web video gözlem betiği `assets/web_video.js`, TV kaynak doğrulaması `core/web_video.dart` ve arayüzü `ui/browser.dart` içindedir. Video oynatma deneysel kalır; her sitede başarı iddiası yoktur.
+
+Yerel kontroller: `flutter analyze`, `flutter test`, Android release APK ve macOS uygulaması. Windows paketi GitHub Actions'ta üretilip kurulumdan geçer. Ayrıntılar `VALIDATION.tr.md` dosyasında güncellenir. QA uygulaması `tool/native_preview.dart` yalnız bellek içi açıkça etiketli test verisi kullanır; üretim giriş noktası `lib/main.dart`tır.
+
+## Önceki oturum notu (15 Kasım 2026, tarihsel)
+
 
 15 Kasım 2026 tarihli `e7c7f488-c164-4bd7-8cb9-08b269c0fb7a` oturumunun LG Kumanda ile ilgili son bölümü incelendi. Özel oturum kayıtları bu depoya kopyalanmadı.
 

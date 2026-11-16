@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 import '../core/protocol.dart';
+import '../core/android_tv/box_client.dart';
 import '../core/tv_client.dart';
 import 'devices.dart';
 import 'remote.dart';
@@ -22,7 +23,32 @@ class RemoteShell extends StatefulWidget {
   State<RemoteShell> createState() => _RemoteShellState();
 }
 
-class _RemoteShellState extends State<RemoteShell> {
+class _RemoteShellState extends State<RemoteShell> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      widget.client.disconnect();
+      BoxClient.shared?.disconnect();
+    }
+    if (state == AppLifecycleState.resumed &&
+        widget.client.selected != null &&
+        !widget.client.connected) {
+      widget.client.connect(widget.client.selected!);
+    }
+  }
+
   int index = 0;
   @override
   Widget build(BuildContext context) => AnimatedBuilder(
@@ -126,7 +152,7 @@ class _RemoteShellState extends State<RemoteShell> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                '${client.selected?.name ?? 'TV seçilmedi'} · ${client.state.label}',
+                                '${client.selected?.name ?? 'TV seçilmedi'} · ${client.connectionLabel}',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),

@@ -4,6 +4,20 @@ LG webOS televizyonlar için Türkçe, ücretsiz ve MIT lisanslı kumanda. Bu di
 
 **[APK, DMG ve Windows kurulum EXE’sini indir → GitHub Releases](https://github.com/ertugrulerzin/LGKumanda/releases)**
 
+## 22. sürüm
+
+Bu aktarım iPhone **1.0 (22)** işlevlerini temel alır (`f9395b2`). Ortak Flutter uygulaması Android, macOS ve Windows'ta aynı kodu kullanır.
+
+- Birden fazla Android TV kutusu; her birine ayrı kumanda sekmesi. Kutunun adı bağlı olduğu HDMI girişinden alınır veya değiştirilebilir.
+- Kutuyu ekleme, yeniden adlandırma, etkinleştirme, HDMI girişini değiştirme ve kaldırma. Önceki tek kutu kaydı ve ortak istemci sertifikası korunur.
+- Kutunun girişine geçince doğru kumanda sekmesi seçilir; kutu sekmesine dokununca TV o girişe alınır. TV sekmesiyle TV tuşlarına dönülebilir.
+- Sürekli görünür sayısal tuşlar, kanal numarasıyla Git ve duraklat/devam. Kutu tuşları doğrudan Wi-Fi'dan gider; ses TV'de kalır.
+- Fiziksel kumandadan gelen bekleme bildirimi ve periyodik güç kontrolü. Uyandırma sonucu güç yanıtıyla doğrulanır; paket gönderimi tek başına açıldı sayılmaz.
+- Kalıcı TV kimliği ve kayıtlı sertifika ile IP değişikliğinde yeniden bulma. Eski IP tabanlı kayıtlar kalıcı depolama kimliğine taşınırken anahtarlar ve kısayollar korunur.
+- Sayfadaki MP4/HLS gibi video adreslerini bulup TV oynatıcısında açma denemesi. Oturum, çerez, DRM ve site uyumluluğu sınırları devam eder; TV'nin her kaynağı oynatacağı doğrulanmış değildir.
+
+Android ARM64 APK, modern telefonlara yönelik küçük pakettir. Evrensel APK ARM/ARM64/x86_64 içerir; işlevler aynıdır. İlk önizlemeler farklı Android imzalarıyla üretilmiş olabilir; imza uyuşmazlığında eski uygulama üzerine güncelleme kurulamaz. Yerel önceki ARM64 paketiyle aynı imza korunur. Mac önizlemesi ad-hoc imzalıdır; Developer ID / noter onayı vaat etmez. Windows paketi x64 içindir ve tarayıcıda WebView2 Runtime gerekir.
+
 ## Özellikler
 
 - Aynı yerel ağda LG TV arama veya IP adresiyle ekleme; birden fazla kayıtlı TV.
@@ -25,7 +39,7 @@ Flutter **3.50.0** / Dart **3.14**, Android derlemesi için **JDK 17**. Bağıml
 | --- | --- | --- |
 | macOS | Mac, Xcode, CocoaPods (bu projede Swift Package Manager kapalı) | `build/macos/Build/Products/Release/LG Kumanda.app` |
 | Windows | Windows, Visual Studio C++ masaüstü araçları | `build/windows/x64/runner/Release/` klasörünün tamamı |
-| Android | Android SDK, JDK 17 | `build/app/outputs/flutter-apk/app-debug.apk` |
+| Android | Android SDK, JDK 17 | `build/app/outputs/flutter-apk/app-arm64-v8a-release.apk` |
 
 Windows uygulama içi tarayıcısı için **Microsoft Edge WebView2 Runtime** gerekir. TV ve kumanda cihazı aynı yerel ağda bulunmalıdır. macOS yerel ağ izni veya Windows güvenlik duvarı bağlantıyı engelliyorsa izin ver. Android 17 ve üzerinde arama, bağlantı veya uyandırmadan önce yerel ağ izni istenir; reddedilirse ayarlardan açılması gerekir ([Android belgesi](https://developer.android.com/privacy-and-security/local-network-permission)). Android’de internet/ağ yetkileri manifestte tanımlıdır; eski TV ve keşif HTTP bağlantıları için yerel açık metin trafiğine izin verilir. Ana TV bağlantısı varsayılan olarak WSS kullanır.
 

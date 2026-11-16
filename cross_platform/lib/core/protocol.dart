@@ -24,15 +24,21 @@ class Television {
     this.secure = true,
     this.mac = '',
     this.broadcast = '255.255.255.255',
+    this.deviceUUID,
+    this.id,
   });
   final String host, name, mac, broadcast;
   final bool secure;
+  final String? deviceUUID, id;
+  String get storageID => id ?? host;
   Json toJson() => {
     'host': host,
     'name': name,
     'secure': secure,
     'mac': mac,
     'broadcast': broadcast,
+    'deviceUUID': deviceUUID,
+    'id': storageID,
   };
   factory Television.fromJson(Json j) => Television(
     host: j['host'] as String,
@@ -40,8 +46,41 @@ class Television {
     secure: j['secure'] as bool? ?? true,
     mac: j['mac'] as String? ?? '',
     broadcast: j['broadcast'] as String? ?? '255.255.255.255',
+    deviceUUID: j['deviceUUID'] as String?,
+    id: j['id'] as String?,
   );
 }
+
+Television copyTelevision(
+  Television tv, {
+  String? host,
+  String? deviceUUID,
+  String? mac,
+  String? broadcast,
+}) => Television(
+  id: tv.storageID,
+  host: host ?? tv.host,
+  name: tv.name,
+  secure: tv.secure,
+  mac: mac ?? tv.mac,
+  broadcast: broadcast ?? tv.broadcast,
+  deviceUUID: deviceUUID ?? tv.deviceUUID,
+);
+
+enum TVPowerState { unknown, active, standby, screenOff, screenSaver }
+
+TVPowerState readPowerState(Json payload) => switch (payload['state']) {
+  'Active' => TVPowerState.active,
+  'Active Standby' =>
+    (payload['processing'] is String &&
+            (payload['processing'] as String).isNotEmpty)
+        ? TVPowerState.unknown
+        : TVPowerState.standby,
+  'Suspend' || 'Power Off' => TVPowerState.standby,
+  'Screen Off' => TVPowerState.screenOff,
+  'Screen Saver' => TVPowerState.screenSaver,
+  _ => TVPowerState.unknown,
+};
 
 class TVItem {
   const TVItem(this.id, this.title, {this.detail = '', this.simplink});

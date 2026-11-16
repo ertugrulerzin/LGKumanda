@@ -9,9 +9,160 @@ import 'box_setup.dart';
 import 'browser.dart';
 import 'devices.dart';
 import 'shell.dart';
+import 'box_remote.dart';
 
-class RemotePage extends StatelessWidget {
+class RemotePage extends StatefulWidget {
   const RemotePage({
+    super.key,
+    required this.client,
+    required this.openDevices,
+  });
+  final TVClient client;
+  final VoidCallback openDevices;
+  @override
+  State<RemotePage> createState() => _RemotePageState();
+}
+
+class _RemotePageState extends State<RemotePage> {
+  String? target, _foreground;
+  BoxClient? get box => BoxClient.shared;
+  @override
+  void initState() {
+    super.initState();
+    widget.client.addListener(_follow);
+    box?.addListener(_boxChanged);
+    _follow(initial: true);
+  }
+
+  @override
+  void dispose() {
+    widget.client.removeListener(_follow);
+    box?.removeListener(_boxChanged);
+    super.dispose();
+  }
+
+  void _follow({bool initial = false}) {
+    if (!initial && _foreground == widget.client.foreground) return;
+    _foreground = widget.client.foreground;
+    final linked = box?.boxForForeground(_foreground);
+    if (linked != null) {
+      box?.suspended = false;
+      box?.select(linked.id);
+    }
+    if (initial) {
+      target = linked?.id;
+    } else if (mounted) {
+      setState(() => target = linked?.id);
+    }
+  }
+
+  void _boxChanged() {
+    if (!mounted) return;
+    if (target != null && !box!.pairedBoxes.any((b) => b.id == target)) {
+      target = null;
+    }
+    setState(() {});
+  }
+
+  Future<void> _setup({String? id, bool adding = false}) async {
+    await Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BoxSetupPage(
+          box: box!,
+          client: widget.client,
+          boxID: id,
+          adding: adding,
+        ),
+      ),
+    );
+    if (!mounted) return;
+    final linked = box?.boxForForeground(widget.client.foreground);
+    if (linked != null) {
+      box?.suspended = false;
+      box?.select(linked.id);
+      setState(() => target = linked.id);
+    } else {
+      setState(() {});
+    }
+  }
+
+  void _choose(SavedBox? selected) {
+    box?.suspended = selected == null;
+    if (selected != null) {
+      box?.select(selected.id);
+      final input = selected.inputID;
+      if (widget.client.connected &&
+          input != null &&
+          hdmiAppID(input) != widget.client.foreground) {
+        widget.client.run(() => widget.client.activate('input', input));
+      }
+    }
+    setState(() => target = selected?.id);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final boxes = box;
+    if (boxes == null) {
+      return TVRemotePage(
+        client: widget.client,
+        openDevices: widget.openDevices,
+      );
+    }
+    final selected = boxes.pairedBoxes.where((b) => b.id == target).firstOrNull;
+    return Column(
+      children: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Row(
+            children: [
+              ChoiceChip(
+                label: const Text('TV'),
+                selected: selected == null,
+                onSelected: (_) => _choose(null),
+              ),
+              for (final item in boxes.pairedBoxes)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: ChoiceChip(
+                    key: ValueKey('remoteTarget.${item.id}'),
+                    label: Text(item.title(widget.client.inputs)),
+                    selected: selected?.id == item.id,
+                    onSelected: (_) => _choose(item),
+                  ),
+                ),
+              const SizedBox(width: 8),
+              ActionChip(
+                avatar: const Icon(Icons.add),
+                label: const Text('Kutu ekle'),
+                onPressed: () => _setup(adding: true),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: selected == null
+              ? TVRemotePage(
+                  client: widget.client,
+                  openDevices: widget.openDevices,
+                )
+              : BoxRemotePage(
+                  key: ValueKey(selected.id),
+                  box: boxes,
+                  saved: selected,
+                  client: widget.client,
+                  openSettings: () => _setup(id: selected.id),
+                ),
+        ),
+      ],
+    );
+  }
+}
+
+class TVRemotePage extends StatelessWidget {
+  const TVRemotePage({
     super.key,
     required this.client,
     required this.openDevices,
@@ -36,7 +187,10 @@ class RemotePage extends StatelessWidget {
     Widget remoteKey(String title, IconData icon, String name) => RemoteButton(
       label: title,
       icon: icon,
-      enabled: client.connected && client.pointerReady,
+      enabled:
+          client.connected &&
+          (client.pointerReady ||
+              BoxClient.shared?.handles(client.foreground) == true),
       onPressed: () => key(name),
     );
     return Focus(
@@ -155,14 +309,28 @@ class RemotePage extends StatelessWidget {
                             Text(
                               '${client.hdmiWithoutCEC!.title} girişinde SIMPLINK cihazı görünmüyor. Kutu yön tuşlarına yanıt vermeyebilir.',
                             ),
-                          if (handled) Row(children: [const Icon(Icons.wifi, size: 18), const SizedBox(width: 8), Expanded(child: Text(box.status))]),
+                          if (handled)
+                            Row(
+                              children: [
+                                const Icon(Icons.wifi, size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(child: Text(box.status)),
+                              ],
+                            ),
                           TextButton.icon(
                             key: const Key('openBoxSetup'),
                             onPressed: () => Navigator.of(context).push(
-                              MaterialPageRoute<void>(builder: (_) => BoxSetupPage(box: box, client: client)),
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    BoxSetupPage(box: box, client: client),
+                              ),
                             ),
                             icon: const Icon(Icons.router_outlined),
-                            label: Text(box.box?.paired == true ? 'Wi-Fi ile kutu kumandası' : 'Kutuyu Wi-Fi ile kumanda et'),
+                            label: Text(
+                              box.box?.paired == true
+                                  ? 'Wi-Fi ile kutu kumandası'
+                                  : 'Kutuyu Wi-Fi ile kumanda et',
+                            ),
                           ),
                         ],
                       ),
@@ -202,7 +370,13 @@ class RemotePage extends StatelessWidget {
                           const SizedBox(width: 8),
                           Expanded(
                             child: FilledButton(
-                              onPressed: client.connected && client.pointerReady
+                              onPressed:
+                                  client.connected &&
+                                      (client.pointerReady ||
+                                          BoxClient.shared?.handles(
+                                                client.foreground,
+                                              ) ==
+                                              true)
                                   ? () => key('ENTER')
                                   : null,
                               style: FilledButton.styleFrom(
@@ -411,7 +585,13 @@ class RemotePage extends StatelessWidget {
                         SizedBox(
                           width: 64,
                           child: OutlinedButton(
-                            onPressed: client.connected && client.pointerReady
+                            onPressed:
+                                client.connected &&
+                                    (client.pointerReady ||
+                                        BoxClient.shared?.handles(
+                                              client.foreground,
+                                            ) ==
+                                            true)
                                 ? () => key(number)
                                 : null,
                             child: Text(number),
@@ -439,7 +619,13 @@ class RemotePage extends StatelessWidget {
                         ('Mavi', 'BLUE'),
                       ])
                         OutlinedButton(
-                          onPressed: client.connected && client.pointerReady
+                          onPressed:
+                              client.connected &&
+                                  (client.pointerReady ||
+                                      BoxClient.shared?.handles(
+                                            client.foreground,
+                                          ) ==
+                                          true)
                               ? () => key(entry.$2)
                               : null,
                           child: Text(entry.$1),
@@ -472,31 +658,44 @@ class RemoteButton extends StatelessWidget {
     required this.icon,
     required this.enabled,
     required this.onPressed,
+    this.prominent = false,
   });
+  final bool prominent;
   final String label;
   final IconData icon;
   final bool enabled;
   final VoidCallback onPressed;
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: double.infinity,
-    child: OutlinedButton(
-      onPressed: enabled ? onPressed : null,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: Colors.white,
-        minimumSize: const Size(48, 64),
-        padding: const EdgeInsets.all(8),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon),
-          const SizedBox(height: 4),
-          Text(label, textAlign: TextAlign.center),
-        ],
-      ),
-    ),
-  );
+  Widget build(BuildContext context) {
+    final style = OutlinedButton.styleFrom(
+      minimumSize: const Size(48, 64),
+      padding: const EdgeInsets.all(8),
+    );
+    final content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon),
+        const SizedBox(height: 4),
+        Text(label, textAlign: TextAlign.center),
+      ],
+    );
+    return SizedBox(
+      width: double.infinity,
+      child: prominent
+          ? FilledButton(
+              onPressed: enabled ? onPressed : null,
+              style: style,
+              child: content,
+            )
+          : OutlinedButton(
+              onPressed: enabled ? onPressed : null,
+              style: style.copyWith(
+                backgroundColor: const WidgetStatePropertyAll(Colors.white),
+              ),
+              child: content,
+            ),
+    );
+  }
 }
 
 class _ShortcutEditor extends StatefulWidget {

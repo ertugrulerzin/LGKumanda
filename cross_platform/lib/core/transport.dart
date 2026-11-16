@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:crypto/crypto.dart';
@@ -53,7 +54,7 @@ Future<TVSocket> openTVSocket(Uri uri, String? saved) async {
       uri.toString(),
       customClient: client,
     ).timeout(const Duration(seconds: 12));
-    ws.pingInterval = const Duration(seconds: 20);
+    ws.pingInterval = const Duration(seconds: 5);
     return _IOSocket(ws, client, fingerprint);
   } catch (_) {
     client.close(force: true);
@@ -76,4 +77,41 @@ class _IOSocket implements TVSocket {
     unawaited(ws.close(WebSocketStatus.goingAway));
     client.close(force: true);
   }
+}
+
+Future<String?> readTVIdentity(String host, String fingerprint) async {
+  if (!isLocalHost(host) || !RegExp(r'^[a-f0-9]{64}$').hasMatch(fingerprint)) {
+    return null;
+  }
+  TVSocket? socket;
+  try {
+    socket = await openTVSocket(
+      Uri(scheme: 'wss', host: host, port: 3001),
+      fingerprint,
+    );
+    final response = socket.messages.first.timeout(const Duration(seconds: 3));
+    socket.send(
+      encodeMessage({
+        'id': 'hello',
+        'type': 'hello',
+        'payload': <String, dynamic>{},
+      }),
+    );
+    final data = await response;
+    final message = jsonDecode(
+      data is String ? data : utf8.decode(data as List<int>),
+    ) as Json;
+    final uuid = (message['payload'] as Map?)?['deviceUUID'];
+    if (message['type'] == 'hello' &&
+        uuid is String &&
+        RegExp(r'^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$')
+            .hasMatch(uuid)) {
+      return uuid.toLowerCase();
+    }
+  } catch (_) {
+    /* No identity: do not send credentials to this candidate. */
+  } finally {
+    await socket?.close();
+  }
+  return null;
 }

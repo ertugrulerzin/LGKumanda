@@ -1,3 +1,19 @@
+# 22. sürüm doğrulaması
+
+17 Kasım 2026 — iPhone 1.0 (22) işlevlerinin ortak Flutter uygulamasına aktarımı.
+
+- `flutter analyze`: temiz.
+- `flutter test`: 38 başarılı, bir gerçek kutu testi isteğe bağlı olduğu için atlandı.
+- Yeni kontroller: eski tek kutu kaydının korunması, iki kutunun adı/girişi/etkinlik durumunun ayrılması, RemoteStart öncesi tuş göndermeme, anlaşılmış özellikler ve sırayla tuş iletimi, kanal numarası ve duraklat/devam; IP değişince depolama kimliğinin ve kısayolların korunması; güç bildirimiyle beklemeye geçiş; web video adresi doğrulama.
+- Telefon (390×844) ve masaüstü (1280×800) etkileşim testlerinde kutu sekmesi, yön/sayı tuşları ve cihaz listesi sınandı. TV işaretçisi kapalıyken kutu sayı tuşunun doğru adrese gittiği doğrulandı.
+- Gerçek Android emülatöründe ve macOS Flutter görüntüleyicisinde açık temalı yeni kutu kumandası kontrol edildi. Küçük ekrandaki oynatma düğmesinin yazı taşması düzeltildi ve tekrar görüntülendi. Görseller sentetik test verisi olarak etiketlidir; üretim giriş noktası bu verileri kullanmaz.
+- Android release ARM64 APK: v2 imzası ve sürüm kodu 2022 doğrulandı; QA test verisi içermez. 20.322.039 bayt APK Faturabot tarafından kabul edildi.
+- Gerçek LG / Android TV kutularıyla çoklu kutu, güç değişikliği, adres değişikliği ve video oynatma uçtan uca bu aktarımda denenmedi. iPhone sonuçları bu platformların gerçek cihaz doğrulaması sayılmaz.
+
+Paket ve CI doğrulamaları tamamlandığında aşağıdaki sürüm kaydı güncellenir.
+
+## Önceki paketlerin doğrulaması
+
 # İlk önizlemenin doğrulama kapsamı
 
 15 Kasım 2026 — `v1.0.0-preview.1`. Ortak uygulama kodu: `1ac9186`. Windows çalışma zamanı paketleme düzeltmesi: `527fd1d`.

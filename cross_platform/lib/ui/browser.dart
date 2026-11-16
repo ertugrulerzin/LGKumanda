@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 import '../core/protocol.dart';
+import '../core/web_video.dart';
 import '../core/tv_client.dart';
 import 'keyboard.dart';
 
@@ -24,12 +25,68 @@ class _BrowserPageState extends State<BrowserPage> {
   String? failure, lastSent;
   bool sending = false, webViewReady = !Platform.isWindows;
   double progress = 0;
+  final videos = <String, WebVideo>{};
+  bool videoSheetOpen = false;
   Timer? mirrorTimer;
   Directory? temporaryData;
   @override
   void initState() {
     super.initState();
     if (Platform.isWindows) unawaited(_prepareWindows());
+  }
+
+  Future<void> showVideos() async {
+    if (videoSheetOpen || !mounted) return;
+    videoSheetOpen = true;
+    await showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('TV’de video aç · deneysel'),
+        content: SizedBox(
+          width: 560,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'TV oynatıcısı her siteyi, oturum gerektiren bağlantıyı veya video biçimini desteklemez. Açılamazsa TV tarayıcısındaki dokunmatik denetimini kullan.',
+                ),
+                const SizedBox(height: 16),
+                if (videos.isEmpty)
+                  const Text(
+                    'Video kaynağı henüz bulunamadı. Sayfada videoya dokunup yeniden dene.',
+                  ),
+                for (final video in videos.values)
+                  ListTile(
+                    title: Text(video.title),
+                    subtitle: Text('${video.url.host} · ${video.mime}'),
+                    trailing: const Icon(Icons.play_circle_outline),
+                    onTap: () async {
+                      try {
+                        await widget.client.request(
+                          'media.viewer/open',
+                          video.payload,
+                        );
+                        if (context.mounted) Navigator.pop(context);
+                      } catch (_) {
+                        if (context.mounted) Navigator.pop(context);
+                        widget.client.reportError('TV videoyu açamadı. TV tarayıcısındaki dokunmatik denetimini dene.');
+                      }
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Kapat'),
+          ),
+        ],
+      ),
+    );
+    videoSheetOpen = false;
   }
 
   Future<void> _prepareWindows() async {
@@ -281,12 +338,7 @@ class _BrowserPageState extends State<BrowserPage> {
                         ),
                         initialUserScripts: UnmodifiableListView([
                           UserScript(
-                            source: """
-            document.addEventListener('play', function(e) {
-              if (e.target && e.target.pause) { e.target.pause(); e.target.muted = true; }
-              if (window.flutter_inappwebview) window.flutter_inappwebview.callHandler('tvMedia');
-            }, true);
-          """,
+                            source: widget.client.videoDiscoveryScript,
                             injectionTime:
                                 UserScriptInjectionTime.AT_DOCUMENT_START,
                             forMainFrameOnly: false,
@@ -295,9 +347,30 @@ class _BrowserPageState extends State<BrowserPage> {
                         onWebViewCreated: (c) {
                           controller = c;
                           c.addJavaScriptHandler(
+                            handlerName: 'videoSource',
+                            callback: (args) {
+                              final video = args.isEmpty
+                                  ? null
+                                  : WebVideo.parse(args.first);
+                              if (mounted &&
+                                  video != null &&
+                                  (videos.length < 32 ||
+                                      videos.containsKey(video.url.toString()))) {
+                                setState(
+                                  () => videos[video.url.toString()] = video,
+                                );
+                              }
+                              return null;
+                            },
+                          );
+                          c.addJavaScriptHandler(
                             handlerName: 'tvMedia',
                             callback: (_) {
-                              unawaited(touchPad());
+                              if (!videoSheetOpen) {
+                                unawaited(
+                                  videos.isEmpty ? touchPad() : showVideos(),
+                                );
+                              }
                               return null;
                             },
                           );
@@ -310,7 +383,10 @@ class _BrowserPageState extends State<BrowserPage> {
                                 (action.request.url?.userInfo.isEmpty ?? true)
                             ? NavigationActionPolicy.ALLOW
                             : NavigationActionPolicy.CANCEL,
-                        onLoadStart: (_, url) => mirror(url),
+                        onLoadStart: (_, url) {
+                          if (mounted) setState(videos.clear);
+                          mirror(url);
+                        },
                         onUpdateVisitedHistory: (_, url, _) => mirror(url),
                         onProgressChanged: (_, value) {
                           if (mounted) setState(() => progress = value / 100);
@@ -356,6 +432,11 @@ class _BrowserPageState extends State<BrowserPage> {
                             )
                           : null,
                       icon: const Icon(Icons.keyboard_arrow_down),
+                    ),
+                    TextButton.icon(
+                      onPressed: showVideos,
+                      icon: const Icon(Icons.video_library_outlined),
+                      label: Text('Videolar (${videos.length})'),
                     ),
                     TextButton.icon(
                       onPressed: widget.client.pointerReady ? touchPad : null,

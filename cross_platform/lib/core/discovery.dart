@@ -7,6 +7,9 @@ import 'package:xml/xml.dart';
 
 import 'protocol.dart';
 import 'network_access.dart';
+import 'transport.dart';
+
+import 'package:crypto/crypto.dart';
 
 ({String name, String? identity})? deviceDescription(String body) {
   try {
@@ -48,7 +51,10 @@ bool isLGTelevisionCertificate(String subject, String issuer) {
 
 /// Some webOS TVs keep the 1311 description server closed. They still serve
 /// their LG-signed certificate on the remote-control port 3001.
-Future<bool> answersAsLGTelevision(String host, {int port = 3001}) async {
+Future<({bool isLG, String fingerprint})?> inspectTelevisionCertificate(
+  String host, {
+  int port = 3001,
+}) async {
   X509Certificate? certificate;
   SecureSocket? socket;
   try {
@@ -62,19 +68,28 @@ Future<bool> answersAsLGTelevision(String host, {int port = 3001}) async {
       },
     ).timeout(const Duration(seconds: 2));
     final peer = certificate ?? socket.peerCertificate;
-    return peer != null && isLGTelevisionCertificate(peer.subject, peer.issuer);
+    return peer == null
+        ? null
+        : (
+            isLG: isLGTelevisionCertificate(peer.subject, peer.issuer),
+            fingerprint: sha256.convert(peer.der).toString(),
+          );
   } catch (_) {
-    return false;
+    return null;
   } finally {
     socket?.destroy();
   }
 }
+
+Future<bool> answersAsLGTelevision(String host, {int port = 3001}) async =>
+    (await inspectTelevisionCertificate(host, port: port))?.isLG == true;
 
 class TVDiscovery extends ChangeNotifier {
   bool searching = false;
   int checked = 0, total = 0, _generation = 0;
   String? message;
   List<Television> found = [];
+  final fingerprints = <String, String>{};
   HttpClient? _http;
   bool _disposed = false;
   void _emit() {
@@ -94,6 +109,7 @@ class TVDiscovery extends ChangeNotifier {
     final generation = _generation;
     searching = true;
     found = [];
+    fingerprints.clear();
     checked = 0;
     total = 0;
     message = null;
@@ -136,9 +152,16 @@ class TVDiscovery extends ChangeNotifier {
           try {
             if (await _identify(http, host, generation, identities)) continue;
             if (generation != _generation) return;
-            if (await answersAsLGTelevision(host) && generation == _generation &&
+            final certificate = await inspectTelevisionCertificate(host);
+            if (certificate?.isLG == true &&
+                generation == _generation &&
                 !found.any((t) => t.host == host)) {
-              found.add(Television(host: host));
+              final uuid = await readTVIdentity(host, certificate!.fingerprint);
+              if (generation != _generation) return;
+              fingerprints[host] = certificate.fingerprint;
+              found.add(
+                Television(host: host, id: uuid ?? host, deviceUUID: uuid),
+              );
             }
           } finally {
             if (generation == _generation) {
@@ -189,8 +212,22 @@ class TVDiscovery extends ChangeNotifier {
       }
       final description = deviceDescription(utf8.decode(data));
       if (description == null || generation != _generation) return false;
-      if (description.identity == null || identities.add(description.identity!)) {
-        found.add(Television(host: host, name: description.name));
+      if (description.identity == null ||
+          identities.add(description.identity!)) {
+        final certificate = await inspectTelevisionCertificate(host);
+        final uuid = certificate == null
+            ? null
+            : await readTVIdentity(host, certificate.fingerprint);
+        if (generation != _generation) return false;
+        if (certificate != null) fingerprints[host] = certificate.fingerprint;
+        found.add(
+          Television(
+            host: host,
+            id: uuid ?? host,
+            name: description.name,
+            deviceUUID: uuid,
+          ),
+        );
       }
       return true;
     } catch (_) {
@@ -203,5 +240,30 @@ class TVDiscovery extends ChangeNotifier {
     _disposed = true;
     cancel();
     super.dispose();
+  }
+}
+
+Future<Television?> findMovedTV(Television saved, String fingerprint) async {
+  if (saved.deviceUUID == null || !saved.secure) return null;
+  final discovery = TVDiscovery();
+  try {
+    await discovery.search([saved.host]);
+    final matches = discovery.found
+        .where(
+          (t) =>
+              t.deviceUUID == saved.deviceUUID &&
+              discovery.fingerprints[t.host] == fingerprint,
+        )
+        .toList();
+    if (matches.length > 1) {
+      throw StateError(
+        'Birden fazla TV eşleşti. Cihazlar’dan doğru TV’yi seç.',
+      );
+    }
+    return matches.isEmpty
+        ? null
+        : copyTelevision(saved, host: matches.single.host);
+  } finally {
+    discovery.dispose();
   }
 }
