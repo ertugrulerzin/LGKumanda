@@ -1,10 +1,7 @@
-LG Kumanda 1.0 (17)
+LG Kumanda 1.0 (18)
 
-- TV fiziksel kumandadan kapatıldığında güç bildirimiyle “TV kapalı” durumunu gösterme. Bekleme bildirimi geldiğinde kumanda bağlantısı kapanır ve gereksiz IP araması başlatılmaz.
-- Güç durumu ayrıca 5 saniyede bir kontrol edilir; yanıt ve bağlantı kontrolleri 3 saniyeyle sınırlandırılır. Güç API'sini desteklemeyen TV'lerde bağlantı kontrolü sürer. Sadece ekranın kapandığı ses moduyla tam bekleme birbirinden ayrılır.
-- Tivibu/Android TV kutusunda oturum tamamen hazır olmadan tuş gönderilmesi düzeltildi. Yalnız kutunun kabul ettiği özellikler kullanılır; art arda gelen tuşlar sırayla gönderilir.
-- Wi-Fi ile eşleşen kutunun yön/OK tuşları LG işaretçi bağlantısından bağımsız çalışır. Kutuya bağlanılamazsa hata gösterilir. Uygulama arka plana geçtiğinde kutu bağlantısı temizlenir; sonraki tuşta yeniden açılır.
+- Uyandır artık "paketler gönderildi" demekle kalmaz: paketten sonra 20 saniye TV'nin yanıt vermesini bekler. TV açılırsa kendiliğinden bağlanır; açılmazsa gerçek sebebi söyler.
+- iPhone, Apple'ın multicast izni olmadan yayın (broadcast) paketini engeller. Bekleme modundaki TV ağ adresi sorgularına yanıt vermediği için yalnız IP'ye giden paket genelde TV'ye ulaşmaz. Bu durumda uygulama "Apple izni bekleniyor, TV'yi kumandayla aç" der. Apple'a izin başvurusu yapıldı.
+- TV yeni kapandıysa (telefon TV'nin adresini hâlâ hatırlıyorsa) uyandırma çalışabilir; uygulama bunu da algılayıp bağlanır.
 
-Tivibu ilk kurulum: Kumanda > Kontrol hedefi > HDMI kutusu yardımı > Wi-Fi ile kutu kumandası. Kutuyu seç, TV'deki 6 karakterlik kodu gir ve bağlı olduğu HDMI girişini seç (bu kurulumda HDMI 3). Her iPhone'da bir kez eşleştirmek gerekir; başka cihazın eşleştirmesi otomatik aktarılmaz.
-
-Doğrulama: güç durumları ve kutu oturumu testleri ile iPhone gezinme/klavye kontrolleri geçti. Fiziksel kumandadan kapanma ve Tivibu menüsünün gerçekten hareket etmesi ayrıca cihazda doğrulanmalıdır. Uyandırma için Apple multicast yetkisi bu sürümde de eklenmez.
+Doğrulama: Mac'ten gerçek OLED55C64LA üzerinde yayın adresine gönderilen paket TV'yi 6 saniyede açtı, IP'ye gönderilen paket ulaşmadı. Tivibu kutusu üzerinden (HDMI-CEC) TV açma denendi ve çalışmadı. Birim testleri geçti; iPhone'da uyandırma davranışı ayrıca cihazda doğrulanmalıdır.
