@@ -22,6 +22,13 @@ struct LocalSubnet: Equatable {
         guard let own = Self.number(address), let candidate = Self.number(host), let bits = Self.number(mask) else { return false }
         return TVProtocol.validHost(host) && own & bits == candidate & bits
     }
+    var broadcast: String? {
+        guard TVProtocol.validHost(address), let own = Self.number(address),
+              let bits = Self.number(mask), bits != 0 else { return nil }
+        let inverse = ~bits
+        guard inverse > 1, inverse & (inverse &+ 1) == 0 else { return nil }
+        return Self.string((own & bits) | inverse)
+    }
     var scanHosts: [String] {
         guard TVProtocol.validHost(address), let own = Self.number(address), let bits = Self.number(mask), bits != 0 else { return [] }
         let inverse = ~bits

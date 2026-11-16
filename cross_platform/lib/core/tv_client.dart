@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 
@@ -8,6 +7,7 @@ import 'protocol.dart';
 import 'network_access.dart';
 import 'storage.dart';
 import 'transport.dart';
+import 'wake_on_lan.dart';
 
 class TVClient extends ChangeNotifier {
   TVClient({
@@ -33,7 +33,7 @@ class TVClient extends ChangeNotifier {
   String webFocusScript = '';
   TVSocket? _socket, _pointer;
   Timer? _deadline;
-  int _generation = 0, _sequence = 0;
+  int _generation = 0, _sequence = 0, _wakeAttempt = 0;
   bool _registering = false, _disposed = false;
   final Map<String, Completer<Json>> _pending = {};
   Future<void> _keyQueue = Future.value();
@@ -373,6 +373,39 @@ class TVClient extends ChangeNotifier {
     if (generation == _generation) {
       _emit();
       await refreshLibrary();
+      await _captureWakeIdentity(generation);
+    }
+  }
+
+  Future<void> _captureWakeIdentity(int generation) async {
+    final tv = selected;
+    if (generation != _generation || tv == null || tv.mac.isNotEmpty) return;
+    try {
+      final info = await request('com.webos.service.connectionmanager/getinfo');
+      if (generation != _generation) return;
+      Json status = {};
+      try {
+        status = await request('com.webos.service.connectionmanager/getStatus');
+      } catch (_) {
+        /* Older firmware may not expose network status. */
+      }
+      if (generation != _generation ||
+          selected?.host != tv.host ||
+          selected!.mac.isNotEmpty) {
+        return;
+      }
+      final updated = wakeIdentity(tv, info, status);
+      if (updated == null ||
+          !televisions.any((t) => t.host == tv.host && t.mac.isEmpty)) {
+        return;
+      }
+      await saveTV(updated);
+      if (generation == _generation && selected?.host == tv.host) {
+        selected = updated;
+        _emit();
+      }
+    } catch (_) {
+      /* Wake metadata is optional; normal remote controls still work. */
     }
   }
 
@@ -639,24 +672,30 @@ class TVClient extends ChangeNotifier {
   Future<void> wake() async {
     final tv = selected;
     if (tv == null) throw StateError('Önce bir TV seç.');
+    final generation = _generation;
     await ensureNetworkAccess();
-    final packet = magicPacket(tv.mac);
-    if (InternetAddress.tryParse(tv.broadcast)?.type !=
-            InternetAddressType.IPv4 ||
-        !(tv.broadcast == '255.255.255.255' || isLocalHost(tv.broadcast))) {
-      throw const FormatException('Geçerli bir yerel yayın IPv4 adresi gir.');
+    if (generation != _generation || selected?.host != tv.host) return;
+    if (tv.mac.isEmpty) {
+      throw StateError(
+        "Uyandırma için TV'nin MAC adresi kayıtlı olmalı. TV'ye bir kez açıkken bağlan; otomatik alınamazsa Cihazı düzenle bölümüne etkin Wi-Fi veya Ethernet MAC adresini gir.",
+      );
     }
-    final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+    final attempt = ++_wakeAttempt;
+    error = null;
+    notice = 'Uyandırma paketleri gönderiliyor…';
+    _emit();
     try {
-      socket.broadcastEnabled = true;
-      final count = socket.send(packet, InternetAddress(tv.broadcast), 9);
-      if (count != packet.length) {
-        throw StateError('Uyandırma paketi gönderilemedi.');
-      }
-    } finally {
-      socket.close();
+      await sendWakePackets(
+        tv,
+        cancelled: () => generation != _generation || attempt != _wakeAttempt,
+      );
+    } catch (_) {
+      if (generation != _generation || attempt != _wakeAttempt) return;
+      notice = null;
+      rethrow;
     }
-    notice = 'Uyandırma paketi gönderildi. TV açılınca yeniden bağlan.';
+    if (generation != _generation || attempt != _wakeAttempt) return;
+    notice = "Uyandırma paketleri gönderildi; TV'nin açıldığı henüz doğrulanmadı. Birkaç saniye sonra yeniden bağlan. Yanıt yoksa TV'de Mobil ile TV Açma ayarını kontrol et.";
     _emit();
   }
 

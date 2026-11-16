@@ -113,7 +113,9 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         KeychainStore.delete("key.\(tv.id)"); KeychainStore.delete("cert.\(tv.id)")
         connect(to: tv)
     }
+    private var wakeTask: Task<Void, Never>?
     func disconnect() {
+        wakeTask?.cancel(); wakeTask = nil
         webVideoSession = nil
         stopPointerMotion()
         generation = UUID()
@@ -371,6 +373,20 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         }
         guard generation == token else { return }
         await refreshLibrary(reportErrors: false)
+        await captureWakeIdentity(token: token)
+    }
+    private func captureWakeIdentity(token: UUID) async {
+        guard generation == token, let tv = selected, tv.mac.isEmpty else { return }
+        guard let info = try? await request("com.webos.service.connectionmanager/getinfo"), generation == token else { return }
+        let status = (try? await request("com.webos.service.connectionmanager/getStatus")) ?? [:]
+        guard generation == token, selected?.id == tv.id,
+              let index = televisions.firstIndex(where: { $0.id == tv.id }), televisions[index].mac.isEmpty,
+              let identity = WakeOnLAN.networkIdentity(info: info, status: status, host: tv.host) else { return }
+        var updated = televisions[index]
+        updated.mac = identity.mac
+        if updated.broadcast == "255.255.255.255", let broadcast = identity.broadcast { updated.broadcast = broadcast }
+        televisions[index] = updated
+        selected = updated
     }
     func refreshLibrary(reportErrors: Bool = true) async {
         guard state == .connected else { return }
@@ -408,10 +424,21 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     }
     func wake() {
         guard let tv = selected else { error = "Önce Cihazlar bölümünden TV ekle."; return }
-        do {
-            try WakeOnLAN.send(mac: tv.mac, broadcast: tv.broadcast)
-            notice = "Uyandırma paketi gönderildi. TV açılınca Bağlan'a dokun."
-        } catch { self.error = error.localizedDescription }
+        guard !tv.mac.isEmpty else {
+            error = "Uyandırma için TV'nin MAC adresi kayıtlı olmalı. TV'yi bir kez açıkken bağla; otomatik alınamazsa Cihazı düzenle bölümüne TV'nin etkin Wi-Fi veya Ethernet MAC adresini gir."
+            return
+        }
+        wakeTask?.cancel()
+        error = nil
+        notice = "Uyandırma paketleri gönderiliyor…"
+        wakeTask = Task {
+            do {
+                try await WakeOnLAN.send(mac: tv.mac, host: tv.host, broadcast: tv.broadcast)
+                guard !Task.isCancelled else { return }
+                notice = "Uyandırma paketleri gönderildi; TV'nin açıldığı henüz doğrulanmadı. Birkaç saniye sonra Bağlan'a dokun. Yanıt yoksa TV'de Mobil ile TV Açma ayarını kontrol et."
+            } catch is CancellationError { }
+            catch { self.notice = nil; self.error = error.localizedDescription }
+        }
     }
 }
 

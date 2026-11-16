@@ -89,6 +89,16 @@ IP adresiyle kumanda için Yerel Ağ izni yeterlidir. 1.0 (2) sürümünden itib
 
 Kaynak: [Apple TN3179](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy). Uyandırma ayrıca TV'deki Mobile TV On / Wake-on-LAN ayarına ve ağ bağlantısına bağlıdır.
 
+### TV kapalıyken uyandırma
+
+Kapalı TV ağ taramasına yanıt vermeyebilir. Önce TV açıkken bağlanıp cihazı kaydet; daha sonra **kayıtlı TV** üzerinden uyandır. TV'de **Mobil ile TV Açma / Wi-Fi ile Aç (TV On With Mobile)** etkin olmalı. Fişi çekilmiş veya ağ bağlantısını beklemede kapatan bir TV ağdan uyandırılamaz.
+
+Uygulama TV destekliyorsa açık bağlantı sırasında ağ bilgilerini okur ve bağlı IP'ye ait Wi-Fi/Ethernet MAC adresini kaydeder. İki kart arasında güvenli seçim yapılamıyorsa adresi tahmin etmez; Cihazı düzenle bölümüne etkin ağ kartının MAC adresini elle gir. Elle girilmiş MAC ve özel yayın adresi korunur. TV'den alınabiliyorsa gerçek ağ maskesiyle yayın adresi hesaplanır.
+
+Uyandırma kayıtlı IP'ye ve yayın adresine UDP 9/7 portlarından üç tur gönderilir. iPhone ayrıca bağlı Wi-Fi ağının gerçek yayın adresini kullanır. Paket gönderilmesi TV'nin açıldığını doğrulamaz; birkaç saniye sonra yeniden bağlan. iPhone'da doğrudan IP'ye gönderim multicast yetkisi gerektirmez, ancak beklemedeki TV'nin ağ kartı bu paketi alamayabilir; yayın gönderiminin Apple yetkisi gereksinimi devam eder. Mevcut TestFlight 1.0 (13) dağıtım profilinde bu yetki bulunmuyor. Ayrıntılar: [Apple yerel ağ belgesi](https://developer.apple.com/documentation/technotes/tn3179-understanding-local-network-privacy), [LG TV On With Mobile ayarı](https://www.lg.com/us/support/help-library/lg-tv-how-to-set-up-the-lg-thinq-app-on-your-lg-smart-tv--20152745625356).
+
+2026-11-16 geliştirme doğrulaması: otomatik MAC seçimi ve gerçek ağ maskesi testleri geçti. Mac'ten kayıtlı gerçek TV'ye yayın paketleri gönderildi, ancak TV'nin 3001 bağlantı portu 15 saniye içinde açılmadı. Gerçek TV'de uyandırma başarısı henüz doğrulanmadı. Bu kaynak değişiklikleri mevcut 1.0 (13) ve preview.3 indirmelerine dahil değildir.
+
 ## Doğrulama
 
 ```sh

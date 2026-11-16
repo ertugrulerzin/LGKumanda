@@ -49,6 +49,24 @@ final class ProtocolTests: XCTestCase {
             XCTAssertThrowsError(try WakeOnLAN.packet(mac: mac), mac)
         }
     }
+    func testWakeUsesTheActiveNICAndActualSubnet() throws {
+        let info: [String: Any] = ["wiredInfo": ["macAddress": "20:30:40:50:60:70"], "wifiInfo": ["macAddress": "aa-bb-cc-dd-ee-02"]]
+        let status: [String: Any] = ["wired": ["state": "disconnected"], "wifi": ["state": "connected", "ipAddress": "192.168.5.40", "netmask": "255.255.252.0"]]
+        let identity = try XCTUnwrap(WakeOnLAN.networkIdentity(info: info, status: status, host: "192.168.5.40"))
+        XCTAssertEqual(identity.mac, "AA:BB:CC:DD:EE:02")
+        XCTAssertEqual(identity.broadcast, "192.168.7.255")
+        XCTAssertNil(WakeOnLAN.networkIdentity(info: info, status: [:], host: "192.168.5.40"))
+        XCTAssertNil(WakeOnLAN.networkIdentity(info: info, status: status, host: "192.168.5.41"))
+        XCTAssertNil(WakeOnLAN.networkIdentity(info: ["wifiInfo": ["macAddress": "00:00:00:00:00:00"]], status: [:], host: "192.168.5.40"))
+    }
+    func testWakeTargetsIncludeUnicastAndMatchingSubnetBroadcastOnly() throws {
+        let subnets = [LocalSubnet(address: "192.168.5.10", mask: "255.255.252.0"), LocalSubnet(address: "10.0.0.2", mask: "255.255.255.0")]
+        XCTAssertEqual(try WakeOnLAN.targets(host: "192.168.5.40", broadcast: "255.255.255.255", subnets: subnets), ["192.168.5.40", "192.168.7.255", "255.255.255.255"])
+        XCTAssertThrowsError(try WakeOnLAN.targets(host: "192.168.5.40", broadcast: "8.8.8.8", subnets: subnets))
+        XCTAssertThrowsError(try WakeOnLAN.targets(host: "8.8.8.8", broadcast: "255.255.255.255", subnets: subnets))
+        XCTAssertNil(LocalSubnet(address: "192.168.5.10", mask: "255.0.255.0").broadcast)
+        XCTAssertNil(LocalSubnet(address: "192.168.5.10", mask: "255.255.255.254").broadcast)
+    }
     func testCredentialsRoundTripAndDelete() {
         let account = "test.\(UUID())"
         defer { KeychainStore.delete(account) }

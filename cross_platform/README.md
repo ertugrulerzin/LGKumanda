@@ -62,6 +62,10 @@ TV eklerken yerel IPv4 adresini gir. İlk WSS bağlantısında TV’nin sertifik
 
 Keşif, yerel IPv4 arayüzlerinin bulunduğu /24 aralıklarını tarar; en fazla dört arayüz ve aynı anda 24 istek kullanılır. Bu sürümde SSDP/multicast keşfi yoktur; farklı VLAN veya daha geniş ağlarda IP ile ekleme kullanılabilir.
 
+## Kapalı TV'yi uyandırma
+
+Kapalı TV taramaya yanıt vermeyebilir; açıkken kaydedilmiş cihazı seçip uyandır. TV'nin **Mobil ile TV Açma / Wi-Fi ile Aç** ayarı etkin olmalı. Uygulama destekleyen TV'lerden etkin ağ kartının MAC adresini ve gerçek ağ maskesini alarak kaydeder; Wi-Fi ve Ethernet arasında seçim yapılamıyorsa MAC adresini elle girmek gerekir. Elle girilen bilgiler korunur. Kayıtlı IP'ye ve yayın adresine UDP 9/7 portlarından üç tur paket gönderilir. Paket gönderimi açılma onayı değildir; birkaç saniye sonra yeniden bağlan. Fişi çekilmiş veya beklemede ağ kartını kapatan TV açılamaz. Ayrıntılı sınırlar ve gerçek cihaz denemesi [ana README'de](../README.md#tv-kapalıyken-uyandırma).
+
 ## Tarayıcı ve HDMI sınırları
 
 Tarayıcı sayfa adreslerini eşler; ekran yansıtma yapmaz. Google sonuçları Mac ve TV’de farklı sıra veya içerikle görünebilir: Google cihaz türü, dil ve konum gibi bağlamlara göre sonuçları değiştirebilir ([Google açıklaması](https://support.google.com/websearch/answer/12412910?hl=tr)). TV’de açılacak sayfayı bu cihazdaki listeden seçtiğinde ilgili sayfanın adresi TV’ye gönderilir. Cihazın ve TV’nin oturumları, çerezleri, doğrulamaları ve sayfa içi düğme tıklamaları birbirinden bağımsızdır. Uygulama içi tarayıcı geçici oturum kullanır. Video cihazda durdurulur; TV’de oynatmak için **TV’de dokunmatik** paneli açılır. Bu davranışın web siteleriyle uyumu ayrıca denenmelidir. AirPlay bağımlılığı yoktur.

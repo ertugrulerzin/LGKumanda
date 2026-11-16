@@ -59,6 +59,47 @@ void main() {
       expect(server.pins.last, 'test-certificate');
     },
   );
+  test('online connection persists the active MAC for offline wake', () async {
+    final storage = MemoryStorage(), server = FakeTV();
+    server.connectionInfo = {
+      'wiredInfo': {'macAddress': '20:30:40:50:60:70'},
+      'wifiInfo': {'macAddress': 'AA:BB:CC:DD:EE:02'},
+    };
+    server.connectionStatus = {
+      'wifi': {
+        'state': 'connected',
+        'ipAddress': tv.host,
+        'netmask': '255.255.255.0',
+      },
+    };
+    final client = TVClient(storage: storage, openSocket: server.open);
+    addTearDown(client.dispose);
+    await client.saveTV(tv);
+    await client.connect(tv);
+    server.approve();
+    await flush();
+    expect(client.selected?.mac, 'AA:BB:CC:DD:EE:02');
+    expect(client.selected?.broadcast, '192.168.1.255');
+    client.disconnect();
+    final restored = TVClient(storage: storage);
+    addTearDown(restored.dispose);
+    await restored.initialize();
+    expect(restored.selected?.mac, 'AA:BB:CC:DD:EE:02');
+  });
+  test('automatic MAC lookup preserves a manually configured MAC', () async {
+    final server = FakeTV();
+    server.connectionInfo = {
+      'wifiInfo': {'macAddress': 'AA:BB:CC:DD:EE:02'},
+    };
+    final client = TVClient(storage: MemoryStorage(), openSocket: server.open);
+    addTearDown(client.dispose);
+    const manual = Television(host: '192.168.1.50', mac: '20:30:40:50:60:70');
+    await client.saveTV(manual);
+    await client.connect(manual);
+    server.approve();
+    await flush();
+    expect(client.selected?.mac, manual.mac);
+  });
   test('failed secret storage does not produce a connected UI', () async {
     final storage = MemoryStorage()..failWrites = true;
     final server = FakeTV();

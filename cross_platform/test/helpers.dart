@@ -75,6 +75,8 @@ class FakeTV {
             {'id': 'HDMI_1', 'label': 'Kutu'},
           ],
         },
+        'com.webos.service.connectionmanager/getinfo' => connectionInfo,
+        'com.webos.service.connectionmanager/getStatus' => connectionStatus,
         'tv/getChannelList' => {
           'channelList': [
             {
@@ -95,6 +97,7 @@ class FakeTV {
   );
   final pointer = FakeSocket();
   String pointerAddress = 'wss://192.168.1.50:3001/resources/pointer';
+  Json connectionInfo = {}, connectionStatus = {};
   final pins = <String?>[];
   Future<TVSocket> open(Uri uri, String? fingerprint) async {
     pins.add(fingerprint);
