@@ -1,11 +1,10 @@
-LG Kumanda 1.0 (21)
+LG Kumanda 1.0 (22)
 
-Yeni Tivibu kumandası
-- Kumanda sekmesinin üstünde "TV | Tivibu" geçişi var. TV Tivibu'nun HDMI girişine geçince kumanda kendiliğinden Tivibu'ya döner; Tivibu'ya dokununca TV de o girişe geçer.
-- Tivibu kumandası gerçek kumanda gibi düzenlendi: Geri / Ana sayfa / Menü, yön tuşları ve OK, solda ses (TV), sağda kanal yukarı/aşağı.
-- Rakam tuşları her zaman görünür: 1, 1, 9'a bas, kutu kanala geçer. Yazdığın numara üstte görünür. Alt sırada Önceki kanal, 0 ve OK var.
-- Durdur/Devam tek tuş; ayrıca geri/ileri sar, Rehber, Bilgi, Sessiz ve renkli tuşlar.
-- Tivibu eşleşmemişse Tivibu sekmesinde büyük "Kutuyu bul ve eşleştir" düğmesi çıkar. Tivibu, Cihazlar sekmesinde de "HDMI kutusu" olarak görünür.
-- Tivibu girişindeyken TV'yi seçersen tuşlar TV'ye gider (ör. TV menüsü için).
+Android TV kutuları (set üstü kutu, Google TV) artık genel ve çoklu
+- Her eşleşmiş kutu Kumanda'da TV'nin yanında kendi sekmesini alır. Sekmenin adı kutunun bağlı olduğu TV girişinin adıdır (ör. TVP); istersen ayarlardan kendi adını verebilirsin.
+- Yeni kutu: Kumanda'daki "+ Ekle" ya da Cihazlar > Android TV kutuları > Android TV kutusu ekle. Kutuları buradan yeniden adlandırabilir, girişini değiştirebilir veya kaldırabilirsin.
+- Eşleştirirken TV'yi kutunun girişine al: kod kutunun ekranında çıktığı için giriş otomatik doğru kaydedilir. (Önceden giriş, kutunun adına bakılarak tahmin ediliyordu; bu yüzden kutu yanlış girişe bağlanabiliyordu.)
+- Mevcut eşleşmen korunur. Sekme yanlış girişin adını gösteriyorsa: kutu sekmesinde en alttaki ayarlar > "Kutunun bağlı olduğu giriş"ten doğru girişi seç veya TV o girişteyken "TV'nin şu anki girişini kullan"a dokun.
+- TV kutunun girişine geçince kumanda o kutunun sekmesine kendiliğinden geçer; sekmeye dokununca TV de o girişe geçer.
 
-Doğrulama: birim ve arayüz testleri geçti. Rakamla kanal değiştirme gerçek Tivibu'da denenmeli; kutu numaradan birkaç saniye sonra ya da OK'e basınca geçer.
+Doğrulama: birim ve arayüz testleri geçti. İki kutuyla gerçek cihazda denenmedi.
