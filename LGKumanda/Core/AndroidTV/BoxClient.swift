@@ -247,6 +247,23 @@ import Security
     /// Sends a remote key to the box, connecting first if needed. Returns false if the key has no box equivalent.
     @discardableResult func send(_ key: RemoteKey) -> Bool {
         guard let code = Self.keyCode(for: key) else { return false }
+        return send(code: code)
+    }
+    /// Android KEYCODE_MEDIA_PLAY_PAUSE: one key that pauses and resumes, like the box's own remote.
+    static let playPauseCode = 85
+    /// Types a channel number on the box (e.g. "119" sends 1, 1, 9). Keys are queued in order.
+    @discardableResult func enterChannel(_ number: String) -> Bool {
+        let digits = Self.channelDigits(number)
+        guard !digits.isEmpty else { return false }
+        for code in digits { send(code: code) }
+        return true
+    }
+    /// Android key codes for a typed channel number; KEYCODE_0 is 7. Non-digits are ignored.
+    nonisolated static func channelDigits(_ number: String) -> [Int] {
+        number.compactMap { $0.wholeNumberValue }.filter { (0...9).contains($0) }.prefix(5).map { 7 + $0 }
+    }
+    /// Sends an Android key code to the box, connecting first if needed.
+    @discardableResult func send(code: Int) -> Bool {
         let previous = keyTask
         let token = generation
         keyTask = Task { [weak self] in

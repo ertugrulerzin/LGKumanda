@@ -106,6 +106,9 @@ struct RemoteView: View {
                             Spacer(minLength: 0)
                         }.foregroundStyle(.secondary).accessibilityIdentifier("boxStatus")
                     }
+                    if connected, box.handles(foregroundAppID: client.foregroundAppID) {
+                        BoxQuickControls()
+                    }
                     HStack(spacing: 12) {
                         RemoteButton(title: connected ? "Kapat" : "Uyandır", symbol: "power", color: Theme.accent) {
                             if connected { powerOff = true } else { client.wake() }
@@ -256,6 +259,49 @@ struct RemoteView: View {
                 Text(title).font(.caption2).foregroundStyle(.primary)
             }.frame(maxWidth: .infinity, minHeight: 56).background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
         }.accessibilityLabel("\(title) tuş")
+    }
+}
+
+/// Shown while keys go to the Wi-Fi box: type a channel number and pause/resume in one tap.
+struct BoxQuickControls: View {
+    @EnvironmentObject private var box: BoxClient
+    @State private var channel = ""
+    @FocusState private var typing: Bool
+    var body: some View {
+        HStack(spacing: 10) {
+            TextField("Kanal no", text: $channel)
+                .keyboardType(.numberPad)
+                .focused($typing)
+                .font(.title3.weight(.semibold)).monospacedDigit()
+                .padding(.horizontal, 14).frame(minHeight: 56)
+                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
+                .onChange(of: channel) { _, value in
+                    let digits = String(value.filter(\.isNumber).prefix(5))
+                    if digits != value { channel = digits }
+                }
+                .onSubmit(go)
+                .accessibilityIdentifier("boxChannelField")
+            Button(action: go) {
+                Text("Git").font(.body.weight(.semibold)).frame(minWidth: 56, minHeight: 56)
+            }
+            .foregroundStyle(.white)
+            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
+            .disabled(channel.isEmpty)
+            .accessibilityLabel("Kanala git")
+            RemoteButton(title: "Durdur/Devam", symbol: "playpause.fill") { box.send(code: BoxClient.playPauseCode) }
+                .frame(maxWidth: 120)
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Git", action: go).disabled(channel.isEmpty)
+            }
+        }
+    }
+    private func go() {
+        guard box.enterChannel(channel) else { return }
+        channel = ""
+        typing = false
     }
 }
 

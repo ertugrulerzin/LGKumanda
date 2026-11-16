@@ -2,6 +2,15 @@ import XCTest
 @testable import LGKumanda
 
 final class PowerAndBoxStateTests: XCTestCase {
+    func testChannelNumberBecomesAndroidDigitKeys() {
+        XCTAssertEqual(BoxClient.channelDigits("119"), [8, 8, 16])
+        XCTAssertEqual(BoxClient.channelDigits("0"), [7])
+        XCTAssertEqual(BoxClient.channelDigits(" 1a2 "), [8, 9])
+        XCTAssertEqual(BoxClient.channelDigits(""), [])
+        XCTAssertEqual(BoxClient.channelDigits("1234567").count, 5)
+        XCTAssertEqual(BoxClient.playPauseCode, 85)
+    }
+
     func testConfirmedStandbyDiffersFromScreenOffAndUnknownNetworkState() {
         for state in ["Active Standby", "Suspend", "Power Off"] {
             XCTAssertEqual(TVPowerState.read(["state": state]), .standby)
