@@ -1,7 +1,9 @@
-LG Kumanda 1.0 (19)
+LG Kumanda 1.0 (20)
 
-- Uyandırdıktan sonra TV açıldığı hâlde bağlanamama sorunu düzeltildi. TV açılırken bir süre bağlantıyı reddedebiliyor veya kısa süreliğine "bekleme" bildiriyordu; uygulama artık 40 saniye boyunca yeniden dener ve açılışın ilk 30 saniyesindeki bekleme bildirimlerini yok sayar.
-- TV kapalıyken uygulama açık kaldığı sürece TV'yi izler: TV açıldığında (fiziksel kumandayla açılsa bile) kendiliğinden bağlanır, uygulamayı yeniden başlatmak gerekmez.
-- 1.0 (18)'den: Uyandır, TV'nin gerçekten açılıp açılmadığını kontrol eder ve açılmazsa sebebini söyler. iPhone'da yayın paketi için Apple izni hâlâ bekleniyor; TV uzun süredir kapalıysa uyandırma genelde çalışmaz.
+- Tivibu kutusu Wi-Fi ile kumanda edilirken kumanda ekranının üstünde yeni bir alan var:
+  • Kanal no: numarayı yaz (ör. 119) ve Git'e dokun; rakamlar kutuya sırayla gider.
+  • Durdur/Devam: tek tuşla duraklatır ve devam ettirir (kutunun kendi kumandasındaki oynat/duraklat tuşu).
+- Ses artırma/azaltma ve Sessiz TV'ye gitmeye devam eder (ses TV'den çıktığı için).
+- 1.0 (19)'dan: uyandırdıktan sonra TV açılırken bağlanmayı yeniden dener; TV kapalıyken açıldığında (kumandayla bile) kendiliğinden bağlanır.
 
-Doğrulama: birim testleri geçti. Uyandırma sonrası otomatik bağlanma ve kumandayla açılınca otomatik bağlanma iPhone'da denenmeli.
+Doğrulama: birim testleri geçti. Kanal numarası ve Durdur/Devam gerçek Tivibu kutusunda denenmeli; bazı kanallarda kutu numarayı girdikten birkaç saniye sonra kanala geçer.
