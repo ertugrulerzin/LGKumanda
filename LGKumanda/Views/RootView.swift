@@ -75,6 +75,7 @@ struct RemoteView: View {
     @State private var hdmiHelp = false
     @State private var target: RemoteTarget = .tv
     @State private var switching = false
+    @State private var addingBox = false
     private var connected: Bool { client.state == .connected }
     private var keysAvailable: Bool { client.pointerReady || box.handles(foregroundAppID: client.foregroundAppID) }
     var body: some View {
@@ -109,8 +110,8 @@ struct RemoteView: View {
                         RemoteButton(title: "Giriş", symbol: "rectangle.on.rectangle") { sources = true }.disabled(!connected)
                         RemoteButton(title: "Klavye", symbol: "keyboard") { keyboard = true }.disabled(!connected)
                     }
-                    if target == .box {
-                        BoxRemoteView()
+                    if case .box(let id) = target, box.pairedBoxes.contains(where: { $0.id == id }) {
+                        BoxRemoteView(id: id)
                     } else {
                         tvRemote
                     }
@@ -123,7 +124,7 @@ struct RemoteView: View {
             .navigationTitle("Kumanda")
             .onAppear { followTV() }
             .onChange(of: client.foregroundAppID) { _, _ in followTV() }
-            .onChange(of: box.box?.inputID) { _, _ in followTV() }
+            .onChange(of: box.boxes) { _, _ in followTV() }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { editingShortcuts = true } label: { Image(systemName: "star") }
@@ -149,35 +150,64 @@ struct RemoteView: View {
             }
         }
     }
-    /// TV | box switch. Picking the box also puts the TV on the box's input.
+    /// TV | box | box | + tabs. Each paired Android TV box gets its own tab, named after its TV input;
+    /// picking a box also puts the TV on that box's input. "+" adds another box.
     private var targetPicker: some View {
-        Picker("Kumanda", selection: Binding(get: { target }, set: { choose($0) })) {
-            Label("TV", systemImage: "tv").tag(RemoteTarget.tv)
-            Label(box.box?.name.isEmpty == false && box.box?.paired == true ? boxShortName : "Tivibu", systemImage: "wifi").tag(RemoteTarget.box)
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                targetChip("TV", symbol: "tv", selected: target == .tv, id: "remoteTarget.tv") { choose(.tv) }
+                ForEach(box.pairedBoxes) { item in
+                    targetChip(item.title(inputs: client.inputs), symbol: "wifi", selected: target == .box(item.id), id: "remoteTarget.box") {
+                        choose(.box(item.id))
+                    }
+                }
+                Button { addingBox = true } label: {
+                    Label(box.pairedBoxes.isEmpty ? "Android TV kutusu ekle" : "Ekle", systemImage: "plus")
+                        .font(.subheadline.weight(.semibold))
+                        .padding(.horizontal, 14).frame(minHeight: 40)
+                        .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                }
+                .foregroundStyle(Theme.accent)
+                .accessibilityLabel("Android TV kutusu ekle")
+                .accessibilityIdentifier("remoteTarget.add")
+            }
         }
-        .pickerStyle(.segmented)
-        .accessibilityIdentifier("remoteTarget")
+        .sheet(isPresented: $addingBox) { BoxSetupView() }
     }
-    private var boxShortName: String {
-        let name = box.box?.name ?? "Tivibu"
-        return name.count > 18 ? "Tivibu" : name
+    private func targetChip(_ title: String, symbol: String, selected: Bool, id: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: symbol)
+                .font(.subheadline.weight(.semibold)).lineLimit(1)
+                .padding(.horizontal, 16).frame(minHeight: 40)
+                .foregroundStyle(selected ? Color.white : Color.primary)
+                .background(selected ? Theme.accent : Theme.surface, in: Capsule())
+        }
+        .buttonStyle(PressStyle())
+        .accessibilityAddTraits(selected ? .isSelected : [])
+        .accessibilityIdentifier(id)
     }
-    /// Follows the TV: showing the box's input selects the box remote; leaving it returns to the TV remote.
+    /// Follows the TV: showing a box's input selects that box's remote; leaving it returns to the TV remote.
     private func followTV() {
         guard !switching else { return }
-        if box.isLinked(foregroundAppID: client.foregroundAppID) {
-            if target != .box, !box.suspended { target = .box }
+        if let linked = box.box(forForeground: client.foregroundAppID) {
+            if target != .box(linked.id), !box.suspended { box.select(linked.id); target = .box(linked.id) }
         } else if client.foregroundAppID != nil {
             // Leaving the box's input ends an explicit "TV remote here" choice.
             box.suspended = false
-            if target == .box, box.box?.paired == true { target = .tv }
+            if case .box = target { target = .tv }
         }
+        if case .box(let id) = target, !box.pairedBoxes.contains(where: { $0.id == id }) { target = .tv }
     }
     private func choose(_ value: RemoteTarget) {
         target = value
-        box.suspended = value == .tv
-        guard value == .box, connected, let input = box.box?.inputID, box.box?.paired == true,
-              !box.isLinked(foregroundAppID: client.foregroundAppID) else { return }
+        guard case .box(let id) = value else {
+            box.suspended = box.isLinked(foregroundAppID: client.foregroundAppID)
+            return
+        }
+        box.suspended = false
+        box.select(id)
+        guard connected, let input = box.box?.inputID,
+              box.box(forForeground: client.foregroundAppID)?.id != id else { return }
         switching = true
         Task {
             defer { switching = false }

@@ -2,6 +2,17 @@ import XCTest
 @testable import LGKumanda
 
 final class PowerAndBoxStateTests: XCTestCase {
+    @MainActor func testBoxTabTitleFollowsItsTVInputUnlessRenamed() {
+        let inputs = [TVItem(id: "HDMI_2", title: "Tivibu"), TVItem(id: "HDMI_3", title: "TVP"), TVItem(id: "HDMI_4", title: "HDMI 4")]
+        var box = BoxClient.Box(host: "192.168.1.11", name: "Tivibu AndroidTV", inputID: "HDMI_3", paired: true)
+        XCTAssertEqual(box.title(inputs: inputs), "TVP")
+        box.inputID = "HDMI_4"
+        XCTAssertEqual(box.title(inputs: inputs), "Tivibu AndroidTV", "a generic input name falls back to the network name")
+        box.name = "Salon kutusu"; box.customName = true
+        XCTAssertEqual(box.title(inputs: inputs), "Salon kutusu")
+        let old = try! JSONDecoder().decode(BoxClient.Box.self, from: Data(#"{"host":"192.168.1.11","name":"Tivibu","inputID":"HDMI_3","paired":true}"#.utf8))
+        XCTAssertTrue(old.paired); XCTAssertTrue(old.enabled); XCTAssertFalse(old.customName)
+    }
     func testChannelNumberBecomesAndroidDigitKeys() {
         XCTAssertEqual(BoxClient.channelDigits("119"), [8, 8, 16])
         XCTAssertEqual(BoxClient.channelDigits("0"), [7])

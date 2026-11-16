@@ -2,32 +2,74 @@ import Foundation
 import Network
 import Security
 
-/// An Android TV box (Tivibu, Google TV and similar) controlled over Wi-Fi with the Android TV Remote protocol v2,
-/// instead of HDMI-CEC. Pairing (port 6467) happens once with a code shown on the box; keys then go to port 6466.
-/// While the TV shows the HDMI input the box is linked to, the remote's keys are sent to the box.
+/// Android TV boxes (set-top boxes, Google TV and similar) controlled over Wi-Fi with the Android TV Remote
+/// protocol v2, instead of HDMI-CEC. Pairing (port 6467) happens once per box with a code shown on the box;
+/// keys then go to port 6466. Several boxes can be saved; one is active (connected) at a time. While the TV
+/// shows the HDMI input a box is linked to, the remote's keys are sent to that box.
 @MainActor final class BoxClient: ObservableObject {
-    struct Box: Codable, Equatable {
+    struct Box: Codable, Equatable, Identifiable {
+        var id = UUID()
         var host: String
+        /// Name found on the network or typed by the user.
         var name: String
+        /// True once the user renamed the box; otherwise the linked TV input's title is shown.
+        var customName = false
         /// TV input the box is connected to, e.g. "HDMI_3".
         var inputID: String?
         var paired = false
+        var enabled = true
+
+        init(id: UUID = UUID(), host: String, name: String, customName: Bool = false, inputID: String? = nil, paired: Bool = false, enabled: Bool = true) {
+            self.id = id; self.host = host; self.name = name; self.customName = customName
+            self.inputID = inputID; self.paired = paired; self.enabled = enabled
+        }
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+            host = try c.decode(String.self, forKey: .host)
+            name = try c.decodeIfPresent(String.self, forKey: .name) ?? ""
+            customName = try c.decodeIfPresent(Bool.self, forKey: .customName) ?? false
+            inputID = try c.decodeIfPresent(String.self, forKey: .inputID)
+            paired = try c.decodeIfPresent(Bool.self, forKey: .paired) ?? false
+            enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+        }
+        /// Shown on the remote's tab: the user's name, else the TV input's title (e.g. "TVP"), else the network name.
+        func title(inputs: [TVItem]) -> String {
+            let typed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if customName, !typed.isEmpty { return typed }
+            if let inputID, let input = inputs.first(where: { $0.id == inputID }) {
+                let label = input.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !label.isEmpty, label.uppercased().replacingOccurrences(of: " ", with: "_") != inputID.uppercased() { return label }
+            }
+            if !typed.isEmpty { return typed }
+            return inputID.map { $0.replacingOccurrences(of: "_", with: " ") } ?? "Android TV"
+        }
     }
     enum State: Equatable { case idle, connecting, connected, failed(String) }
     enum PairingState: Equatable { case idle, starting, waitingForCode, verifying, done, failed(String) }
 
-    @Published private(set) var box: Box? { didSet { persist() } }
+    @Published private(set) var boxes: [Box] = [] { didSet { persist() } }
+    @Published private(set) var activeID: UUID? { didSet { UserDefaults.standard.set(activeID?.uuidString, forKey: Self.activeKey) } }
+    /// The active box: the one being paired, connected or edited.
+    var box: Box? { boxes.first { $0.id == activeID } }
+    var pairedBoxes: [Box] { boxes.filter(\.paired) }
     @Published private(set) var state: State = .idle
     @Published private(set) var pairing: PairingState = .idle
     @Published private(set) var currentApp = ""
     @Published private(set) var deviceModel = ""
-    @Published var enabled: Bool { didSet {
-        UserDefaults.standard.set(enabled, forKey: Self.enabledKey)
-        if !enabled { disconnect() }
-    } }
+    /// Whether keys go to the active box over Wi-Fi.
+    var enabled: Bool {
+        get { box?.enabled ?? false }
+        set {
+            updateActive { $0.enabled = newValue }
+            if !newValue { disconnect() }
+        }
+    }
 
-    private static let storeKey = "androidTVBox"
-    private static let enabledKey = "androidTVBox.enabled"
+    private static let storeKey = "androidTVBoxes"
+    private static let activeKey = "androidTVBoxes.active"
+    private static let legacyKey = "androidTVBox"
+    private static let legacyEnabledKey = "androidTVBox.enabled"
     var onCommandError: ((String) -> Void)?
     private var remoteSession = BoxRemoteSession()
     private var generation = UUID()
@@ -38,40 +80,76 @@ import Security
     private var readyWaiter: CheckedContinuation<Void, Never>?
 
     init() {
-        if let data = UserDefaults.standard.data(forKey: Self.storeKey) {
-            box = try? JSONDecoder().decode(Box.self, from: data)
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: Self.storeKey), let saved = try? JSONDecoder().decode([Box].self, from: data) {
+            boxes = saved
+        } else if let data = defaults.data(forKey: Self.legacyKey), var single = try? JSONDecoder().decode(Box.self, from: data) {
+            // Earlier builds kept a single box; carry its pairing over unchanged.
+            single.enabled = defaults.object(forKey: Self.legacyEnabledKey) as? Bool ?? true
+            boxes = [single]
         }
-        enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true
+        let saved = defaults.string(forKey: Self.activeKey).flatMap(UUID.init(uuidString:))
+        activeID = boxes.contains { $0.id == saved } ? saved : boxes.first(where: \.paired)?.id
+    }
+    private func updateActive(_ change: (inout Box) -> Void) {
+        guard let index = boxes.firstIndex(where: { $0.id == activeID }) else { return }
+        change(&boxes[index])
+    }
+    /// Makes a saved box the active one; an open connection to another box is closed.
+    func select(_ id: UUID) {
+        guard id != activeID, boxes.contains(where: { $0.id == id }) else { return }
+        cancelPairing(); disconnect()
+        activeID = id
+    }
+    /// Clears the active box so the setup screen offers to pair a new one.
+    func beginAdding() {
+        cancelPairing(); disconnect()
+        activeID = nil
+    }
+    func rename(_ name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        updateActive { $0.name = trimmed; $0.customName = !trimmed.isEmpty }
     }
 
     /// Set while the user explicitly picks the TV remote on the box's input; keys then stay on the TV.
     @Published var suspended = false
-    /// True when the TV currently shows the input the paired box is plugged into.
-    func isLinked(foregroundAppID: String?) -> Bool {
-        guard enabled, let box, box.paired, let input = box.inputID else { return false }
-        return ControlRouting.appID(forInput: input) == foregroundAppID
+    /// The paired box plugged into the input the TV currently shows, if any.
+    func box(forForeground foregroundAppID: String?) -> Box? {
+        guard let foregroundAppID else { return nil }
+        return boxes.first { $0.paired && $0.enabled && $0.inputID.flatMap(ControlRouting.appID(forInput:)) == foregroundAppID }
+    }
+    /// True when the TV currently shows the input of a paired box.
+    func isLinked(foregroundAppID: String?) -> Bool { box(forForeground: foregroundAppID) != nil }
+    /// Sends a TV-remote key to the box on the TV's current input, making it active first.
+    func route(_ key: RemoteKey, foregroundAppID: String?) -> Bool {
+        guard !suspended, let target = box(forForeground: foregroundAppID) else { return false }
+        select(target.id)
+        return send(key)
     }
     /// True when keys for the TV's current foreground app should go to the box.
     func handles(foregroundAppID: String?) -> Bool {
         !suspended && isLinked(foregroundAppID: foregroundAppID)
     }
 
-    func link(input: String?) { box?.inputID = input }
+    func link(input: String?) { updateActive { $0.inputID = input } }
 
     var statusText: String {
-        let name = box?.name ?? "Kutu"
         switch state {
-        case .connected: return remoteSession.isOn == false ? "\(name) beklemede. Kutu açık değilse kendi kumandasından aç." : "\(name) Wi-Fi ile kumanda ediliyor."
-        case .connecting: return "\(name) kutusuna bağlanılıyor…"
+        case .connected: return remoteSession.isOn == false ? "Kutu beklemede. Açık değilse kendi kumandasından aç." : "Kutu Wi-Fi ile kumanda ediliyor."
+        case .connecting: return "Kutuya bağlanılıyor…"
         case .failed(let reason): return reason
-        case .idle: return "Tuşlar \(name) kutusuna Wi-Fi ile gönderilecek."
+        case .idle: return "Tuşlar kutuya Wi-Fi ile gönderilecek."
         }
     }
 
+
     func forget() {
         disconnect(); cancelPairing()
-        box = nil
-        try? BoxCertificate.reset()
+        let removed = activeID
+        boxes.removeAll { $0.id == removed }
+        activeID = boxes.first(where: \.paired)?.id
+        // The client certificate is shared by all boxes; drop it only with the last one.
+        if boxes.isEmpty { try? BoxCertificate.reset() }
     }
 
     // MARK: Pairing
@@ -80,7 +158,15 @@ import Security
     func startPairing(host: String, name: String, inputID: String?) async {
         cancelPairing(); disconnect()
         pairing = .starting
-        box = Box(host: host, name: name, inputID: inputID ?? box?.inputID, paired: false)
+        if let existing = boxes.first(where: { $0.host == host }) {
+            // Re-pairing a saved box keeps its name; the TV's current input (where the code shows) wins.
+            activeID = existing.id
+            updateActive { $0.paired = false; if let inputID { $0.inputID = inputID } }
+        } else {
+            let new = Box(host: host, name: name, inputID: inputID)
+            boxes.append(new)
+            activeID = new.id
+        }
         do {
             let connection = BoxConnection(host: host, port: 6467, identity: try BoxCertificate.identity())
             pairingConnection = connection
@@ -127,6 +213,11 @@ import Security
         pairingConnection?.onClose = nil
         pairingConnection?.cancel(); pairingConnection = nil
         if pairing != .done { pairing = .idle }
+        // A box that never finished pairing is not kept.
+        if boxes.contains(where: { !$0.paired }) {
+            boxes.removeAll { !$0.paired }
+            if !boxes.contains(where: { $0.id == activeID }) { activeID = boxes.first?.id }
+        }
     }
 
     private func handlePairing(_ frame: Data) {
@@ -149,7 +240,7 @@ import Security
             pairing = .waitingForCode
         } else if message.has(41) {   // secret ack: paired
             pairing = .done
-            box?.paired = true
+            updateActive { $0.paired = true }
             cancelPairingConnectionOnly()
             Task { _ = await connect() }
         }
@@ -351,7 +442,7 @@ import Security
     }
 
     private func persist() {
-        if let box, let data = try? JSONEncoder().encode(box) { UserDefaults.standard.set(data, forKey: Self.storeKey) }
-        else { UserDefaults.standard.removeObject(forKey: Self.storeKey) }
+        if let data = try? JSONEncoder().encode(boxes) { UserDefaults.standard.set(data, forKey: Self.storeKey) }
+        UserDefaults.standard.removeObject(forKey: Self.legacyKey)
     }
 }

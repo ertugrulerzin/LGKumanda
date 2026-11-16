@@ -3,16 +3,16 @@ import SwiftUI
 struct DevicesView: View {
     @EnvironmentObject private var client: TVClient
     @EnvironmentObject private var box: BoxClient
-    @State private var boxSetup = false
+    @State private var addingBox = false
+    @State private var editingBox: UUID?
     @State private var adding = false
     @StateObject private var discovery = TVDiscovery()
     @State private var editing: Television?
     @State private var reset = false
     @AppStorage("haptics") private var haptics = true
-    private var boxSummary: String {
-        guard let current = box.box, current.paired else { return "Eşleştirilmedi" }
-        let input = current.inputID.map { $0.replacingOccurrences(of: "_", with: " ") } ?? "giriş seçilmedi"
-        return "\(input) · \(current.host)" + (box.enabled ? "" : " · kapalı")
+    private func summary(_ item: BoxClient.Box) -> String {
+        let input = item.inputID.map { $0.replacingOccurrences(of: "_", with: " ") } ?? "giriş seçilmedi"
+        return "\(input) · \(item.host)" + (item.enabled ? "" : " · kapalı")
     }
     var body: some View {
         NavigationStack {
@@ -100,19 +100,23 @@ struct DevicesView: View {
                     }
                 }
                 Section {
-                    Button { boxSetup = true } label: {
-                        HStack(spacing: 12) {
-                            Image(systemName: "wifi").foregroundStyle(Theme.accent).frame(width: 28)
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(box.box?.paired == true ? (box.box?.name ?? "Tivibu") : "Tivibu kutusu ekle").foregroundStyle(.primary)
-                                Text(boxSummary).font(.footnote).foregroundStyle(.secondary)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
-                        }.frame(minHeight: 44)
-                    }.accessibilityIdentifier("devicesBox")
-                } header: { Text("HDMI kutusu") } footer: {
-                    Text("Tivibu gibi Android TV kutularını Wi-Fi ile kumanda et. Eşleştikten sonra Kumanda sekmesinde TV | Tivibu geçişi görünür.")
+                    ForEach(box.pairedBoxes) { item in
+                        Button { editingBox = item.id } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: "wifi").foregroundStyle(Theme.accent).frame(width: 28)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(item.title(inputs: client.inputs)).foregroundStyle(.primary)
+                                    Text(summary(item)).font(.footnote).foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Image(systemName: "chevron.right").font(.footnote.weight(.semibold)).foregroundStyle(.tertiary)
+                            }.frame(minHeight: 44)
+                        }.accessibilityIdentifier("devicesBox")
+                    }
+                    Button { addingBox = true } label: { Label("Android TV kutusu ekle", systemImage: "plus") }
+                        .frame(minHeight: 44).accessibilityIdentifier("devicesAddBox")
+                } header: { Text("Android TV kutuları") } footer: {
+                    Text("Set üstü kutuları ve Google TV cihazlarını Wi-Fi ile kumanda et. Her kutu Kumanda sekmesinde kendi sekmesini alır.")
                 }
                 Section {
                     Toggle("Tuş titreşimi", isOn: $haptics)
@@ -130,7 +134,8 @@ struct DevicesView: View {
             .navigationTitle("Cihazlar")
             .toolbar { ToolbarItem(placement: .topBarTrailing) { Button { adding = true } label: { Image(systemName: "plus") }.accessibilityLabel("Televizyon ekle") } }
             .sheet(isPresented: $adding) { DeviceEditor() }
-            .sheet(isPresented: $boxSetup) { BoxSetupView() }
+            .sheet(isPresented: $addingBox) { BoxSetupView() }
+            .sheet(item: Binding(get: { editingBox.map(BoxSheetID.init) }, set: { editingBox = $0?.id })) { BoxSetupView(boxID: $0.id) }
             .sheet(item: $editing) { DeviceEditor(existing: $0) }
             .confirmationDialog("Eşleştirme bilgileri silinip yeniden bağlantı kurulacak.", isPresented: $reset, titleVisibility: .visible) {
                 Button("Yeniden eşleştir", role: .destructive) { client.resetPairing() }
@@ -205,3 +210,5 @@ struct DeviceEditor: View {
         client.save(tv); dismiss()
     }
 }
+
+private struct BoxSheetID: Identifiable { let id: UUID }

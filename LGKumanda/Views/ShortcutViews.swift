@@ -161,10 +161,10 @@ struct HDMIHelpView: View {
                 }
                 Section {
                     Button { boxSetup = true } label: {
-                        LabeledContent("Wi-Fi ile kutu kumandası", value: box.box?.paired == true ? (box.box?.name ?? "Eşleşti") : "Kur")
+                        LabeledContent("Wi-Fi ile kutu kumandası", value: box.pairedBoxes.isEmpty ? "Kur" : "\(box.pairedBoxes.count) kutu")
                     }.accessibilityIdentifier("openBoxSetup")
                 } footer: {
-                    Text("Tivibu gibi Android TV kutuları SIMPLINK olmadan, Wi-Fi üzerinden kumanda edilebilir.")
+                    Text("Android TV kutuları SIMPLINK olmadan, Wi-Fi üzerinden kumanda edilebilir. Kutuları Cihazlar sekmesinden yönetebilirsin.")
                 }
                 Section("SIMPLINK durumu") {
                     ForEach(client.inputs.filter { $0.id.uppercased().hasPrefix("HDMI") }) { item in
@@ -185,7 +185,7 @@ struct HDMIHelpView: View {
                 if let error { Section { Text(error).foregroundStyle(.red) } }
             }
             .navigationTitle("HDMI kutusu").navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $boxSetup) { BoxSetupView() }
+            .sheet(isPresented: $boxSetup) { BoxSetupView(boxID: box.pairedBoxes.first?.id) }
             .refreshable { await client.refreshLibrary() }
             .task { await client.refreshLibrary(reportErrors: false) }
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Bitti") { dismiss() } } }

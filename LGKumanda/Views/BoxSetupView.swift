@@ -1,29 +1,46 @@
 import SwiftUI
 
-/// Set up Wi-Fi control of an Android TV box (Tivibu and similar): find it, pair once with the code on screen,
-/// and link it to the TV input it is plugged into.
+/// Adds or edits an Android TV box controlled over Wi-Fi: find it, pair once with the code on its screen,
+/// then name it and link it to the TV input it is plugged into. `boxID == nil` adds a new box.
 struct BoxSetupView: View {
     @EnvironmentObject private var client: TVClient
     @EnvironmentObject private var box: BoxClient
     @Environment(\.dismiss) private var dismiss
     @StateObject private var discovery = BoxDiscovery()
+    var boxID: UUID? = nil
     @State private var manualHost = ""
     @State private var code = ""
+    @State private var name = ""
+    @State private var prepared = false
     @FocusState private var codeFocused: Bool
 
     var body: some View {
         NavigationStack {
             List {
-                if let current = box.box, current.paired {
+                if !prepared {
+                    EmptyView()
+                } else if let current = box.box, current.paired {
                     pairedSection(current)
                 } else {
                     pairingSection
                 }
             }
-            .navigationTitle("Wi-Fi ile kutu kumandası").navigationBarTitleDisplayMode(.inline)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Bitti") { dismiss() } } }
-            .task { if box.box?.paired != true { discovery.start() } }
-            .onDisappear { discovery.stop(); if box.pairing != .done { box.cancelPairing() } }
+            .navigationTitle(boxID == nil && box.box?.paired != true ? "Android TV kutusu ekle" : "Android TV kutusu").navigationBarTitleDisplayMode(.inline)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Bitti") { saveName(); dismiss() } } }
+            .task {
+                if !prepared {
+                    if let boxID { box.select(boxID) } else { box.beginAdding() }
+                    name = box.box?.customName == true ? box.box?.name ?? "" : ""
+                    prepared = true
+                }
+                if box.box?.paired != true { discovery.start() }
+            }
+            .onChange(of: box.pairing) { _, state in
+                // The code was on the box's screen, so the TV was showing the box's input.
+                if state == .done, box.box?.inputID == nil, let shown = currentHDMIInput { box.link(input: shown) }
+            }
+            .onChange(of: box.box?.id) { _, _ in name = box.box?.customName == true ? box.box?.name ?? "" : "" }
+            .onDisappear { saveName(); discovery.stop(); if box.pairing != .done { box.cancelPairing() } }
         }
     }
 
@@ -32,17 +49,26 @@ struct BoxSetupView: View {
     private func pairedSection(_ current: BoxClient.Box) -> some View {
         Group {
             Section {
-                LabeledContent("Kutu", value: current.name)
+                TextField(current.title(inputs: client.inputs), text: $name)
+                    .autocorrectionDisabled()
+                    .onSubmit(saveName)
+                    .accessibilityIdentifier("boxName")
+                LabeledContent("Ağdaki adı", value: current.name.isEmpty || current.customName ? "—" : current.name)
                 LabeledContent("Adres", value: current.host)
                 Toggle("Wi-Fi ile kumanda et", isOn: $box.enabled).accessibilityIdentifier("boxEnabled")
-            } footer: {
-                Text("TV aşağıdaki girişteyken yön, OK, geri, ana ekran, kanal, rakam ve oynatma tuşları kutuya Wi-Fi ile gider. Ses TV'de kalır.")
+            } header: { Text("Ad") } footer: {
+                Text("Boş bırakırsan kutu, bağlı olduğu TV girişinin adıyla görünür. TV aşağıdaki girişteyken tuşlar kutuya Wi-Fi ile gider; ses TV'de kalır.")
             }
-            Section("Kutunun bağlı olduğu giriş") {
+            Section {
                 Picker("Giriş", selection: Binding(get: { current.inputID ?? "" }, set: { box.link(input: $0.isEmpty ? nil : $0) })) {
                     Text("Seçilmedi").tag("")
                     ForEach(hdmiInputs) { input in Text("\(input.title) · \(input.detail)").tag(input.id) }
                 }.accessibilityIdentifier("boxInput")
+                if let shown = currentHDMIInput, shown != current.inputID {
+                    Button("TV'nin şu anki girişini kullan (\(inputTitle(shown)))") { box.link(input: shown) }
+                }
+            } header: { Text("Kutunun bağlı olduğu giriş") } footer: {
+                Text("Yanlış kutunun açıldığını görürsen burada doğru girişi seç.")
             }
             Section("Deneme") {
                 Text(box.statusText).font(.footnote).foregroundStyle(.secondary)
@@ -79,7 +105,7 @@ struct BoxSetupView: View {
             .onAppear { codeFocused = true }
         default:
             Section {
-                Text("Tivibu gibi Android TV kutularını HDMI-CEC olmadan, Wi-Fi üzerinden kumanda edebilirsin. Kutu ile iPhone aynı ağda olmalı.")
+                Text("Android TV kutularını (set üstü kutular, Google TV) HDMI-CEC olmadan Wi-Fi üzerinden kumanda edebilirsin. Kutu ile iPhone aynı ağda olmalı. Eşleştirmeden önce TV'yi kutunun girişine al; kod kutunun ekranında çıkar ve giriş otomatik kaydedilir.")
                     .font(.subheadline)
                 if case .failed(let reason) = box.pairing { Text(reason).foregroundStyle(.red).font(.footnote) }
                 if box.pairing == .starting { HStack { ProgressView(); Text("Kutuya bağlanılıyor…") } }
@@ -107,18 +133,21 @@ struct BoxSetupView: View {
 
     private var hdmiInputs: [TVItem] { client.inputs.filter { $0.id.uppercased().hasPrefix("HDMI") } }
 
-    /// Suggested input: one named like the box (e.g. "tivibu"), otherwise none until the user picks.
-    private func suggestedInput(for name: String) -> String? {
-        let key = name.lowercased()
-        return hdmiInputs.first { input in
-            let title = input.title.lowercased()
-            return key.contains(title) || title.contains("tivibu") && key.contains("tivibu")
-        }?.id
+    /// The HDMI input the TV shows now. The pairing code appears on the box's screen, so while pairing
+    /// the TV is on the box's input; that is a better guess than matching names.
+    private var currentHDMIInput: String? {
+        hdmiInputs.first { ControlRouting.appID(forInput: $0.id) == client.foregroundAppID }?.id
+    }
+    private func inputTitle(_ id: String) -> String { hdmiInputs.first { $0.id == id }?.title ?? id }
+    private func saveName() {
+        guard box.box?.paired == true else { return }
+        let current = box.box?.customName == true ? box.box?.name ?? "" : ""
+        if name.trimmingCharacters(in: .whitespacesAndNewlines) != current { box.rename(name) }
     }
 
     private func pair(host: String, name: String) {
         code = ""
         discovery.stop()
-        Task { await box.startPairing(host: host, name: name, inputID: suggestedInput(for: name)) }
+        Task { await box.startPairing(host: host, name: name, inputID: currentHDMIInput) }
     }
 }

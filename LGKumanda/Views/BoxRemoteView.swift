@@ -1,23 +1,24 @@
 import SwiftUI
 
 /// Which remote the Kumanda tab shows.
-enum RemoteTarget: Hashable { case tv, box }
+enum RemoteTarget: Hashable { case tv, box(UUID) }
 
-/// Remote for the Wi-Fi Android TV box (Tivibu). Laid out like the box's own remote:
+/// Remote for one Wi-Fi Android TV box. Laid out like a set-top box remote:
 /// navigation on top, the number pad always visible, media and colour keys below.
 /// Keys go straight to the box; volume and mute stay on the TV, where the sound plays.
 struct BoxRemoteView: View {
     @EnvironmentObject private var client: TVClient
     @EnvironmentObject private var box: BoxClient
+    let id: UUID
     @State private var setup = false
     @State private var typed = ""
     @State private var clearTyped: Task<Void, Never>?
 
-    private var name: String { box.box?.name ?? "Tivibu" }
+    private var name: String { box.boxes.first { $0.id == id }?.title(inputs: client.inputs) ?? "Kutu" }
 
     var body: some View {
         VStack(spacing: 18) {
-            if box.box?.paired == true {
+            if box.boxes.first(where: { $0.id == id })?.paired == true {
                 status
                 topRow
                 ViewThatFits(in: .horizontal) {
@@ -27,8 +28,8 @@ struct BoxRemoteView: View {
                 numberPad
                 mediaRow
                 HStack(spacing: 10) {
-                    RemoteButton(title: "Rehber", symbol: "list.bullet.rectangle") { box.send(.guide) }
-                    RemoteButton(title: "Bilgi", symbol: "info.circle") { box.send(.info) }
+                    RemoteButton(title: "Rehber", symbol: "list.bullet.rectangle") { press(.guide) }
+                    RemoteButton(title: "Bilgi", symbol: "info.circle") { press(.info) }
                     RemoteButton(title: client.muted ? "Sesi aç" : "Sessiz", symbol: client.muted ? "speaker.slash.fill" : "speaker.wave.2") {
                         client.command("audio/setMute", ["mute": !client.muted])
                     }.disabled(client.state != .connected)
@@ -41,7 +42,8 @@ struct BoxRemoteView: View {
                 pairingCard
             }
         }
-        .sheet(isPresented: $setup) { BoxSetupView() }
+        .sheet(isPresented: $setup) { BoxSetupView(boxID: id) }
+        .onAppear { box.select(id) }
     }
 
     // MARK: Parts
@@ -63,9 +65,9 @@ struct BoxRemoteView: View {
 
     private var topRow: some View {
         HStack(spacing: 12) {
-            RemoteButton(title: "Geri", symbol: "arrow.uturn.backward") { box.send(.back) }
-            RemoteButton(title: "Ana sayfa", symbol: "house", prominent: true) { box.send(.home) }
-            RemoteButton(title: "Menü", symbol: "line.3.horizontal") { box.send(.menu) }
+            RemoteButton(title: "Geri", symbol: "arrow.uturn.backward") { press(.back) }
+            RemoteButton(title: "Ana sayfa", symbol: "house", prominent: true) { press(.home) }
+            RemoteButton(title: "Menü", symbol: "line.3.horizontal") { press(.menu) }
         }
     }
 
@@ -75,10 +77,10 @@ struct BoxRemoteView: View {
                    increaseLabel: "Sesi artır", decreaseLabel: "Sesi azalt",
                    increase: { client.command("audio/volumeUp") }, decrease: { client.command("audio/volumeDown") })
                 .frame(width: 56).disabled(client.state != .connected)
-            DirectionPad(diameter: diameter, send: { box.send($0) })
+            DirectionPad(diameter: diameter, send: { press($0) })
             Rocker(title: "KANAL", value: nil, plus: "chevron.up", minus: "chevron.down",
                    increaseLabel: "Sonraki kanal", decreaseLabel: "Önceki kanal",
-                   increase: { box.send(.channelUp) }, decrease: { box.send(.channelDown) })
+                   increase: { press(.channelUp) }, decrease: { press(.channelDown) })
                 .frame(width: 56)
         }.fixedSize(horizontal: true, vertical: false)
     }
@@ -98,9 +100,9 @@ struct BoxRemoteView: View {
                 ForEach([RemoteKey.one, .two, .three, .four, .five, .six, .seven, .eight, .nine], id: \.self) { key in
                     digit(key)
                 }
-                RemoteButton(title: "Önceki", symbol: "arrow.left.arrow.right") { box.send(.previous); reset() }
+                RemoteButton(title: "Önceki", symbol: "arrow.left.arrow.right") { press(.previous); reset() }
                 digit(.zero)
-                RemoteButton(title: "OK", prominent: true) { box.send(.enter); reset() }
+                RemoteButton(title: "OK", prominent: true) { press(.enter); reset() }
             }
         }
         .padding(12)
@@ -108,7 +110,7 @@ struct BoxRemoteView: View {
     }
     private func digit(_ key: RemoteKey) -> some View {
         RemoteButton(title: key.rawValue) {
-            box.send(key)
+            press(key)
             typed = String((typed + key.rawValue).suffix(4))
             clearTyped?.cancel()
             clearTyped = Task {
@@ -117,21 +119,23 @@ struct BoxRemoteView: View {
             }
         }.accessibilityIdentifier("boxDigit\(key.rawValue)")
     }
+    /// Keys always go to this tab's box, even if another box was active.
+    private func press(_ key: RemoteKey) { box.select(id); box.send(key) }
     private func reset() { clearTyped?.cancel(); typed = "" }
 
     private var mediaRow: some View {
         HStack(spacing: 10) {
-            RemoteButton(title: "Geri sar", symbol: "backward.fill") { box.send(.rewind) }
-            RemoteButton(title: "Durdur/Devam", symbol: "playpause.fill", prominent: true) { box.send(code: BoxClient.playPauseCode) }
+            RemoteButton(title: "Geri sar", symbol: "backward.fill") { press(.rewind) }
+            RemoteButton(title: "Durdur/Devam", symbol: "playpause.fill", prominent: true) { box.select(id); box.send(code: BoxClient.playPauseCode) }
                 .accessibilityIdentifier("boxPlayPause")
-            RemoteButton(title: "İleri sar", symbol: "forward.fill") { box.send(.fastForward) }
+            RemoteButton(title: "İleri sar", symbol: "forward.fill") { press(.fastForward) }
         }
     }
 
     private var colorKeys: some View {
         HStack(spacing: 12) {
             ForEach([(RemoteKey.red, Color.red, "Kırmızı"), (.green, .green, "Yeşil"), (.yellow, .yellow, "Sarı"), (.blue, .blue, "Mavi")], id: \.0) { key, color, title in
-                Button { box.send(key) } label: {
+                Button { press(key) } label: {
                     Capsule().fill(color).frame(height: 10).frame(maxWidth: .infinity, minHeight: 44)
                 }
                 .padding(.horizontal, 10)
@@ -143,8 +147,8 @@ struct BoxRemoteView: View {
 
     private var pairingCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Tivibu kutusunu bağla", systemImage: "wifi").font(.title3.weight(.bold))
-            Text("Tivibu gibi Android TV kutuları Wi-Fi ile kumanda edilir. Kutu ve telefon aynı ağda olmalı. Bir kez eşleştirmen yeterli: TV'yi kutunun girişine al, kutunun ekranındaki 6 karakterlik kodu yaz.")
+            Label("Kutuyu bağla", systemImage: "wifi").font(.title3.weight(.bold))
+            Text("Android TV kutuları Wi-Fi ile kumanda edilir. Kutu ve telefon aynı ağda olmalı. Bir kez eşleştirmen yeterli: TV'yi kutunun girişine al, kutunun ekranındaki 6 karakterlik kodu yaz.")
                 .font(.subheadline).foregroundStyle(.secondary)
             Button { setup = true } label: {
                 Text("Kutuyu bul ve eşleştir").font(.headline).frame(maxWidth: .infinity, minHeight: 50)
