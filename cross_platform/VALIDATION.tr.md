@@ -10,7 +10,15 @@
 - Android release ARM64 APK: v2 imzası ve sürüm kodu 2022 doğrulandı; QA test verisi içermez. 20.322.039 bayt APK Faturabot tarafından kabul edildi.
 - Gerçek LG / Android TV kutularıyla çoklu kutu, güç değişikliği, adres değişikliği ve video oynatma uçtan uca bu aktarımda denenmedi. iPhone sonuçları bu platformların gerçek cihaz doğrulaması sayılmaz.
 
-Paket ve CI doğrulamaları tamamlandığında aşağıdaki sürüm kaydı güncellenir.
+## Yayımlanan 22. sürüm paketleri
+
+Kaynak: `cdb055668d3f71175982eee5b96e3f85f76ce674`. [Sürüm ve indirmeler](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.22).
+
+- ARM64 APK: 20.322.039 bayt; evrensel APK: 57.340.725 bayt. Her ikisi sürüm kodu 2022, sürüm adı 1.0.0 ve aynı v2 imzaya sahiptir. Evrensel paket ARM32, ARM64 ve x86_64 içerir; işlev farkı yoktur.
+- macOS 1.0.0 (22): uygulama ve Flutter çalıştırılabilir dosyalarında x86_64 + arm64 doğrulandı. `codesign --verify --deep --strict` başarılı; ad-hoc imza, Developer ID veya noter onayı değildir. `hdiutil verify` DMG için başarılıdır. Üretim uygulamasında sentetik QA cihaz verisi bulunmaz.
+- [Üç platformun CI çalışması](https://github.com/ertugrulerzin/LGKumanda/actions/runs/43959576576): Android, macOS ve Windows başarılı. Yayımlanan Windows EXE bu kaynak çalışmasının çıktısıdır; gerçek kurulum sessizce yapıldı, uygulama beş saniye çalışır durumda kaldı ve kaldırıldı.
+- Yayımlanan Android ve macOS paketleri yerel release derlemeleridir. Dört paket için SHA-256 özetleri sürüme eklenmiştir.
+- Android ARM64 APK Faturabot'a gönderildi; Telegram teslim yanıtı başarılı (mesaj 6618).
 
 ## Önceki paketlerin doğrulaması
 

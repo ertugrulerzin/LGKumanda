@@ -6,9 +6,11 @@ Türkçe, açık renkli, SwiftUI ile yazılmış yerel iPhone uygulaması. iOS 1
 
 ## Mac, Windows ve Android
 
-**[Deneme sürümünü indir](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.3):** [Android APK](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.3/LGKumanda-Android-preview.apk) · [Mac DMG](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.3/LGKumanda-macOS.dmg) · [Windows kurulum EXE](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.3/LGKumanda-Windows-Setup.exe).
+**[22. sürümü indir](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.22):** [Android ARM64 · küçük paket](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.22/LGKumanda-Android-arm64.apk) · [Android evrensel paket](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.22/LGKumanda-Android-universal.apk) · [Mac DMG](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.22/LGKumanda-macOS.dmg) · [Windows kurulum EXE](https://github.com/ertugrulerzin/LGKumanda/releases/download/v1.0.0-preview.22/LGKumanda-Windows-Setup.exe).
 
-Bunlar ilk önizleme paketleridir; imzalama ve cihaz doğrulama sınırları sürüm notlarında açıklanır.
+Android paketleri aynı özelliklere sahiptir: küçük paket ARM64 telefonlar içindir; evrensel paket ayrıca ARM32 ve x86_64 içerir. Mac paketi Intel ve Apple Silicon destekler. Bunlar önizleme paketleridir; imzalama ve gerçek cihaz doğrulama sınırları sürüm notlarında açıklanır.
+
+22. sürümde birden fazla Android TV / Tivibu kutusu, kutuya özel kumanda ve sayı tuşları, HDMI girişine göre yönlendirme, TV güç durumunun takibi, IP değişikliklerinde yeniden bulma ve deneysel web video algılama bulunur.
 
 Bu platformlar için ortak Flutter uygulaması **[`cross_platform/`](cross_platform/README.md)** dizinindedir. Kumanda, klavye/fare, uygulama ve HDMI listeleri, kanallar, kısayollar ve TV tarayıcısı içerir. Kurulum, deneme paketleri ve doğrulama sınırları için platform kılavuzuna bak. Aşağıdaki Xcode adımları iPhone uygulamasına aittir.
 
