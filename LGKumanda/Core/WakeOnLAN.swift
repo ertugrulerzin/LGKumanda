@@ -44,7 +44,15 @@ enum WakeOnLAN {
         let addresses = [host] + subnets.filter { $0.contains(host) }.compactMap(\.broadcast) + [broadcast]
         return addresses.reduce(into: []) { if !$0.contains($1) { $0.append($1) } }
     }
-    static func send(mac: String, host: String, broadcast: String) async throws {
+    /// What actually left the phone. Without Apple's multicast entitlement iOS rejects
+    /// every broadcast; only the unicast copy goes out, and a TV in standby does not
+    /// answer ARP, so that copy only arrives while the phone still caches the TV's address.
+    struct Delivery: Equatable {
+        var unicast = false
+        var broadcast = false
+    }
+    @discardableResult
+    static func send(mac: String, host: String, broadcast: String) async throws -> Delivery {
         let data = try packet(mac: mac)
         let destinations = try targets(host: host, broadcast: broadcast, subnets: LocalSubnet.wifi())
         let descriptor = Darwin.socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
@@ -53,7 +61,7 @@ enum WakeOnLAN {
         var enabled: Int32 = 1
         // An iPhone without the multicast entitlement can still send unicast.
         _ = setsockopt(descriptor, SOL_SOCKET, SO_BROADCAST, &enabled, socklen_t(MemoryLayout.size(ofValue: enabled)))
-        var delivered = false
+        var delivery = Delivery()
         for attempt in 0..<3 {
             try Task.checkCancellation()
             for target in destinations {
@@ -70,11 +78,14 @@ enum WakeOnLAN {
                             }
                         }
                     }
-                    delivered = delivered || sent == data.count
+                    if sent == data.count {
+                        if target == host { delivery.unicast = true } else { delivery.broadcast = true }
+                    }
                 }
             }
             if attempt < 2 { try await Task.sleep(for: .milliseconds(300)) }
         }
-        guard delivered else { throw Failure.send }
+        guard delivery.unicast || delivery.broadcast else { throw Failure.send }
+        return delivery
     }
 }

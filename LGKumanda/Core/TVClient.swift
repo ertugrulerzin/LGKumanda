@@ -568,15 +568,39 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         }
         wakeTask?.cancel()
         error = nil
-        notice = "Uyandırma paketleri gönderiliyor…"
+        notice = "TV açılıyor…"
         wakeTask = Task {
-            do {
-                try await WakeOnLAN.send(mac: tv.mac, host: tv.host, broadcast: tv.broadcast)
+            let delivery: WakeOnLAN.Delivery
+            do { delivery = try await WakeOnLAN.send(mac: tv.mac, host: tv.host, broadcast: tv.broadcast) }
+            catch is CancellationError { return }
+            catch { self.notice = nil; self.error = error.localizedDescription; return }
+            guard !Task.isCancelled else { return }
+            let port: UInt16 = tv.secure ? 3001 : 3000
+            if await TVReachability.waitUntilListening(host: tv.host, port: port, within: 20) {
                 guard !Task.isCancelled else { return }
-                notice = "Uyandırma paketleri gönderildi; TV'nin açıldığı henüz doğrulanmadı. Birkaç saniye sonra Bağlan'a dokun. Yanıt yoksa TV'de Mobil ile TV Açma ayarını kontrol et."
-            } catch is CancellationError { }
-            catch { self.notice = nil; self.error = error.localizedDescription }
+                connect(to: tv)
+                notice = "TV açıldı, bağlanılıyor…"
+                return
+            }
+            guard !Task.isCancelled else { return }
+            if delivery.broadcast, tv.deviceUUID != nil {
+                // The TV may have woken with a new DHCP address; connecting runs address recovery.
+                connect(to: tv)
+                notice = "TV eski adresinde yanıt vermedi; ağda aranıyor…"
+                return
+            }
+            notice = nil
+            error = Self.wakeFailure(delivery)
         }
+    }
+    // Tested on a Tivibu (ZTE Android TV) box: it stays awake while the TV is off and
+    // a WAKEUP/POWER key over Wi-Fi does not turn the TV on through HDMI-CEC, so the
+    // box is not a fallback for waking the TV.
+    nonisolated static func wakeFailure(_ delivery: WakeOnLAN.Delivery) -> String {
+        if !delivery.broadcast {
+            return "TV açılmadı. iPhone, uygulamanın ağa yayın (broadcast) paketi göndermesine henüz izin vermiyor; bu izin Apple'ın onayını bekliyor. Paket yalnızca TV'nin son bilinen adresine gidebildi ve kapalı TV bunu genelde almaz. Şimdilik TV'yi kendi kumandasıyla aç."
+        }
+        return "Uyandırma paketi gönderildi ama TV 20 saniyede yanıt vermedi. TV'de Mobil ile TV Açma (Wi-Fi ile aç) ayarını ve kayıtlı MAC adresini kontrol et."
     }
 }
 

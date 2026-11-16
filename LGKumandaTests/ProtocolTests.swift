@@ -59,6 +59,10 @@ final class ProtocolTests: XCTestCase {
         XCTAssertNil(WakeOnLAN.networkIdentity(info: info, status: status, host: "192.168.5.41"))
         XCTAssertNil(WakeOnLAN.networkIdentity(info: ["wifiInfo": ["macAddress": "00:00:00:00:00:00"]], status: [:], host: "192.168.5.40"))
     }
+    @MainActor func testWakeFailureNamesTheBlockedBroadcast() {
+        XCTAssertTrue(TVClient.wakeFailure(.init(unicast: true, broadcast: false)).contains("broadcast"))
+        XCTAssertTrue(TVClient.wakeFailure(.init(unicast: true, broadcast: true)).contains("Mobil ile TV Açma"))
+    }
     func testWakeTargetsIncludeUnicastAndMatchingSubnetBroadcastOnly() throws {
         let subnets = [LocalSubnet(address: "192.168.5.10", mask: "255.255.252.0"), LocalSubnet(address: "10.0.0.2", mask: "255.255.255.0")]
         XCTAssertEqual(try WakeOnLAN.targets(host: "192.168.5.40", broadcast: "255.255.255.255", subnets: subnets), ["192.168.5.40", "192.168.7.255", "255.255.255.255"])

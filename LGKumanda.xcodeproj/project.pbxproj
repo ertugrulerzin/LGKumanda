@@ -11,6 +11,7 @@
 		0CF6070CDF51649B9661AB01 /* LocalSubnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8824910ED5A5787B4F050D4D /* LocalSubnet.swift */; };
 		0E4C84BE9B8C01F1A1ABB6D8 /* ShortcutAndRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */; };
 		13B9C8248DC276A31A1F8E47 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */; };
+		192CC549BFA8BB74A842E450 /* TVReachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D71F0239B138BBCB79DD117 /* TVReachability.swift */; };
 		26D57391B1C809AD12D845B9 /* TVClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */; };
 		314786D0B5E2DBA5E4F1C710 /* BoxRemoteSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F6CD04CEF15E33C04BF278 /* BoxRemoteSession.swift */; };
 		31E370B22551F982505FBE27 /* WebFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311AAADF9BE4046BB505615C /* WebFocus.swift */; };
@@ -75,6 +76,7 @@
 
 /* Begin PBXFileReference section */
 		0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVDiscovery.swift; sourceTree = "<group>"; };
+		0D71F0239B138BBCB79DD117 /* TVReachability.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVReachability.swift; sourceTree = "<group>"; };
 		0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutViews.swift; sourceTree = "<group>"; };
 		0E1C1D3B38E5674CF2C22BF3 /* AddressRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressRecoveryTests.swift; sourceTree = "<group>"; };
 		159A8A03F3DD884FACEEDD6D /* PhoneBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneBrowserView.swift; sourceTree = "<group>"; };
@@ -182,6 +184,7 @@
 				0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */,
 				7FE369FA62C0F85DCEAF2348 /* TVIdentityProbe.swift */,
 				C91E235FA540824088F6046B /* TVPowerState.swift */,
+				0D71F0239B138BBCB79DD117 /* TVReachability.swift */,
 				24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */,
 				311AAADF9BE4046BB505615C /* WebFocus.swift */,
 				5C172EC879F4E0F59762FDF1 /* WebVideo.swift */,
@@ -402,6 +405,7 @@
 				3B7D38BE39B54A5BCA78AE4A /* TVDiscovery.swift in Sources */,
 				0CACD5F123C3B65452662838 /* TVIdentityProbe.swift in Sources */,
 				71006F7047273686D0D5EB79 /* TVPowerState.swift in Sources */,
+				192CC549BFA8BB74A842E450 /* TVReachability.swift in Sources */,
 				5A182C752D7993BCBE86F25D /* TrackpadView.swift in Sources */,
 				3B945621BDEE9CF833779DD6 /* WakeOnLAN.swift in Sources */,
 				31E370B22551F982505FBE27 /* WebFocus.swift in Sources */,
