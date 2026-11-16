@@ -91,7 +91,7 @@ final class BoxConnection: @unchecked Sendable {
     static func describe(_ error: NWError) -> String {
         switch error {
         case .posix(let code) where code == .EHOSTUNREACH || code == .ENETUNREACH:
-            return "Kutuya ulaşılamadı. iPhone ile kutu aynı Wi-Fi'da mı? Ayarlar > Gizlilik > Yerel Ağ'da LG Kumanda açık olmalı."
+            return "Kutuya ulaşılamadı. iPhone ile kutu aynı Wi-Fi'da mı? Ayarlar > Gizlilik > Yerel Ağ'da Kumanda açık olmalı."
         case .posix(let code) where code == .ECONNREFUSED:
             return "Kutu bağlantıyı reddetti. Kutu açık mı?"
         case .tls:

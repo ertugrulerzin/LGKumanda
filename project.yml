@@ -18,7 +18,7 @@ targets:
     info:
       path: LGKumanda/Info.plist
       properties:
-        CFBundleDisplayName: LG Kumanda
+        CFBundleDisplayName: Kumanda
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         ITSAppUsesNonExemptEncryption: false

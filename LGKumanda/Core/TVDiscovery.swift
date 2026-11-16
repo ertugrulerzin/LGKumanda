@@ -73,7 +73,7 @@ import CryptoKit
         guard generation == token else { return }
         if found.isEmpty {
             message = permissionDenied
-                ? "Yerel ağ izni kapalı. Ayarlar'dan LG Kumanda için Yerel Ağ iznini aç, sonra yeniden ara."
+                ? "Yerel ağ izni kapalı. Ayarlar'dan Kumanda için Yerel Ağ iznini aç, sonra yeniden ara."
                 : "TV bulunamadı. TV'nin açık ve aynı Wi-Fi'da olduğundan emin ol. İstersen IP adresiyle ekle."
         }
     }

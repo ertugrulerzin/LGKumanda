@@ -249,7 +249,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
                 self.error = "Birden fazla TV eşleşti. Cihazlar bölümünden doğru televizyonu seç."
             case .permissionDenied:
                 self.disconnect(); self.notice = nil
-                self.error = "Yerel ağ izni kapalı. Ayarlar'dan LG Kumanda için Yerel Ağ iznini aç."
+                self.error = "Yerel ağ izni kapalı. Ayarlar'dan Kumanda için Yerel Ağ iznini aç."
             case .notFound, .cancelled:
                 self.disconnect(); self.notice = nil
                 self.error = "Kayıtlı TV ağda bulunamadı. TV'nin açık ve aynı yerel ağda olduğunu kontrol edip yeniden bağlan."
@@ -683,3 +683,30 @@ private final class PingCompletion: @unchecked Sendable {
         return true
     }
 }
+
+#if DEBUG
+extension TVClient {
+    /// App Store screenshots only (UITEST_SCREENSHOTS): shows a connected TV with sample content.
+    /// Never compiled into release builds.
+    func loadScreenshotPreview() {
+        let tv = Television(name: "Salon TV", host: "192.168.1.20")
+        televisions = [tv]
+        selected = tv
+        state = .connected
+        powerState = .active
+        volume = 14
+        pointerReady = true
+        apps = [("com.webos.app.livetv", "Canlı TV"), ("com.webos.app.browser", "Web Tarayıcı"), ("com.webos.app.photovideo", "Fotoğraf ve Video"),
+                ("com.webos.app.music", "Müzik"), ("com.webos.app.igallery", "Galeri"), ("com.webos.app.notificationcenter", "Bildirimler")]
+            .map { TVItem(id: $0.0, title: $0.1) }
+        inputs = [TVItem(id: "HDMI_1", title: "Oyun konsolu", detail: "HDMI 1", simplinkName: "Oyun konsolu"),
+                  TVItem(id: "HDMI_2", title: "HDMI 2", detail: "HDMI 2"),
+                  TVItem(id: "HDMI_3", title: "TVP", detail: "HDMI 3")]
+        channels = [("1", "Haber"), ("2", "Belgesel"), ("3", "Spor"), ("4", "Çocuk"), ("5", "Müzik"), ("6", "Sinema")]
+            .map { TVItem(id: "ch\($0.0)", title: $0.1, detail: $0.0) }
+        // The TV shows the box's input, so the box tab opens without switching inputs.
+        foregroundAppID = "com.webos.app.hdmi3"
+        libraryReady = true
+    }
+}
+#endif

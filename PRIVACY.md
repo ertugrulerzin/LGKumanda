@@ -1,8 +1,8 @@
-# LG Kumanda Gizlilik Politikası
+# Kumanda – webOS TV için: Gizlilik Politikası
 
 Son güncelleme: 16 Kasım 2026
 
-LG Kumanda, ev ağındaki LG webOS televizyonu ve Android TV kutularını iPhone'dan kumanda eden bağımsız bir uygulamadır. LG Electronics veya kutu üreticilerinin resmi ürünü değildir.
+Kumanda (eski adıyla LG Kumanda), ev ağındaki LG webOS televizyonu ve Android TV kutularını iPhone'dan kumanda eden bağımsız bir uygulamadır. LG Electronics veya kutu üreticilerinin resmi ürünü değildir.
 
 ## Toplanan veriler
 
@@ -29,6 +29,6 @@ Sorular için: ertugrul.erzin@gmail.com
 
 ---
 
-# LG Kumanda Privacy Policy (English summary)
+# Kumanda – Remote for webOS TV: Privacy Policy (English summary)
 
-LG Kumanda collects no personal data. It has no server, accounts, ads, analytics or crash reporting. Saved TVs, boxes, pairing keys and settings stay on the iPhone (keys in the iOS Keychain). The app talks only to TVs and Android TV boxes on the user's local network; web pages and searches opened in the in-app browser go directly to those sites. Contact: ertugrul.erzin@gmail.com
+Kumanda collects no personal data. It has no server, accounts, ads, analytics or crash reporting. Saved TVs, boxes, pairing keys and settings stay on the iPhone (keys in the iOS Keychain). The app talks only to TVs and Android TV boxes on the user's local network; web pages and searches opened in the in-app browser go directly to those sites. Contact: ertugrul.erzin@gmail.com

@@ -17,6 +17,9 @@ import SwiftUI
             }.environmentObject(client)
                 .environmentObject(box)
                 .onAppear {
+                    #if DEBUG
+                    if ProcessInfo.processInfo.environment["UITEST_SCREENSHOTS"] != nil { client.loadScreenshotPreview() }
+                    #endif
                     box.onCommandError = { [weak client] reason in client?.error = reason }
                     client.keyRouter = { [weak client, weak box] key in
                         guard let client, let box else { return false }

@@ -185,7 +185,7 @@ import Security
             }
             try await connection.start()
             guard pairingConnection === connection else { return }
-            connection.send(Self.pairingMessage { $0.message(10) { r in r.string(1, "atvremote"); r.string(2, "LG Kumanda") } })
+            connection.send(Self.pairingMessage { $0.message(10) { r in r.string(1, "atvremote"); r.string(2, "Kumanda") } })
         } catch {
             pairing = .failed(error.localizedDescription)
         }

@@ -122,12 +122,12 @@ struct DevicesView: View {
                     Toggle("Tuş titreşimi", isOn: $haptics)
                 }
                 Section("Bağlantı yardımı") {
-                    help(title: "Aynı ağa bağlan", text: "iPhone ve TV aynı yerel ağda olmalı. iPhone Ayarlar uygulamasından LG Kumanda için Yerel Ağ iznini aç.")
+                    help(title: "Aynı ağa bağlan", text: "iPhone ve TV aynı yerel ağda olmalı. iPhone Ayarlar uygulamasından Kumanda için Yerel Ağ iznini aç.")
                     help(title: "TV'nin IP adresini bul", text: "TV Ayarlar → Ağ → Bağlantı bilgileri bölümüne bak. Menü adı modele göre değişebilir.")
                     help(title: "Mobil bağlantıya izin ver", text: "LG Connect Apps veya Mobil TV Açık ayarını etkinleştir. Uyandırmak için TV'nin MAC adresini ekle ve ağ üzerinden açmayı etkinleştir.")
                 }
                 Section {
-                    Text("LG Kumanda bağımsız bir uygulamadır; LG Electronics ile bağlantılı değildir. Özellik desteği TV modeli ve webOS sürümüne göre değişir. Kızılötesi ve TV'nin sesli asistanı desteklenmez. iPhone klavyesindeki dikteyi metin girişi için kullanabilirsin.")
+                    Text("Kumanda bağımsız bir uygulamadır; LG Electronics ile bağlantılı değildir. Özellik desteği TV modeli ve webOS sürümüne göre değişir. Kızılötesi ve TV'nin sesli asistanı desteklenmez. iPhone klavyesindeki dikteyi metin girişi için kullanabilirsin.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
             }

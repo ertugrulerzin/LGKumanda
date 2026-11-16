@@ -22,6 +22,7 @@
 		3D718F5871FD5C7C7B8C284B /* WebVideo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C172EC879F4E0F59762FDF1 /* WebVideo.swift */; };
 		3E205B714E01287BD46146D6 /* WebVideoSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDB94840A944FDD61623627 /* WebVideoSheet.swift */; };
 		41C718858F7AFFB0777A2DFC /* PhoneBrowserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F432E84BEC25AB5FB920DB8D /* PhoneBrowserTests.swift */; };
+		4416E7EF6944F010B71E0B24 /* ScreenshotTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5D0CC22268C3F4C6A2C4A9A /* ScreenshotTests.swift */; };
 		5A182C752D7993BCBE86F25D /* TrackpadView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8214599D0C6E5600A6246A0F /* TrackpadView.swift */; };
 		64E6DBA7183D9748A4B83D88 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F08A3C71907CF5EA7B5F8192 /* RootView.swift */; };
 		6E68745B950127C622E206D0 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */; };
@@ -125,6 +126,7 @@
 		C2509A981B771E29DD3631F7 /* LGKumandaUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LGKumandaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C91E235FA540824088F6046B /* TVPowerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVPowerState.swift; sourceTree = "<group>"; };
 		D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LGKumandaApp.swift; sourceTree = "<group>"; };
+		E5D0CC22268C3F4C6A2C4A9A /* ScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotTests.swift; sourceTree = "<group>"; };
 		ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
 		ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
 		ED291B2B594036CA08F48B74 /* WebVideoLiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebVideoLiveTests.swift; sourceTree = "<group>"; };
@@ -217,6 +219,7 @@
 				370A8AC7F28264843AF33072 /* BoxRemoteTests.swift */,
 				9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */,
 				F432E84BEC25AB5FB920DB8D /* PhoneBrowserTests.swift */,
+				E5D0CC22268C3F4C6A2C4A9A /* ScreenshotTests.swift */,
 			);
 			path = LGKumandaUITests;
 			sourceTree = "<group>";
@@ -428,6 +431,7 @@
 				16D2598ADBE0428D5D90AB45 /* BoxRemoteTests.swift in Sources */,
 				8E87E118B6CEDB36088FA04A /* NavigationTests.swift in Sources */,
 				41C718858F7AFFB0777A2DFC /* PhoneBrowserTests.swift in Sources */,
+				4416E7EF6944F010B71E0B24 /* ScreenshotTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
