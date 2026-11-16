@@ -44,10 +44,16 @@ import Security
         enabled = UserDefaults.standard.object(forKey: Self.enabledKey) as? Bool ?? true
     }
 
-    /// True when keys for the TV's current foreground app should go to the box.
-    func handles(foregroundAppID: String?) -> Bool {
+    /// Set while the user explicitly picks the TV remote on the box's input; keys then stay on the TV.
+    @Published var suspended = false
+    /// True when the TV currently shows the input the paired box is plugged into.
+    func isLinked(foregroundAppID: String?) -> Bool {
         guard enabled, let box, box.paired, let input = box.inputID else { return false }
         return ControlRouting.appID(forInput: input) == foregroundAppID
+    }
+    /// True when keys for the TV's current foreground app should go to the box.
+    func handles(foregroundAppID: String?) -> Bool {
+        !suspended && isLinked(foregroundAppID: foregroundAppID)
     }
 
     func link(input: String?) { box?.inputID = input }
@@ -250,7 +256,7 @@ import Security
         return send(code: code)
     }
     /// Android KEYCODE_MEDIA_PLAY_PAUSE: one key that pauses and resumes, like the box's own remote.
-    static let playPauseCode = 85
+    nonisolated static let playPauseCode = 85
     /// Types a channel number on the box (e.g. "119" sends 1, 1, 9). Keys are queued in order.
     @discardableResult func enterChannel(_ number: String) -> Bool {
         let digits = Self.channelDigits(number)

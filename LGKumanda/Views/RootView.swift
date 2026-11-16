@@ -73,6 +73,8 @@ struct RemoteView: View {
     @State private var powerOff = false
     @State private var editingShortcuts = false
     @State private var hdmiHelp = false
+    @State private var target: RemoteTarget = .tv
+    @State private var switching = false
     private var connected: Bool { client.state == .connected }
     private var keysAvailable: Bool { client.pointerReady || box.handles(foregroundAppID: client.foregroundAppID) }
     var body: some View {
@@ -89,7 +91,7 @@ struct RemoteView: View {
                             Button { client.notice = nil } label: { Image(systemName: "xmark").frame(width: 44, height: 44) }.accessibilityLabel("Bilgiyi kapat")
                         }.foregroundStyle(.secondary)
                     }
-                    if connected, let input = client.activeInputWithoutSimplink, !box.handles(foregroundAppID: client.foregroundAppID) {
+                    if connected, target == .tv, let input = client.activeInputWithoutSimplink, !box.isLinked(foregroundAppID: client.foregroundAppID) {
                         Button { hdmiHelp = true } label: {
                             HStack(alignment: .top, spacing: 10) {
                                 Image(systemName: "exclamationmark.triangle")
@@ -99,16 +101,7 @@ struct RemoteView: View {
                             }.foregroundStyle(.orange).frame(maxWidth: .infinity, alignment: .leading)
                         }.buttonStyle(.plain).accessibilityIdentifier("simplinkWarning")
                     }
-                    if connected, box.handles(foregroundAppID: client.foregroundAppID) {
-                        HStack(spacing: 8) {
-                            Image(systemName: "wifi")
-                            Text(box.statusText).font(.footnote)
-                            Spacer(minLength: 0)
-                        }.foregroundStyle(.secondary).accessibilityIdentifier("boxStatus")
-                    }
-                    if connected, box.handles(foregroundAppID: client.foregroundAppID) {
-                        BoxQuickControls()
-                    }
+                    targetPicker
                     HStack(spacing: 12) {
                         RemoteButton(title: connected ? "Kapat" : "Uyandır", symbol: "power", color: Theme.accent) {
                             if connected { powerOff = true } else { client.wake() }
@@ -116,6 +109,83 @@ struct RemoteView: View {
                         RemoteButton(title: "Giriş", symbol: "rectangle.on.rectangle") { sources = true }.disabled(!connected)
                         RemoteButton(title: "Klavye", symbol: "keyboard") { keyboard = true }.disabled(!connected)
                     }
+                    if target == .box {
+                        BoxRemoteView()
+                    } else {
+                        tvRemote
+                    }
+                    Text("LG webOS için bağımsız kumanda.").font(.footnote).foregroundStyle(.secondary).padding(.bottom, 12)
+                }
+                .padding(.horizontal, 20).padding(.top, 8)
+                .frame(maxWidth: 520).frame(maxWidth: .infinity)
+            }
+            .background(Theme.background)
+            .navigationTitle("Kumanda")
+            .onAppear { followTV() }
+            .onChange(of: client.foregroundAppID) { _, _ in followTV() }
+            .onChange(of: box.box?.inputID) { _, _ in followTV() }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { editingShortcuts = true } label: { Image(systemName: "star") }
+                        .accessibilityLabel("Kısayolları düzenle").disabled(client.selected == nil)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Menu {
+                        Picker("Kanal ve medya tuşları", selection: $client.controlMode) {
+                            ForEach(ControlMode.allCases) { mode in Text(mode.title).tag(mode) }
+                        }
+                        Button("HDMI kutusu yardımı") { hdmiHelp = true }
+                    } label: { Image(systemName: "slider.horizontal.3") }.accessibilityLabel("Kontrol hedefi")
+                }
+            }
+            .sheet(isPresented: $keyboard) { KeyboardView() }
+            .sheet(isPresented: $sources) { LibraryView(kind: .inputs) }
+            .sheet(isPresented: $editingShortcuts) { ShortcutEditor() }
+            .sheet(isPresented: $hdmiHelp) { HDMIHelpView() }
+            .confirmationDialog("Televizyon kapatılsın mı?", isPresented: $powerOff, titleVisibility: .visible) {
+                Button("TV'yi kapat", role: .destructive) {
+                    client.powerOff()
+                }
+            }
+        }
+    }
+    /// TV | box switch. Picking the box also puts the TV on the box's input.
+    private var targetPicker: some View {
+        Picker("Kumanda", selection: Binding(get: { target }, set: { choose($0) })) {
+            Label("TV", systemImage: "tv").tag(RemoteTarget.tv)
+            Label(box.box?.name.isEmpty == false && box.box?.paired == true ? boxShortName : "Tivibu", systemImage: "wifi").tag(RemoteTarget.box)
+        }
+        .pickerStyle(.segmented)
+        .accessibilityIdentifier("remoteTarget")
+    }
+    private var boxShortName: String {
+        let name = box.box?.name ?? "Tivibu"
+        return name.count > 18 ? "Tivibu" : name
+    }
+    /// Follows the TV: showing the box's input selects the box remote; leaving it returns to the TV remote.
+    private func followTV() {
+        guard !switching else { return }
+        if box.isLinked(foregroundAppID: client.foregroundAppID) {
+            if target != .box, !box.suspended { target = .box }
+        } else if client.foregroundAppID != nil {
+            // Leaving the box's input ends an explicit "TV remote here" choice.
+            box.suspended = false
+            if target == .box, box.box?.paired == true { target = .tv }
+        }
+    }
+    private func choose(_ value: RemoteTarget) {
+        target = value
+        box.suspended = value == .tv
+        guard value == .box, connected, let input = box.box?.inputID, box.box?.paired == true,
+              !box.isLinked(foregroundAppID: client.foregroundAppID) else { return }
+        switching = true
+        Task {
+            defer { switching = false }
+            do { try await client.switchInput(input) } catch { client.error = error.localizedDescription }
+        }
+    }
+    private var tvRemote: some View {
+        VStack(spacing: 22) {
                     VStack(spacing: 18) {
                         Picker("Kontrol biçimi", selection: $mode) {
                             Text("Yön tuşları").tag(0)
@@ -142,36 +212,6 @@ struct RemoteView: View {
                         RemoteButton(title: "Rehber", symbol: "list.bullet.rectangle") { client.key(.guide) }.disabled(!keysAvailable)
                     }.disabled(!connected)
                     extraControls.disabled(!connected)
-                    Text("LG webOS için bağımsız kumanda.").font(.footnote).foregroundStyle(.secondary).padding(.bottom, 12)
-                }
-                .padding(.horizontal, 20).padding(.top, 8)
-                .frame(maxWidth: 520).frame(maxWidth: .infinity)
-            }
-            .background(Theme.background)
-            .navigationTitle("Kumanda")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button { editingShortcuts = true } label: { Image(systemName: "star") }
-                        .accessibilityLabel("Kısayolları düzenle").disabled(client.selected == nil)
-                }
-                ToolbarItem(placement: .topBarTrailing) {
-                    Menu {
-                        Picker("Kanal ve medya tuşları", selection: $client.controlMode) {
-                            ForEach(ControlMode.allCases) { mode in Text(mode.title).tag(mode) }
-                        }
-                        Button("HDMI kutusu yardımı") { hdmiHelp = true }
-                    } label: { Image(systemName: "slider.horizontal.3") }.accessibilityLabel("Kontrol hedefi")
-                }
-            }
-            .sheet(isPresented: $keyboard) { KeyboardView() }
-            .sheet(isPresented: $sources) { LibraryView(kind: .inputs) }
-            .sheet(isPresented: $editingShortcuts) { ShortcutEditor() }
-            .sheet(isPresented: $hdmiHelp) { HDMIHelpView() }
-            .confirmationDialog("Televizyon kapatılsın mı?", isPresented: $powerOff, titleVisibility: .visible) {
-                Button("TV'yi kapat", role: .destructive) {
-                    client.powerOff()
-                }
-            }
         }
     }
     private var connection: some View {
@@ -262,52 +302,12 @@ struct RemoteView: View {
     }
 }
 
-/// Shown while keys go to the Wi-Fi box: type a channel number and pause/resume in one tap.
-struct BoxQuickControls: View {
-    @EnvironmentObject private var box: BoxClient
-    @State private var channel = ""
-    @FocusState private var typing: Bool
-    var body: some View {
-        HStack(spacing: 10) {
-            TextField("Kanal no", text: $channel)
-                .keyboardType(.numberPad)
-                .focused($typing)
-                .font(.title3.weight(.semibold)).monospacedDigit()
-                .padding(.horizontal, 14).frame(minHeight: 56)
-                .background(Theme.surface, in: RoundedRectangle(cornerRadius: 16))
-                .onChange(of: channel) { _, value in
-                    let digits = String(value.filter(\.isNumber).prefix(5))
-                    if digits != value { channel = digits }
-                }
-                .onSubmit(go)
-                .accessibilityIdentifier("boxChannelField")
-            Button(action: go) {
-                Text("Git").font(.body.weight(.semibold)).frame(minWidth: 56, minHeight: 56)
-            }
-            .foregroundStyle(.white)
-            .background(Theme.accent, in: RoundedRectangle(cornerRadius: 16))
-            .disabled(channel.isEmpty)
-            .accessibilityLabel("Kanala git")
-            RemoteButton(title: "Durdur/Devam", symbol: "playpause.fill") { box.send(code: BoxClient.playPauseCode) }
-                .frame(maxWidth: 120)
-        }
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button("Git", action: go).disabled(channel.isEmpty)
-            }
-        }
-    }
-    private func go() {
-        guard box.enterChannel(channel) else { return }
-        channel = ""
-        typing = false
-    }
-}
-
 struct DirectionPad: View {
     @EnvironmentObject private var client: TVClient
     var diameter: CGFloat = 212
+    /// Where keys go; the TV remote by default.
+    var send: ((RemoteKey) -> Void)? = nil
+    private func press(_ key: RemoteKey) { if let send { send(key) } else { client.key(key) } }
     private var centerSize: CGFloat { diameter * 0.36 }
     private var edge: CGFloat { (diameter - centerSize) / 2 }
     var body: some View {
@@ -315,7 +315,7 @@ struct DirectionPad: View {
             direction("Yukarı", symbol: "chevron.up", key: .up).frame(width: centerSize, height: edge)
             HStack(spacing: 0) {
                 direction("Sol", symbol: "chevron.left", key: .left).frame(width: edge, height: centerSize)
-                Button { client.key(.enter) } label: {
+                Button { press(.enter) } label: {
                     Text("OK").font(.title2.weight(.semibold)).foregroundStyle(.white)
                         .frame(width: centerSize, height: centerSize).background(Theme.accent, in: Circle())
                 }.buttonStyle(PressStyle()).accessibilityLabel("Tamam")
@@ -325,7 +325,7 @@ struct DirectionPad: View {
         }.frame(width: diameter, height: diameter).background(Theme.surface, in: Circle())
     }
     private func direction(_ title: String, symbol: String, key: RemoteKey) -> some View {
-        Button { client.key(key) } label: { Image(systemName: symbol).font(.title2.weight(.medium)).frame(maxWidth: .infinity, maxHeight: .infinity).contentShape(Rectangle()) }
+        Button { press(key) } label: { Image(systemName: symbol).font(.title2.weight(.medium)).frame(maxWidth: .infinity, maxHeight: .infinity).contentShape(Rectangle()) }
             .buttonStyle(PressStyle()).foregroundStyle(.primary).accessibilityLabel(title)
     }
 }
