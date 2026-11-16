@@ -1,5 +1,6 @@
 import Foundation
 import Darwin
+import Security
 
 @MainActor final class TVDiscovery: ObservableObject {
     @Published private(set) var searching = false
@@ -47,7 +48,7 @@ import Darwin
             // A small concurrency window keeps the phone and Wi-Fi responsive.
             for _ in 0..<min(24, hosts.count) {
                 let host = hosts[next]; next += 1
-                group.addTask { await Self.identify(url: URL(string: "http://\(host):1311/")!, session: session) }
+                group.addTask { await Self.identifyHost(host, session: session) }
             }
             for await result in group {
                 guard generation == token, !Task.isCancelled else { group.cancelAll(); break }
@@ -57,7 +58,7 @@ import Darwin
                 if permissionDenied && found.isEmpty { group.cancelAll(); break }
                 if next < hosts.count {
                     let host = hosts[next]; next += 1
-                    group.addTask { await Self.identify(url: URL(string: "http://\(host):1311/")!, session: session) }
+                    group.addTask { await Self.identifyHost(host, session: session) }
                 }
             }
         }
@@ -92,6 +93,78 @@ import Darwin
         var television: Television?
         var identity: String?
         var denied = false
+    }
+    nonisolated private static func identifyHost(_ host: String, session: URLSession) async -> Identification {
+        let description = await identify(url: URL(string: "http://\(host):1311/")!, session: session)
+        guard description.television == nil, !description.denied, !Task.isCancelled else { return description }
+        if await answersAsLGTelevision(host) {
+            return Identification(television: Television(name: "LG webOS TV", host: host))
+        }
+        return description
+    }
+    // Read only the TLS certificate. Discovery never registers, sends pairing
+    // credentials, or changes the trust used by TVClient for actual control.
+    nonisolated static func answersAsLGTelevision(_ host: String, port: Int = 3001) async -> Bool {
+        guard TVProtocol.validHost(host), (1...65535).contains(port), !Task.isCancelled else { return false }
+        let delegate = LGDiscoveryCertificateDelegate(host: host)
+        let config = URLSessionConfiguration.ephemeral
+        config.waitsForConnectivity = false
+        config.timeoutIntervalForRequest = 1.5
+        config.timeoutIntervalForResource = 2
+        config.connectionProxyDictionary = [:]
+        let session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
+        defer { session.invalidateAndCancel() }
+        _ = try? await session.data(from: URL(string: "https://\(host):\(port)/")!)
+        return !Task.isCancelled && delegate.recognized
+    }
+    nonisolated static func isLGTelevisionCertificate(_ certificate: SecCertificate) -> Bool {
+        let names = [SecCertificateCopyNormalizedSubjectSequence(certificate), SecCertificateCopyNormalizedIssuerSequence(certificate)]
+        return names.compactMap { $0 as Data? }.contains { distinguishedNameHasLGOrganization($0) }
+    }
+    nonisolated static func distinguishedNameHasLGOrganization(_ data: Data) -> Bool {
+        // X.509 Name: SEQUENCE of SETs of SEQUENCE { OID, string }. Restrict
+        // recognition to the organization attribute (2.5.4.10), not arbitrary
+        // certificate bytes or a common name merely mentioning LG.
+        struct DER {
+            let bytes: [UInt8]
+            var offset = 0
+            mutating func read() -> (tag: UInt8, bytes: [UInt8])? {
+                guard offset + 2 <= bytes.count else { return nil }
+                let tag = bytes[offset]; offset += 1
+                var length = Int(bytes[offset]); offset += 1
+                if length & 0x80 != 0 {
+                    let count = length & 0x7f
+                    guard count > 0, count <= 4, offset + count <= bytes.count else { return nil }
+                    length = 0
+                    for _ in 0..<count { length = (length << 8) | Int(bytes[offset]); offset += 1 }
+                }
+                guard length <= bytes.count - offset else { return nil }
+                defer { offset += length }
+                return (tag, Array(bytes[offset..<offset + length]))
+            }
+        }
+        var root = DER(bytes: Array(data))
+        guard let name = root.read(), name.tag == 0x30, root.offset == root.bytes.count else { return false }
+        var sequence = DER(bytes: name.bytes)
+        while let set = sequence.read() {
+            guard set.tag == 0x31 else { return false }
+            var attributes = DER(bytes: set.bytes)
+            while let attribute = attributes.read() {
+                guard attribute.tag == 0x30 else { return false }
+                var pair = DER(bytes: attribute.bytes)
+                guard let oid = pair.read(), oid.tag == 0x06, let value = pair.read() else { return false }
+                guard oid.bytes == [0x55, 0x04, 0x0a] else { continue }
+                let encoding: String.Encoding
+                switch value.tag {
+                case 0x0c, 0x13, 0x14, 0x16: encoding = .utf8
+                case 0x1e: encoding = .utf16BigEndian
+                default: continue
+                }
+                let organization = String(data: Data(value.bytes), encoding: encoding)?.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                if ["lg electronics", "lg electronics inc.", "lg electronics inc"].contains(organization ?? "") { return true }
+            }
+        }
+        return false
     }
     nonisolated private static func identify(url: URL, session: URLSession) async -> Identification {
         guard let host = url.host, TVProtocol.validHost(host), url.scheme == "http" else { return Identification() }
@@ -191,5 +264,25 @@ private final class LocalDiscoveryDelegate: NSObject, URLSessionTaskDelegate {
         // Discovery must not leave the local device that is being identified.
         let allowed = request.url?.scheme == "http" && request.url?.host == task.originalRequest?.url?.host
         completionHandler(allowed ? request : nil)
+    }
+}
+
+private final class LGDiscoveryCertificateDelegate: NSObject, URLSessionDelegate, @unchecked Sendable {
+    let host: String
+    private let lock = NSLock()
+    private var matched = false
+    var recognized: Bool { lock.lock(); defer { lock.unlock() }; return matched }
+    init(host: String) { self.host = host }
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge,
+                    completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+           challenge.protectionSpace.host == host, let trust = challenge.protectionSpace.serverTrust,
+           let chain = SecTrustCopyCertificateChain(trust) as? [SecCertificate], let leaf = chain.first {
+            let result = TVDiscovery.isLGTelevisionCertificate(leaf)
+            lock.lock(); matched = result; lock.unlock()
+        }
+        // Recognizing an advertised brand is not authentication. Do not finish
+        // the handshake or send HTTP / WebSocket registration during discovery.
+        completionHandler(.cancelAuthenticationChallenge, nil)
     }
 }

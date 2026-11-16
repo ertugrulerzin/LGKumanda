@@ -45,6 +45,26 @@ final class DeviceIdentificationTests: XCTestCase {
         XCTAssertNil(TVDiscovery.deviceName(from: Data("<html>Router</html>".utf8)))
         XCTAssertNil(TVDiscovery.deviceName(from: Data("<root><device>".utf8)))
     }
+    func testTLSFallbackRecognizesOnlyLGOrganizationInDistinguishedNames() {
+        func name(_ organization: String, tag: UInt8 = 0x0c, oid: [UInt8] = [0x55, 0x04, 0x0a]) -> Data {
+            let text = Array(organization.utf8)
+            let pair: [UInt8] = [0x06, UInt8(oid.count)] + oid + [tag, UInt8(text.count)] + text
+            let attribute: [UInt8] = [0x30, UInt8(pair.count)] + pair
+            let set: [UInt8] = [0x31, UInt8(attribute.count)] + attribute
+            return Data([0x30, UInt8(set.count)] + set)
+        }
+        for org in ["LG Electronics", "LG Electronics Inc.", "lg electronics inc"] {
+            XCTAssertTrue(TVDiscovery.distinguishedNameHasLGOrganization(name(org)))
+            XCTAssertTrue(TVDiscovery.distinguishedNameHasLGOrganization(name(org, tag: 0x13)))
+        }
+        for org in ["Router", "Not LG Electronics", "LG Electronics Attacker", "", "Other manufacturer"] {
+            XCTAssertFalse(TVDiscovery.distinguishedNameHasLGOrganization(name(org)))
+        }
+        XCTAssertFalse(TVDiscovery.distinguishedNameHasLGOrganization(name("LG Electronics", oid: [0x55, 0x04, 0x03])), "A common name alone must not identify a TV")
+        for bytes: [UInt8] in [[], [0x30, 0xff], [0x30, 0x80, 0, 0], [0x30, 0x05, 0x31], [0x30, 0x84, 0xff, 0xff, 0xff, 0xff]] {
+            XCTAssertFalse(TVDiscovery.distinguishedNameHasLGOrganization(Data(bytes)))
+        }
+    }
     func testPermissionFailureDiffersFromOfflineDevice() {
         let denied = NSError(domain: NSURLErrorDomain, code: -1009, userInfo: ["_NSURLErrorNWPathKey": "unsatisfied (Local network prohibited)"])
         XCTAssertTrue(TVDiscovery.isLocalNetworkDenied(denied))

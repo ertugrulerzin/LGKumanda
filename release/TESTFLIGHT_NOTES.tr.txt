@@ -1,9 +1,10 @@
-LG Kumanda 1.0 (14)
+LG Kumanda 1.0 (15)
 
-- TV açıkken etkin Wi-Fi/Ethernet kartının MAC adresini otomatik kaydetme (destekleyen modellerde).
-- Kayıtlı TV için IP ve yayın adreslerine, UDP 9/7 portlarından tekrarlı uyandırma paketleri gönderme.
-- MAC adresi eksik olduğunda ve uyandırma paketleri gönderildiğinde daha açıklayıcı yönlendirmeler.
+- iPhone'da açık TV'yi bulma düzeltmesi: 1311 tanımlama servisi kapalı LG modelleri artık 3001 numaralı kumanda portundaki LG sertifikası üzerinden de bulunur.
+- Aynı yerel ağdaki kayıtlı IP'lere öncelik verilir. IP değişmişse ağ taraması yeni adresi de kontrol eder.
+- Tarama eşleştirme anahtarı veya kumanda komutu göndermez. Asıl kumanda bağlantısının sertifika doğrulaması korunur.
+- 1.0 (14) sürümündeki MAC kaydı ve uyandırma iyileştirmeleri dahildir.
 
-Denemek için: TV açıkken bir kez bağlan; ardından TV'yi beklemeye alıp Cihazlar bölümündeki kayıtlı TV üzerinden uyandır. TV'de Mobil ile TV Açma / Wi-Fi ile Aç etkin olmalı. Otomatik alınamazsa etkin ağ kartının MAC adresini Cihazı düzenle bölümüne gir.
+Denemek için: iPhone Ayarlar > LG Kumanda > Yerel Ağ iznini aç. Cihazlar > Ağda LG TV ara seçeneğini kullan. TV bulunduğunda seçip Bağlan'a dokun. TV açık ve iPhone ile aynı yerel ağda olmalı.
 
-Paket gönderilmesi TV'nin açıldığını doğrulamaz. Gerçek TV'de uyandırma başarısı henüz doğrulanmadı. iPhone'da yayın gönderimi için gereken Apple multicast yetkisi bu pakette bulunmuyor; kayıtlı IP'ye doğrudan gönderim de denenir, ancak TV/ağ desteğine bağlıdır.
+Fiziksel iPhone 14 Pro'dan TV 192.168.1.3 adresinde bulundu; IP değişmemişti. Uyandırma başarısı ayrıca doğrulanmalıdır; bu sürüm Apple multicast yetkisini eklemez.
