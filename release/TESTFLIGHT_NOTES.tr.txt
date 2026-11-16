@@ -1,7 +1,7 @@
-LG Kumanda 1.0 (18)
+LG Kumanda 1.0 (19)
 
-- Uyandır artık "paketler gönderildi" demekle kalmaz: paketten sonra 20 saniye TV'nin yanıt vermesini bekler. TV açılırsa kendiliğinden bağlanır; açılmazsa gerçek sebebi söyler.
-- iPhone, Apple'ın multicast izni olmadan yayın (broadcast) paketini engeller. Bekleme modundaki TV ağ adresi sorgularına yanıt vermediği için yalnız IP'ye giden paket genelde TV'ye ulaşmaz. Bu durumda uygulama "Apple izni bekleniyor, TV'yi kumandayla aç" der. Apple'a izin başvurusu yapıldı.
-- TV yeni kapandıysa (telefon TV'nin adresini hâlâ hatırlıyorsa) uyandırma çalışabilir; uygulama bunu da algılayıp bağlanır.
+- Uyandırdıktan sonra TV açıldığı hâlde bağlanamama sorunu düzeltildi. TV açılırken bir süre bağlantıyı reddedebiliyor veya kısa süreliğine "bekleme" bildiriyordu; uygulama artık 40 saniye boyunca yeniden dener ve açılışın ilk 30 saniyesindeki bekleme bildirimlerini yok sayar.
+- TV kapalıyken uygulama açık kaldığı sürece TV'yi izler: TV açıldığında (fiziksel kumandayla açılsa bile) kendiliğinden bağlanır, uygulamayı yeniden başlatmak gerekmez.
+- 1.0 (18)'den: Uyandır, TV'nin gerçekten açılıp açılmadığını kontrol eder ve açılmazsa sebebini söyler. iPhone'da yayın paketi için Apple izni hâlâ bekleniyor; TV uzun süredir kapalıysa uyandırma genelde çalışmaz.
 
-Doğrulama: Mac'ten gerçek OLED55C64LA üzerinde yayın adresine gönderilen paket TV'yi 6 saniyede açtı, IP'ye gönderilen paket ulaşmadı. Tivibu kutusu üzerinden (HDMI-CEC) TV açma denendi ve çalışmadı. Birim testleri geçti; iPhone'da uyandırma davranışı ayrıca cihazda doğrulanmalıdır.
+Doğrulama: birim testleri geçti. Uyandırma sonrası otomatik bağlanma ve kumandayla açılınca otomatik bağlanma iPhone'da denenmeli.
