@@ -26,7 +26,7 @@ struct DevicesView: View {
                     ForEach(discovery.found) { tv in
                         Button {
                             discovery.cancel()
-                            editing = client.televisions.first(where: { $0.host == tv.host }) ?? tv
+                            editing = client.savedTelevision(for: tv, candidates: discovery.found, fingerprints: discovery.fingerprints) ?? tv
                         } label: {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(tv.name).foregroundStyle(.primary)

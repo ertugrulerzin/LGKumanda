@@ -7,6 +7,7 @@ struct Television: Codable, Identifiable, Equatable {
     var secure = true
     var mac = ""
     var broadcast = "255.255.255.255"
+    var deviceUUID: String?
 }
 
 struct TVItem: Identifiable, Equatable {

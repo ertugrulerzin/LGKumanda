@@ -1,10 +1,12 @@
 import Foundation
 import Darwin
 import Security
+import CryptoKit
 
 @MainActor final class TVDiscovery: ObservableObject {
     @Published private(set) var searching = false
     @Published private(set) var found: [Television] = []
+    @Published private(set) var fingerprints: [String: String] = [:]
     @Published private(set) var completed = false
     @Published private(set) var message: String?
     @Published private(set) var permissionDenied = false
@@ -21,7 +23,7 @@ import Security
         guard !searching else { return }
         let token = UUID(); generation = token
         searching = true; completed = false; found = []; message = nil; permissionDenied = false
-        identityHosts = [:]; preferredHosts = Set(knownHosts)
+        identityHosts = [:]; fingerprints = [:]; preferredHosts = Set(knownHosts)
         checkedCount = 0; totalCount = 0
         defer { if generation == token { searching = false; completed = true } }
         let subnets = LocalSubnet.wifi()
@@ -54,7 +56,7 @@ import Security
                 guard generation == token, !Task.isCancelled else { group.cancelAll(); break }
                 checkedCount += 1
                 if result.denied { permissionDenied = true }
-                if let tv = result.television { append(tv, identity: result.identity) }
+                if let tv = result.television { append(tv, identity: result.identity, fingerprint: result.fingerprint) }
                 if permissionDenied && found.isEmpty { group.cancelAll(); break }
                 if next < hosts.count {
                     let host = hosts[next]; next += 1
@@ -66,7 +68,7 @@ import Security
         for location in await multicastLocations {
             guard generation == token, let url = URL(string: location), !found.contains(where: { $0.host == url.host }) else { continue }
             let result = await Self.identify(url: url, session: session)
-            if let tv = result.television { append(tv, identity: result.identity) }
+            if let tv = result.television { append(tv, identity: result.identity, fingerprint: result.fingerprint) }
         }
         guard generation == token else { return }
         if found.isEmpty {
@@ -75,7 +77,8 @@ import Security
                 : "TV bulunamadı. TV'nin açık ve aynı Wi-Fi'da olduğundan emin ol. İstersen IP adresiyle ekle."
         }
     }
-    private func append(_ tv: Television, identity: String?) {
+    private func append(_ tv: Television, identity: String?, fingerprint: String?) {
+        if let fingerprint { fingerprints[tv.host] = fingerprint }
         guard !found.contains(where: { $0.host == tv.host }) else { return }
         if let identity, let existing = identityHosts[identity] {
             // A single TV can expose both Wi-Fi and Ethernet addresses.
@@ -92,20 +95,33 @@ import Security
     private struct Identification: @unchecked Sendable {
         var television: Television?
         var identity: String?
+        var fingerprint: String?
         var denied = false
     }
     nonisolated private static func identifyHost(_ host: String, session: URLSession) async -> Identification {
-        let description = await identify(url: URL(string: "http://\(host):1311/")!, session: session)
-        guard description.television == nil, !description.denied, !Task.isCancelled else { return description }
-        if await answersAsLGTelevision(host) {
-            return Identification(television: Television(name: "LG webOS TV", host: host))
+        var description = await identify(url: URL(string: "http://\(host):1311/")!, session: session)
+        guard !description.denied, !Task.isCancelled else { return description }
+        let certificate = await inspectCertificate(host)
+        description.fingerprint = certificate?.fingerprint
+        if description.television == nil, certificate?.isLG == true {
+            description.television = Television(name: "LG webOS TV", host: host)
+        }
+        if description.television != nil, let certificate, !Task.isCancelled {
+            description.television?.deviceUUID = await TVIdentityProbe.read(host: host, fingerprint: certificate.fingerprint)
         }
         return description
+    }
+    struct CertificateIdentity: Sendable {
+        let fingerprint: String
+        let isLG: Bool
     }
     // Read only the TLS certificate. Discovery never registers, sends pairing
     // credentials, or changes the trust used by TVClient for actual control.
     nonisolated static func answersAsLGTelevision(_ host: String, port: Int = 3001) async -> Bool {
-        guard TVProtocol.validHost(host), (1...65535).contains(port), !Task.isCancelled else { return false }
+        await inspectCertificate(host, port: port)?.isLG == true
+    }
+    nonisolated static func inspectCertificate(_ host: String, port: Int = 3001) async -> CertificateIdentity? {
+        guard TVProtocol.validHost(host), (1...65535).contains(port), !Task.isCancelled else { return nil }
         let delegate = LGDiscoveryCertificateDelegate(host: host)
         let config = URLSessionConfiguration.ephemeral
         config.waitsForConnectivity = false
@@ -115,7 +131,7 @@ import Security
         let session = URLSession(configuration: config, delegate: delegate, delegateQueue: nil)
         defer { session.invalidateAndCancel() }
         _ = try? await session.data(from: URL(string: "https://\(host):\(port)/")!)
-        return !Task.isCancelled && delegate.recognized
+        return Task.isCancelled ? nil : delegate.identity
     }
     nonisolated static func isLGTelevisionCertificate(_ certificate: SecCertificate) -> Bool {
         let names = [SecCertificateCopyNormalizedSubjectSequence(certificate), SecCertificateCopyNormalizedIssuerSequence(certificate)]
@@ -270,16 +286,17 @@ private final class LocalDiscoveryDelegate: NSObject, URLSessionTaskDelegate {
 private final class LGDiscoveryCertificateDelegate: NSObject, URLSessionDelegate, @unchecked Sendable {
     let host: String
     private let lock = NSLock()
-    private var matched = false
-    var recognized: Bool { lock.lock(); defer { lock.unlock() }; return matched }
+    private var certificateIdentity: TVDiscovery.CertificateIdentity?
+    var identity: TVDiscovery.CertificateIdentity? { lock.lock(); defer { lock.unlock() }; return certificateIdentity }
     init(host: String) { self.host = host }
     func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge,
                     completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
            challenge.protectionSpace.host == host, let trust = challenge.protectionSpace.serverTrust,
            let chain = SecTrustCopyCertificateChain(trust) as? [SecCertificate], let leaf = chain.first {
-            let result = TVDiscovery.isLGTelevisionCertificate(leaf)
-            lock.lock(); matched = result; lock.unlock()
+            let digest = SHA256.hash(data: SecCertificateCopyData(leaf) as Data).map { String(format: "%02x", $0) }.joined()
+            let result = TVDiscovery.CertificateIdentity(fingerprint: digest, isLG: TVDiscovery.isLGTelevisionCertificate(leaf))
+            lock.lock(); certificateIdentity = result; lock.unlock()
         }
         // Recognizing an advertised brand is not authentication. Do not finish
         // the handshake or send HTTP / WebSocket registration during discovery.

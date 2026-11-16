@@ -44,7 +44,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     @Published var browserAddressRequested = false
     var browserAppID: String? { apps.first { $0.id.hasPrefix("com.webos.app.browser") }?.id }
     @Published var controlMode: ControlMode = .automatic {
-        didSet { if let selected { UserDefaults.standard.set(controlMode.rawValue, forKey: "controlMode.\(selected.id)") } }
+        didSet { if let selected { preferences.set(controlMode.rawValue, forKey: "controlMode.\(selected.id)") } }
     }
     var controlContext: ControlContext { controlMode.context(foregroundID: foregroundAppID) }
     var isHDMIActive: Bool { foregroundAppID?.hasPrefix("com.webos.app.hdmi") == true }
@@ -71,6 +71,9 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     private var heartbeat: Task<Void, Never>?
     private var generation = UUID()
     private var certificate: String?
+    private var addressRecoveryTask: Task<Void, Never>?
+    private var addressRecoveryAllowed = true
+    private var persistAddressOnRegistration = false
     private var motionTask: Task<Void, Never>?
     private var motionToken = UUID()
     private var pendingMotion = (x: 0, y: 0)
@@ -85,16 +88,24 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         var errorDescription: String? { if case .message(let text) = self { return text }; return nil }
     }
 
-    init() {
-        if let data = UserDefaults.standard.data(forKey: "televisions"),
+    private let preferences: UserDefaults
+    private let readDeviceIdentity: @Sendable (String, String) async -> String?
+    private let findTVAddress: @MainActor (Television, String) async -> TVAddressRecovery.Result
+    init(preferences: UserDefaults = .standard,
+         identityReader: @escaping @Sendable (String, String) async -> String? = { await TVIdentityProbe.read(host: $0, fingerprint: $1) },
+         addressFinder: @escaping @MainActor (Television, String) async -> TVAddressRecovery.Result = { await TVAddressRecovery.find($0, fingerprint: $1) }) {
+        self.preferences = preferences
+        self.readDeviceIdentity = identityReader
+        self.findTVAddress = addressFinder
+        if let data = preferences.data(forKey: "televisions"),
            let saved = try? JSONDecoder().decode([Television].self, from: data) {
             televisions = saved
         }
-        let id = UserDefaults.standard.string(forKey: "selectedTV")
+        let id = preferences.string(forKey: "selectedTV")
         selected = televisions.first { $0.id.uuidString == id } ?? televisions.first
     }
     private func persist() {
-        if let data = try? JSONEncoder().encode(televisions) { UserDefaults.standard.set(data, forKey: "televisions") }
+        if let data = try? JSONEncoder().encode(televisions) { preferences.set(data, forKey: "televisions") }
     }
     func save(_ tv: Television) {
         if let index = televisions.firstIndex(where: { $0.id == tv.id }) { televisions[index] = tv }
@@ -102,9 +113,9 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         connect(to: tv)
     }
     func remove(_ tv: Television) {
-        if selected?.id == tv.id { disconnect(); selected = nil; UserDefaults.standard.removeObject(forKey: "selectedTV") }
+        if selected?.id == tv.id { disconnect(); selected = nil; preferences.removeObject(forKey: "selectedTV") }
         televisions.removeAll { $0.id == tv.id }
-        UserDefaults.standard.removeObject(forKey: "controlMode.\(tv.id)")
+        preferences.removeObject(forKey: "controlMode.\(tv.id)")
         KeychainStore.delete("key.\(tv.id)"); KeychainStore.delete("cert.\(tv.id)")
     }
     func resetPairing() {
@@ -115,6 +126,8 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     }
     private var wakeTask: Task<Void, Never>?
     func disconnect() {
+        addressRecoveryTask?.cancel(); addressRecoveryTask = nil
+        persistAddressOnRegistration = false
         wakeTask?.cancel(); wakeTask = nil
         webVideoSession = nil
         stopPointerMotion()
@@ -130,11 +143,16 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         apps = []; inputs = []; channels = []
     }
     func connect(to tv: Television) {
+        connect(to: tv, allowAddressRecovery: true, persistNewAddress: false)
+    }
+    private func connect(to tv: Television, allowAddressRecovery: Bool, persistNewAddress: Bool) {
         disconnect(); error = nil; notice = nil
         guard TVProtocol.validHost(tv.host) else { error = "TV'nin yerel IPv4 adresini gir (ör. 192.168.1.50)."; return }
-        selected = tv; UserDefaults.standard.set(tv.id.uuidString, forKey: "selectedTV")
-        controlMode = ControlMode(rawValue: UserDefaults.standard.string(forKey: "controlMode.\(tv.id)") ?? "") ?? .automatic
+        selected = tv; preferences.set(tv.id.uuidString, forKey: "selectedTV")
+        controlMode = ControlMode(rawValue: preferences.string(forKey: "controlMode.\(tv.id)") ?? "") ?? .automatic
         state = .connecting; certificate = nil
+        addressRecoveryAllowed = allowAddressRecovery
+        persistAddressOnRegistration = persistNewAddress
         let token = generation
         let delegate = TVTrustDelegate(host: tv.host, fingerprint: KeychainStore.read("cert.\(tv.id)")) { [weak self] fingerprint in
             Task { @MainActor in if self?.generation == token { self?.certificate = fingerprint } }
@@ -146,9 +164,22 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         self.session = session
         let url = URL(string: "\(tv.secure ? "wss" : "ws")://\(tv.host):\(tv.secure ? 3001 : 3000)")!
         let socket = session.webSocketTask(with: url)
-        self.socket = socket; socket.resume()
+        self.socket = socket
         receiver = Task { [weak self] in
             do {
+                // DHCP may have given the old address to another LG TV with
+                // the same factory certificate. Verify UUID before any key.
+                if tv.secure, let expectedUUID = tv.deviceUUID,
+                   let fingerprint = KeychainStore.read("cert.\(tv.id)") {
+                    let actualUUID = await self?.readDeviceIdentity(tv.host, fingerprint)
+                    guard let self, self.generation == token, !Task.isCancelled else { return }
+                    guard actualUUID == expectedUUID else {
+                        self.connectionFailed(token: token, message: "Kayıtlı TV bu adreste doğrulanamadı.")
+                        return
+                    }
+                }
+                guard self?.generation == token, !Task.isCancelled else { return }
+                socket.resume()
                 try await self?.send(TVProtocol.registration(key: KeychainStore.read("key.\(tv.id)")))
                 while !Task.isCancelled {
                     let message = try await socket.receive()
@@ -157,8 +188,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
                 }
             } catch {
                 guard let self, self.generation == token, !Task.isCancelled else { return }
-                self.disconnect()
-                self.error = "TV bağlantısı kesildi. TV'nin açık olduğunu, aynı Wi-Fi'da olduğunu ve yerel ağ iznini kontrol et. \(error.localizedDescription)"
+                self.connectionFailed(token: token, message: "TV bağlantısı kesildi. TV'nin açık olduğunu, aynı Wi-Fi'da olduğunu ve yerel ağ iznini kontrol et. \(error.localizedDescription)")
             }
         }
         setDeadline(seconds: 20, token: token, message: "TV'ye ulaşılamadı. IP adresini kontrol edip yeniden dene.")
@@ -168,8 +198,59 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         deadline = Task { [weak self] in
             do { try await Task.sleep(nanoseconds: seconds * 1_000_000_000) } catch { return }
             guard let self, self.generation == token, self.state != .connected else { return }
-            self.disconnect(); self.error = message
+            self.connectionFailed(token: token, message: message)
         }
+    }
+    private func connectionFailed(token: UUID, message: String) {
+        guard generation == token else { return }
+        guard addressRecoveryAllowed, state != .pairing, let tv = selected, tv.secure, tv.deviceUUID != nil,
+              televisions.contains(where: { $0.id == tv.id }),
+              let fingerprint = KeychainStore.read("cert.\(tv.id)") else {
+            disconnect(); error = message; return
+        }
+        disconnect()
+        let recoveryToken = generation
+        state = .connecting
+        error = nil
+        notice = "TV'nin güncel ağ adresi aranıyor…"
+        let finder = findTVAddress
+        addressRecoveryTask = Task { [weak self] in
+            let result = await finder(tv, fingerprint)
+            guard let self, self.generation == recoveryToken, !Task.isCancelled,
+                  self.selected?.id == tv.id else { return }
+            self.addressRecoveryTask = nil
+            switch result {
+            case .found(let updated):
+                // Keep the UUID, saved key, pin and shortcuts. Commit the new
+                // address only after the pinned TV accepts registration.
+                self.connect(to: updated, allowAddressRecovery: false, persistNewAddress: updated.host != tv.host)
+                self.notice = updated.host == tv.host ? "TV yeniden bulundu; bağlanılıyor…" : "TV'nin yeni adresi bulundu; bağlanılıyor…"
+            case .ambiguous:
+                self.disconnect(); self.notice = nil
+                self.error = "Birden fazla TV eşleşti. Cihazlar bölümünden doğru televizyonu seç."
+            case .permissionDenied:
+                self.disconnect(); self.notice = nil
+                self.error = "Yerel ağ izni kapalı. Ayarlar'dan LG Kumanda için Yerel Ağ iznini aç."
+            case .notFound, .cancelled:
+                self.disconnect(); self.notice = nil
+                self.error = "Kayıtlı TV ağda bulunamadı. TV'nin açık ve aynı yerel ağda olduğunu kontrol edip yeniden bağlan."
+            }
+        }
+    }
+    /// Reuse the saved record when manual discovery finds its new address.
+    /// Ambiguous pins never merge records or transfer pairing credentials.
+    func savedTelevision(for candidate: Television, candidates: [Television], fingerprints: [String: String]) -> Television? {
+        if let existing = televisions.first(where: { $0.host == candidate.host }) {
+            if let expected = existing.deviceUUID, let actual = candidate.deviceUUID, expected != actual { return nil }
+            if let expected = KeychainStore.read("cert.\(existing.id)"), let actual = fingerprints[candidate.host], expected != actual { return nil }
+            return existing
+        }
+        guard let deviceUUID = candidate.deviceUUID, let fingerprint = fingerprints[candidate.host],
+              Set(candidates.filter { $0.deviceUUID == deviceUUID && fingerprints[$0.host] == fingerprint }.map(\.host)).count == 1 else { return nil }
+        let matches = televisions.filter { $0.secure && $0.deviceUUID == deviceUUID && KeychainStore.read("cert.\($0.id)") == fingerprint }
+        guard matches.count == 1, var saved = matches.first else { return nil }
+        saved.host = candidate.host
+        return saved
     }
     private func consume(_ message: URLSessionWebSocketTask.Message, token: UUID) {
         let data: Data
@@ -186,6 +267,13 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             if let certificate, !KeychainStore.save(certificate, account: "cert.\(tv.id)") {
                 disconnect(); error = "TV sertifikası kaydedilemedi. Yeniden eşleştir."; return
             }
+            if persistAddressOnRegistration, let index = televisions.firstIndex(where: { $0.id == tv.id }) {
+                televisions[index].host = tv.host
+                selected = televisions[index]
+                notice = "TV'nin IP adresi otomatik güncellendi."
+            }
+            persistAddressOnRegistration = false
+            addressRecoveryAllowed = true
             state = .connected; deadline?.cancel()
             Task { await bootstrap(token: token) }
             heartbeat = Task { [weak self] in
@@ -193,7 +281,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
                     do { try await Task.sleep(nanoseconds: 20_000_000_000); try Task.checkCancellation(); try await self?.socket?.ping() }
                     catch {
                         guard let self, !Task.isCancelled, self.generation == token else { return }
-                        self.disconnect(); self.error = "TV yanıt vermiyor. Yeniden bağlan."; return
+                        self.connectionFailed(token: token, message: "TV yanıt vermiyor. Yeniden bağlan."); return
                     }
                 }
             }
@@ -245,7 +333,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         Task { do { _ = try await request(uri, payload) } catch { if generation == token { self.error = error.localizedDescription } } }
     }
     /// Arrows and OK move a highlight between links in the TV browser instead of needing the pointer (see WebFocus).
-    var webFocusEnabled: Bool { UserDefaults.standard.object(forKey: "webFocus") as? Bool ?? true }
+    var webFocusEnabled: Bool { preferences.object(forKey: "webFocus") as? Bool ?? true }
     private var webFocusQueue: Task<Void, Never>?
     /// Lets another controller (an HDMI box over Wi-Fi) take keys; returns true when it handled the key.
     var keyRouter: ((RemoteKey) -> Bool)?
@@ -372,8 +460,19 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             notice = "TV işaretçi bağlantısını açmadı. Yön ve kumanda tuşları kullanılamayabilir."
         }
         guard generation == token else { return }
+        async let identity: Void = captureDeviceUUID(token: token)
         await refreshLibrary(reportErrors: false)
+        await identity
         await captureWakeIdentity(token: token)
+    }
+    private func captureDeviceUUID(token: UUID) async {
+        guard generation == token, let tv = selected, tv.secure,
+              let fingerprint = KeychainStore.read("cert.\(tv.id)") else { return }
+        let deviceUUID = await readDeviceIdentity(tv.host, fingerprint)
+        guard generation == token, let deviceUUID, selected?.id == tv.id,
+              let index = televisions.firstIndex(where: { $0.id == tv.id }), televisions[index].deviceUUID != deviceUUID else { return }
+        televisions[index].deviceUUID = deviceUUID
+        selected = televisions[index]
     }
     private func captureWakeIdentity(token: UUID) async {
         guard generation == token, let tv = selected, tv.mac.isEmpty else { return }

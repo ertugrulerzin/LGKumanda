@@ -91,6 +91,16 @@ Kaynak: [Apple TN3179](https://developer.apple.com/documentation/technotes/tn317
 
 2026-11-16 tarihinde fiziksel iPhone 14 Pro (192.168.1.9) üzerinden aynı tarama koduyla TV **192.168.1.3** adresinde bulundu. TV'nin IP'si değişmemişti; 1311 servisi bağlantıyı reddederken 3001 TLS yöntemi TV'yi tanıdı. Tarama 253 adresi tamamladı. Bu düzeltme TestFlight **1.0 (15)** paketindedir.
 
+### IP adresi değişirse
+
+TestFlight **1.0 (16)**, TV'nin adresini kalıcı webOS cihaz UUID'sinden ayrı tutar. Bu sürümle TV açıkken bir kez bağlanıp birkaç saniye bekle; kalıcı kimlik otomatik kaydedilir. Önceki sürümlerin TV kayıtları ve eşleştirmeleri korunur.
+
+Sonraki bağlantılarda kayıtlı IP'deki TV'nin UUID'si, eşleştirme anahtarı gönderilmeden önce kayıtlı sertifika üzerinden kontrol edilir. Adres yanıt vermezse veya başka bir TV'ye geçmişse aynı yerel ağ taranır. **Hem UUID hem kayıtlı sertifika** eşleşen tek TV'ye bir kez yeniden bağlanılır. Yeni IP, TV kayıtlı bağlantıyı kabul ettikten sonra kaydedilir; cihaz UUID'si, adı, Keychain anahtarı, kısayolları ve uyandırma bilgileri korunur. Kullanıcı bağlantıyı iptal ettiğinde veya başka TV seçtiğinde eski taramanın sonucu uygulanmaz. Ağ aramasında elle seçilen TV de kimliği eşleşiyorsa mevcut kayıtla açılır.
+
+LG sertifikası tek başına cihaz kimliği değildir; birden fazla TV aynı fabrika sertifikasını kullanabilir ([lgtv2 kaynak açıklaması](https://github.com/hobbyquaker/lgtv2)). Kalıcı UUID, eşleştirme yapmayan webOS `hello` mesajıyla okunur ([aiowebostv kaynak uygulaması](https://github.com/home-assistant-libs/aiowebostv/blob/main/aiowebostv/webos_client.py)). UUID vermeyen modellerde, eksik ilk kimlik kaydında, sertifika değişikliğinde veya birden fazla aynı kimlik eşleşmesinde otomatik taşıma yapılmaz. TV açık ve erişilebilir olmalı; tarama kapsamı yukarıdaki ağ sınırlarıyla aynıdır. Kapalı TV'nin değişen IP'si yanıt almadan belirlenemez; uyandırma kayıtlı MAC üzerinden çalışır.
+
+Doğrulama: IP'nin başka bir LG'ye atanması, ortak sertifikalı farklı UUID'ler, belirsiz eşleşme, eski kayıtların okunması, iptal sonrası eski sonucun yok sayılması ve başarısız yeniden bağlantının IP kaydını değiştirmemesi otomatik testlerle sınanır.
+
 ### TV kapalıyken uyandırma
 
 Kapalı TV ağ taramasına yanıt vermeyebilir. Önce TV açıkken bağlanıp cihazı kaydet; daha sonra **kayıtlı TV** üzerinden uyandır. TV'de **Mobil ile TV Açma / Wi-Fi ile Aç (TV On With Mobile)** etkin olmalı. Fişi çekilmiş veya ağ bağlantısını beklemede kapatan bir TV ağdan uyandırılamaz.

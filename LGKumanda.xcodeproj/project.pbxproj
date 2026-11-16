@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0CACD5F123C3B65452662838 /* TVIdentityProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FE369FA62C0F85DCEAF2348 /* TVIdentityProbe.swift */; };
 		0CF6070CDF51649B9661AB01 /* LocalSubnet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8824910ED5A5787B4F050D4D /* LocalSubnet.swift */; };
 		0E4C84BE9B8C01F1A1ABB6D8 /* ShortcutAndRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */; };
 		13B9C8248DC276A31A1F8E47 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */; };
@@ -40,9 +41,11 @@
 		A6705BFA967F460B10277412 /* BrowserAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */; };
 		A9B5838B9425C22C6126C972 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */; };
 		B149F1AF63F6E8118B6D54D7 /* ClickDiagnosticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */; };
+		B988A1F2939D9E71C9264495 /* TVAddressRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ADDEC6F044A8E51CC674F29 /* TVAddressRecovery.swift */; };
 		BD6E80040CB3D3D4B3812377 /* ControlRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B391A0D1456234881FF34889 /* ControlRouting.swift */; };
 		CE2F795C318EEE72CB88474F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB2FA42BC65BB9471CAE932F /* Assets.xcassets */; };
 		D46FA35C05041E12831201C2 /* ProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832BE2A832A35E8D598903E4 /* ProtocolTests.swift */; };
+		DAF39BCEC852EDE01F1D80E6 /* AddressRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E1C1D3B38E5674CF2C22BF3 /* AddressRecoveryTests.swift */; };
 		E7251C2E4F3B16DEA8EA9A26 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8684CA02FB86C77877C10FA8 /* LibraryView.swift */; };
 		EACDD33B32664AA19A58DAC6 /* BoxSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91E2A1C787CD0241665E7C /* BoxSetupView.swift */; };
 		ED2894E7A7B81FCF35B2735D /* LiveTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */; };
@@ -70,6 +73,7 @@
 /* Begin PBXFileReference section */
 		0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVDiscovery.swift; sourceTree = "<group>"; };
 		0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutViews.swift; sourceTree = "<group>"; };
+		0E1C1D3B38E5674CF2C22BF3 /* AddressRecoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddressRecoveryTests.swift; sourceTree = "<group>"; };
 		159A8A03F3DD884FACEEDD6D /* PhoneBrowserView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneBrowserView.swift; sourceTree = "<group>"; };
 		18B0B08207864C3A929E75BF /* BoxLiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxLiveTests.swift; sourceTree = "<group>"; };
 		20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryTests.swift; sourceTree = "<group>"; };
@@ -84,9 +88,11 @@
 		5AC1A0A7AE90EA326A05E526 /* LGKumanda.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = LGKumanda.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5C172EC879F4E0F59762FDF1 /* WebVideo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebVideo.swift; sourceTree = "<group>"; };
 		64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveTVTests.swift; sourceTree = "<group>"; };
+		6ADDEC6F044A8E51CC674F29 /* TVAddressRecovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVAddressRecovery.swift; sourceTree = "<group>"; };
 		7086847346EAC0CFB0E26BFD /* LGKumandaTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LGKumandaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutAndRoutingTests.swift; sourceTree = "<group>"; };
 		7D110F90BCED48318863B6F1 /* WebVideoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebVideoTests.swift; sourceTree = "<group>"; };
+		7FE369FA62C0F85DCEAF2348 /* TVIdentityProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVIdentityProbe.swift; sourceTree = "<group>"; };
 		802D764DD010FCAA561EC6FF /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		8214599D0C6E5600A6246A0F /* TrackpadView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackpadView.swift; sourceTree = "<group>"; };
 		832BE2A832A35E8D598903E4 /* ProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolTests.swift; sourceTree = "<group>"; };
@@ -165,8 +171,10 @@
 				8824910ED5A5787B4F050D4D /* LocalSubnet.swift */,
 				802D764DD010FCAA561EC6FF /* Models.swift */,
 				BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */,
+				6ADDEC6F044A8E51CC674F29 /* TVAddressRecovery.swift */,
 				BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */,
 				0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */,
+				7FE369FA62C0F85DCEAF2348 /* TVIdentityProbe.swift */,
 				24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */,
 				311AAADF9BE4046BB505615C /* WebFocus.swift */,
 				5C172EC879F4E0F59762FDF1 /* WebVideo.swift */,
@@ -209,6 +217,7 @@
 		7EF0EC6BEEDB3E46395D9511 /* LGKumandaTests */ = {
 			isa = PBXGroup;
 			children = (
+				0E1C1D3B38E5674CF2C22BF3 /* AddressRecoveryTests.swift */,
 				18B0B08207864C3A929E75BF /* BoxLiveTests.swift */,
 				A240A1CCE44649993423D013 /* BoxProtocolTests.swift */,
 				FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */,
@@ -339,6 +348,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DAF39BCEC852EDE01F1D80E6 /* AddressRecoveryTests.swift in Sources */,
 				F9502B73347078C5EEFE9425 /* BoxLiveTests.swift in Sources */,
 				6FED4D718C08D87E57168A17 /* BoxProtocolTests.swift in Sources */,
 				B149F1AF63F6E8118B6D54D7 /* ClickDiagnosticTests.swift in Sources */,
@@ -376,8 +386,10 @@
 				64E6DBA7183D9748A4B83D88 /* RootView.swift in Sources */,
 				8F9C6C523957056D24901CBB /* ShortcutStore.swift in Sources */,
 				9DCD7FCC19D450868C6CF839 /* ShortcutViews.swift in Sources */,
+				B988A1F2939D9E71C9264495 /* TVAddressRecovery.swift in Sources */,
 				26D57391B1C809AD12D845B9 /* TVClient.swift in Sources */,
 				3B7D38BE39B54A5BCA78AE4A /* TVDiscovery.swift in Sources */,
+				0CACD5F123C3B65452662838 /* TVIdentityProbe.swift in Sources */,
 				5A182C752D7993BCBE86F25D /* TrackpadView.swift in Sources */,
 				3B945621BDEE9CF833779DD6 /* WakeOnLAN.swift in Sources */,
 				31E370B22551F982505FBE27 /* WebFocus.swift in Sources */,
@@ -445,7 +457,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = PBY9P5GVFB;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -597,7 +609,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 15;
+				CURRENT_PROJECT_VERSION = 16;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = PBY9P5GVFB;
 				ENABLE_NS_ASSERTIONS = NO;
