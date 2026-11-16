@@ -33,6 +33,8 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     @Published var televisions: [Television] = [] { didSet { persist() } }
     @Published private(set) var selected: Television?
     @Published private(set) var state: ConnectionState = .disconnected
+    @Published private(set) var powerState: TVPowerState = .unknown
+    var connectionLabel: String { powerState.isStandby ? "TV kapalı" : state.label }
     @Published private(set) var volume: Int?
     @Published private(set) var muted = false
     @Published private(set) var pointerReady = false
@@ -84,8 +86,13 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     private var pending: [String: Pending] = [:]
 
     enum Failure: LocalizedError {
-        case message(String)
-        var errorDescription: String? { if case .message(let text) = self { return text }; return nil }
+        case message(String), rejected(String), timeout
+        var errorDescription: String? {
+            switch self {
+            case .message(let text), .rejected(let text): return text
+            case .timeout: return "TV komuta yanıt vermedi. Yeniden dene."
+            }
+        }
     }
 
     private let preferences: UserDefaults
@@ -138,6 +145,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         socket = nil; pointer = nil; session = nil
         for item in pending.values { item.timer.cancel(); item.continuation.resume(throwing: Failure.message("Bağlantı kapandı.")) }
         pending.removeAll()
+        powerState = .unknown
         state = .disconnected; pointerReady = false; volume = nil; muted = false
         foregroundAppID = nil; libraryReady = false
         apps = []; inputs = []; channels = []
@@ -277,11 +285,27 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             state = .connected; deadline?.cancel()
             Task { await bootstrap(token: token) }
             heartbeat = Task { [weak self] in
+                var queryPower = true
                 while !Task.isCancelled {
-                    do { try await Task.sleep(nanoseconds: 20_000_000_000); try Task.checkCancellation(); try await self?.socket?.ping() }
-                    catch {
+                    do {
+                        try await Task.sleep(for: .seconds(5))
+                        guard let self, self.generation == token, self.state == .connected else { return }
+                        if queryPower {
+                            do {
+                                let payload = try await self.request("com.webos.service.tvpower/power/getPowerState", timeout: .seconds(3))
+                                guard self.generation == token else { return }
+                                self.updatePowerState(payload)
+                            } catch Failure.rejected {
+                                // Older firmware may not offer the power API.
+                                queryPower = false
+                            }
+                        }
+                        guard self.generation == token, !Task.isCancelled else { return }
+                        try await self.socket?.ping(timeout: .seconds(3))
+                    } catch {
                         guard let self, !Task.isCancelled, self.generation == token else { return }
-                        self.connectionFailed(token: token, message: "TV yanıt vermiyor. Yeniden bağlan."); return
+                        self.connectionFailed(token: token, message: "TV yanıt vermiyor. Bağlantı yeniden kontrol ediliyor.")
+                        return
                     }
                 }
             }
@@ -290,6 +314,8 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             setDeadline(seconds: 90, token: token, message: "Eşleştirme onaylanmadı. TV ekranındaki isteği kabul edip yeniden dene.")
         } else if type == "error", id == "register" {
             disconnect(); error = "TV eşleştirmeyi reddetti. TV ekranından bağlantıya izin ver. Gerekirse yeniden eşleştir."
+        } else if id == "power" {
+            if type == "response", payload["returnValue"] as? Bool != false { updatePowerState(payload) }
         } else if id == "foreground" {
             if let app = payload["appId"] as? String { foregroundAppID = app }
         } else if id == "audio" {
@@ -300,7 +326,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             item.timer.cancel()
             if type == "error" || payload["returnValue"] as? Bool == false {
                 let detail = object["error"] as? String ?? payload["errorText"] as? String ?? "İşlem desteklenmiyor."
-                item.continuation.resume(throwing: Failure.message("TV komutu reddetti: \(detail)"))
+                item.continuation.resume(throwing: Failure.rejected("TV komutu reddetti: \(detail)"))
             } else { item.continuation.resume(returning: payload) }
         }
     }
@@ -309,14 +335,14 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         let data = try JSONSerialization.data(withJSONObject: object)
         try await socket.send(.string(String(decoding: data, as: UTF8.self)))
     }
-    func request(_ uri: String, _ payload: [String: Any] = [:]) async throws -> [String: Any] {
+    func request(_ uri: String, _ payload: [String: Any] = [:], timeout: Duration = .seconds(10)) async throws -> [String: Any] {
         guard state == .connected else { throw Failure.message("Önce bir TV'ye bağlan.") }
         let id = UUID().uuidString
         return try await withCheckedThrowingContinuation { continuation in
             let timer = Task { [weak self] in
-                do { try await Task.sleep(nanoseconds: 10_000_000_000) } catch { return }
+                do { try await Task.sleep(for: timeout) } catch { return }
                 if let item = self?.pending.removeValue(forKey: id) {
-                    item.continuation.resume(throwing: Failure.message("TV komuta yanıt vermedi. Yeniden dene."))
+                    item.continuation.resume(throwing: Failure.timeout)
                 }
             }
             pending[id] = Pending(continuation: continuation, timer: timer)
@@ -439,6 +465,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         Task { do { try await pointer.send(.string(message)) } catch { self.error = "Tuş gönderilemedi. Yeniden bağlan." } }
     }
     private func bootstrap(token: UUID) async {
+        try? await send(TVProtocol.request(id: "power", uri: "com.webos.service.tvpower/power/getPowerState", subscribe: true))
         try? await send(TVProtocol.request(id: "audio", uri: "audio/getVolume", subscribe: true))
         try? await send(TVProtocol.request(id: "foreground", uri: "com.webos.applicationManager/getForegroundAppInfo", subscribe: true))
         do {
@@ -510,6 +537,18 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             } catch { if reportErrors, generation == token { self.error = error.localizedDescription } }
         }
     }
+    func updatePowerState(_ payload: [String: Any]) {
+        let reported = TVPowerState.read(payload)
+        guard reported != .unknown else { return }
+        if reported.isStandby {
+            // A confirmed power event must not start DHCP recovery and leave
+            // the UI claiming the powered-off TV is still connected.
+            disconnect()
+            powerState = .standby
+            error = nil
+            notice = "TV kapalı. Yeniden açmak için Uyandır'ı kullanabilirsin."
+        } else { powerState = reported }
+    }
     func powerOff() {
         Task {
             do {
@@ -542,12 +581,38 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
 }
 
 private extension URLSessionWebSocketTask {
-    func ping() async throws {
+    func ping(timeout: Duration = .seconds(3)) async throws {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-            sendPing { error in
-                if let error { continuation.resume(throwing: error) }
-                else { continuation.resume() }
+            let completion = PingCompletion(continuation)
+            let timer = Task {
+                do { try await Task.sleep(for: timeout) } catch { return }
+                if completion.finish(URLError(.timedOut)) { self.cancel(with: .goingAway, reason: nil) }
             }
+            completion.setTimer(timer)
+            sendPing { _ = completion.finish($0) }
         }
+    }
+}
+
+private final class PingCompletion: @unchecked Sendable {
+    private let lock = NSLock()
+    private var continuation: CheckedContinuation<Void, Error>?
+    private var timer: Task<Void, Never>?
+    init(_ continuation: CheckedContinuation<Void, Error>) { self.continuation = continuation }
+    func setTimer(_ task: Task<Void, Never>) {
+        lock.lock()
+        if continuation != nil { timer = task; lock.unlock() }
+        else { lock.unlock(); task.cancel() }
+    }
+    @discardableResult func finish(_ error: Error?) -> Bool {
+        lock.lock()
+        guard let continuation else { lock.unlock(); return false }
+        self.continuation = nil
+        let timer = self.timer; self.timer = nil
+        lock.unlock()
+        timer?.cancel()
+        if let error { continuation.resume(throwing: error) }
+        else { continuation.resume() }
+        return true
     }
 }

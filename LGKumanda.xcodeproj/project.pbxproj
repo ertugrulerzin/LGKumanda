@@ -12,6 +12,7 @@
 		0E4C84BE9B8C01F1A1ABB6D8 /* ShortcutAndRoutingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */; };
 		13B9C8248DC276A31A1F8E47 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */; };
 		26D57391B1C809AD12D845B9 /* TVClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */; };
+		314786D0B5E2DBA5E4F1C710 /* BoxRemoteSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91F6CD04CEF15E33C04BF278 /* BoxRemoteSession.swift */; };
 		31E370B22551F982505FBE27 /* WebFocus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 311AAADF9BE4046BB505615C /* WebFocus.swift */; };
 		3A1E30C0EDC55B4044D35119 /* PhoneBrowserView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 159A8A03F3DD884FACEEDD6D /* PhoneBrowserView.swift */; };
 		3B7D38BE39B54A5BCA78AE4A /* TVDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */; };
@@ -25,6 +26,7 @@
 		6F0BE50DE8FDFCE17B1F1544 /* WebVideoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D110F90BCED48318863B6F1 /* WebVideoTests.swift */; };
 		6FED4D718C08D87E57168A17 /* BoxProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A240A1CCE44649993423D013 /* BoxProtocolTests.swift */; };
 		6FEF3D39F1003C43FDBA8574 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802D764DD010FCAA561EC6FF /* Models.swift */; };
+		71006F7047273686D0D5EB79 /* TVPowerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C91E235FA540824088F6046B /* TVPowerState.swift */; };
 		7895CB7C85407C97939ADD25 /* BrowserAddressView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCC81C20F6B46C320FEE176 /* BrowserAddressView.swift */; };
 		7BFC826B734E76C8EC0630AE /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9823705F61465DD5CFFBF99 /* DevicesView.swift */; };
 		7D2656882BC4D130DC6E7180 /* ProtoWire.swift in Sources */ = {isa = PBXBuildFile; fileRef = A347D7F04927C80BCAC85C97 /* ProtoWire.swift */; };
@@ -34,6 +36,7 @@
 		8E87E118B6CEDB36088FA04A /* NavigationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */; };
 		8F9C6C523957056D24901CBB /* ShortcutStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */; };
 		93AAB5683334C0B6494AE648 /* BoxCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93FFEAA8DB27C116318A66E5 /* BoxCertificate.swift */; };
+		9A6D6C68A324621778C9FE9A /* PowerAndBoxStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BD87A11BD425A0BEA5354C4 /* PowerAndBoxStateTests.swift */; };
 		9DCD7FCC19D450868C6CF839 /* ShortcutViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D8C4826C88150E595C3CE25 /* ShortcutViews.swift */; };
 		A1DBAF1FB44F36790ED94CEF /* WebVideoLiveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED291B2B594036CA08F48B74 /* WebVideoLiveTests.swift */; };
 		A385654954340541D56E830E /* BoxDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C4B9A5DC450FE21B649C194 /* BoxDiscovery.swift */; };
@@ -78,6 +81,7 @@
 		18B0B08207864C3A929E75BF /* BoxLiveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxLiveTests.swift; sourceTree = "<group>"; };
 		20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiscoveryTests.swift; sourceTree = "<group>"; };
 		24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WakeOnLAN.swift; sourceTree = "<group>"; };
+		2BD87A11BD425A0BEA5354C4 /* PowerAndBoxStateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PowerAndBoxStateTests.swift; sourceTree = "<group>"; };
 		2D87CE5236628F5059D1F1DD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		2F5EC3322ECBCF1737839C1D /* BoxClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxClient.swift; sourceTree = "<group>"; };
 		311AAADF9BE4046BB505615C /* WebFocus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebFocus.swift; sourceTree = "<group>"; };
@@ -98,6 +102,7 @@
 		832BE2A832A35E8D598903E4 /* ProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProtocolTests.swift; sourceTree = "<group>"; };
 		8684CA02FB86C77877C10FA8 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
 		8824910ED5A5787B4F050D4D /* LocalSubnet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalSubnet.swift; sourceTree = "<group>"; };
+		91F6CD04CEF15E33C04BF278 /* BoxRemoteSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxRemoteSession.swift; sourceTree = "<group>"; };
 		93FFEAA8DB27C116318A66E5 /* BoxCertificate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxCertificate.swift; sourceTree = "<group>"; };
 		9923D4E9CA5623D4F5AD2941 /* NavigationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTests.swift; sourceTree = "<group>"; };
 		A240A1CCE44649993423D013 /* BoxProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxProtocolTests.swift; sourceTree = "<group>"; };
@@ -112,6 +117,7 @@
 		BFD2F7E91B194941AAF34F6D /* ShortcutStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutStore.swift; sourceTree = "<group>"; };
 		C196E1EC0C6666A07590C8AB /* BoxConnection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BoxConnection.swift; sourceTree = "<group>"; };
 		C2509A981B771E29DD3631F7 /* LGKumandaUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LGKumandaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C91E235FA540824088F6046B /* TVPowerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVPowerState.swift; sourceTree = "<group>"; };
 		D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LGKumandaApp.swift; sourceTree = "<group>"; };
 		ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
 		ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
@@ -175,6 +181,7 @@
 				BEE401EDDE6BFCD7FAF30139 /* TVClient.swift */,
 				0A60F63D4E8D339FF77D25E5 /* TVDiscovery.swift */,
 				7FE369FA62C0F85DCEAF2348 /* TVIdentityProbe.swift */,
+				C91E235FA540824088F6046B /* TVPowerState.swift */,
 				24B3D5B2401B6DD45C77E642 /* WakeOnLAN.swift */,
 				311AAADF9BE4046BB505615C /* WebFocus.swift */,
 				5C172EC879F4E0F59762FDF1 /* WebVideo.swift */,
@@ -190,6 +197,7 @@
 				2F5EC3322ECBCF1737839C1D /* BoxClient.swift */,
 				C196E1EC0C6666A07590C8AB /* BoxConnection.swift */,
 				3C4B9A5DC450FE21B649C194 /* BoxDiscovery.swift */,
+				91F6CD04CEF15E33C04BF278 /* BoxRemoteSession.swift */,
 				A347D7F04927C80BCAC85C97 /* ProtoWire.swift */,
 			);
 			path = AndroidTV;
@@ -224,6 +232,7 @@
 				20B6D1C9A04DB80B5F76CFD3 /* DiscoveryTests.swift */,
 				B299E8FAB30A3F589B5137E8 /* HDMIDiagnosticTests.swift */,
 				64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */,
+				2BD87A11BD425A0BEA5354C4 /* PowerAndBoxStateTests.swift */,
 				832BE2A832A35E8D598903E4 /* ProtocolTests.swift */,
 				7CF312E595CBBFBFA284326F /* ShortcutAndRoutingTests.swift */,
 				ED291B2B594036CA08F48B74 /* WebVideoLiveTests.swift */,
@@ -355,6 +364,7 @@
 				A5161F4E416D6FD888F98049 /* DiscoveryTests.swift in Sources */,
 				8BC6FA1A8F16D4F17C4A3AC0 /* HDMIDiagnosticTests.swift in Sources */,
 				ED2894E7A7B81FCF35B2735D /* LiveTVTests.swift in Sources */,
+				9A6D6C68A324621778C9FE9A /* PowerAndBoxStateTests.swift in Sources */,
 				D46FA35C05041E12831201C2 /* ProtocolTests.swift in Sources */,
 				0E4C84BE9B8C01F1A1ABB6D8 /* ShortcutAndRoutingTests.swift in Sources */,
 				A1DBAF1FB44F36790ED94CEF /* WebVideoLiveTests.swift in Sources */,
@@ -370,6 +380,7 @@
 				81A9CE7ECFF11E001A7EEAE0 /* BoxClient.swift in Sources */,
 				F9561C27A440C5F2208761B6 /* BoxConnection.swift in Sources */,
 				A385654954340541D56E830E /* BoxDiscovery.swift in Sources */,
+				314786D0B5E2DBA5E4F1C710 /* BoxRemoteSession.swift in Sources */,
 				EACDD33B32664AA19A58DAC6 /* BoxSetupView.swift in Sources */,
 				A6705BFA967F460B10277412 /* BrowserAddress.swift in Sources */,
 				7895CB7C85407C97939ADD25 /* BrowserAddressView.swift in Sources */,
@@ -390,6 +401,7 @@
 				26D57391B1C809AD12D845B9 /* TVClient.swift in Sources */,
 				3B7D38BE39B54A5BCA78AE4A /* TVDiscovery.swift in Sources */,
 				0CACD5F123C3B65452662838 /* TVIdentityProbe.swift in Sources */,
+				71006F7047273686D0D5EB79 /* TVPowerState.swift in Sources */,
 				5A182C752D7993BCBE86F25D /* TrackpadView.swift in Sources */,
 				3B945621BDEE9CF833779DD6 /* WakeOnLAN.swift in Sources */,
 				31E370B22551F982505FBE27 /* WebFocus.swift in Sources */,
@@ -457,7 +469,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = PBY9P5GVFB;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -609,7 +621,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 16;
+				CURRENT_PROJECT_VERSION = 17;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = PBY9P5GVFB;
 				ENABLE_NS_ASSERTIONS = NO;

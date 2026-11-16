@@ -2,6 +2,7 @@ import SwiftUI
 
 struct KeyboardView: View {
     @EnvironmentObject private var client: TVClient
+    @EnvironmentObject private var box: BoxClient
     @Environment(\.dismiss) private var dismiss
     @Environment(\.dynamicTypeSize) private var textSize
     var isSheet = true
@@ -22,7 +23,7 @@ struct KeyboardView: View {
                     HStack {
                         Text(client.selected?.name ?? "Önce Cihazlar'dan TV ekle").lineLimit(1)
                         Spacer()
-                        Label(client.state.label, systemImage: connected ? "checkmark.circle.fill" : "wifi.slash")
+                        Label(client.connectionLabel, systemImage: connected ? "checkmark.circle.fill" : "wifi.slash")
                             .foregroundStyle(connected ? Theme.accent : .secondary)
                     }.font(.caption)
                     if client.isHDMIActive {
@@ -30,7 +31,7 @@ struct KeyboardView: View {
                             .font(.footnote).foregroundStyle(.secondary)
                     } else { PointerModePicker() }
                     TouchPad(forceCursorless: client.isHDMIActive).frame(height: focused ? (textSize.isAccessibilitySize ? 210 : 148) : 240)
-                        .disabled(!connected || !client.pointerReady)
+                        .disabled(!connected || !(client.pointerReady || box.handles(foregroundAppID: client.foregroundAppID)))
                     if !focused {
                         if cursorless || client.isHDMIActive {
                             Label("İmleci oynatmadan gezin", systemImage: "pawprint")

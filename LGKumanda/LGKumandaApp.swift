@@ -17,6 +17,7 @@ import SwiftUI
             }.environmentObject(client)
                 .environmentObject(box)
                 .onAppear {
+                    box.onCommandError = { [weak client] reason in client?.error = reason }
                     client.keyRouter = { [weak client, weak box] key in
                         guard let client, let box, box.handles(foregroundAppID: client.foregroundAppID) else { return false }
                         return box.send(key)

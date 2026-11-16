@@ -21,12 +21,17 @@ import Security
     @Published private(set) var pairing: PairingState = .idle
     @Published private(set) var currentApp = ""
     @Published private(set) var deviceModel = ""
-    @Published var enabled: Bool { didSet { UserDefaults.standard.set(enabled, forKey: Self.enabledKey) } }
+    @Published var enabled: Bool { didSet {
+        UserDefaults.standard.set(enabled, forKey: Self.enabledKey)
+        if !enabled { disconnect() }
+    } }
 
     private static let storeKey = "androidTVBox"
     private static let enabledKey = "androidTVBox.enabled"
-    /// Features we ask for: ping, keys, power, volume, app links.
-    private static let features = 1 | 2 | 32 | 64 | 512
+    var onCommandError: ((String) -> Void)?
+    private var remoteSession = BoxRemoteSession()
+    private var generation = UUID()
+    private var keyTask: Task<Void, Never>?
     private var remote: BoxConnection?
     private var pairingConnection: BoxConnection?
     private var connectTask: Task<Bool, Never>?
@@ -50,7 +55,7 @@ import Security
     var statusText: String {
         let name = box?.name ?? "Kutu"
         switch state {
-        case .connected: return "\(name) Wi-Fi ile kumanda ediliyor."
+        case .connected: return remoteSession.isOn == false ? "\(name) beklemede. Kutu açık değilse kendi kumandasından aç." : "\(name) Wi-Fi ile kumanda ediliyor."
         case .connecting: return "\(name) kutusuna bağlanılıyor…"
         case .failed(let reason): return reason
         case .idle: return "Tuşlar \(name) kutusuna Wi-Fi ile gönderilecek."
@@ -73,10 +78,13 @@ import Security
         do {
             let connection = BoxConnection(host: host, port: 6467, identity: try BoxCertificate.identity())
             pairingConnection = connection
-            connection.onMessage = { [weak self] frame in Task { @MainActor in self?.handlePairing(frame) } }
-            connection.onClose = { [weak self] error in
+            connection.onMessage = { [weak self, weak connection] frame in Task { @MainActor in
+                guard let connection, self?.pairingConnection === connection else { return }
+                self?.handlePairing(frame)
+            } }
+            connection.onClose = { [weak self, weak connection] error in
                 Task { @MainActor in
-                    guard let self, self.pairingConnection === connection else { return }
+                    guard let self, let connection, self.pairingConnection === connection else { return }
                     self.pairingConnection = nil
                     if self.pairing != .done, self.pairing != .idle {
                         self.pairing = .failed(Self.closeReason(error) ?? "Kutu eşleştirmeyi kapattı. Yeniden dene.")
@@ -84,6 +92,7 @@ import Security
                 }
             }
             try await connection.start()
+            guard pairingConnection === connection else { return }
             connection.send(Self.pairingMessage { $0.message(10) { r in r.string(1, "atvremote"); r.string(2, "LG Kumanda") } })
         } catch {
             pairing = .failed(error.localizedDescription)
@@ -157,16 +166,21 @@ import Security
         if state == .connected { return true }
         if let connectTask { return await connectTask.value }
         guard let box, box.paired else { return false }
+        let token = generation
         let task = Task<Bool, Never> { [weak self] in
             guard let self else { return false }
             self.state = .connecting
             self.isReady = false
+            self.remoteSession = BoxRemoteSession()
             do {
                 let connection = BoxConnection(host: box.host, port: 6466, identity: try BoxCertificate.identity())
-                connection.onMessage = { [weak self] frame in Task { @MainActor in self?.handleRemote(frame, from: connection) } }
-                connection.onClose = { [weak self] error in
+                connection.onMessage = { [weak self, weak connection] frame in Task { @MainActor in
+                    guard let connection else { return }
+                    self?.handleRemote(frame, from: connection)
+                } }
+                connection.onClose = { [weak self, weak connection] error in
                     Task { @MainActor in
-                        guard let self, self.remote === connection else { return }
+                        guard let self, let connection, self.generation == token, self.remote === connection else { return }
                         self.remote = nil
                         self.isReady = false
                         self.readyWaiter?.resume(); self.readyWaiter = nil
@@ -175,16 +189,23 @@ import Security
                 }
                 self.remote = connection
                 try await connection.start()
+                guard self.generation == token, self.remote === connection, !Task.isCancelled else {
+                    connection.cancel(); return false
+                }
                 // The box first configures the session; keys sent before it is active are ignored.
                 let ready = await self.waitUntilReady(timeout: 5)
-                guard ready, self.remote === connection else {
-                    connection.onClose = nil; connection.cancel(); self.remote = nil
-                    self.state = .failed("Kutu kumanda oturumunu başlatmadı. Kutu açık mı?")
+                guard ready, self.generation == token, self.remote === connection, !Task.isCancelled else {
+                    connection.onClose = nil; connection.cancel()
+                    if self.generation == token, self.remote === connection {
+                        self.remote = nil
+                        self.state = .failed("Kutu kumanda oturumunu başlatmadı. Kutu açık mı?")
+                    }
                     return false
                 }
                 self.state = .connected
                 return true
             } catch {
+                guard self.generation == token, !Task.isCancelled else { return false }
                 self.remote = nil
                 self.state = .failed(error.localizedDescription)
                 return false
@@ -192,7 +213,7 @@ import Security
         }
         connectTask = task
         let result = await task.value
-        connectTask = nil
+        if generation == token { connectTask = nil }
         return result
     }
 
@@ -204,7 +225,7 @@ import Security
     private func waitUntilReady(timeout: Double) async -> Bool {
         if isReady { return true }
         let timer = Task { [weak self] in
-            try? await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000))
+            do { try await Task.sleep(nanoseconds: UInt64(timeout * 1_000_000_000)) } catch { return }
             self?.readyWaiter?.resume(); self?.readyWaiter = nil
         }
         await withCheckedContinuation { readyWaiter = $0 }
@@ -213,6 +234,9 @@ import Security
     }
 
     func disconnect() {
+        generation = UUID()
+        connectTask?.cancel(); connectTask = nil
+        keyTask?.cancel(); keyTask = nil
         remote?.onClose = nil
         remote?.cancel(); remote = nil
         isReady = false
@@ -223,8 +247,17 @@ import Security
     /// Sends a remote key to the box, connecting first if needed. Returns false if the key has no box equivalent.
     @discardableResult func send(_ key: RemoteKey) -> Bool {
         guard let code = Self.keyCode(for: key) else { return false }
-        Task {
-            guard await connect(), let remote else { return }
+        let previous = keyTask
+        let token = generation
+        keyTask = Task { [weak self] in
+            await previous?.value
+            guard let self, self.generation == token, self.enabled, !Task.isCancelled else { return }
+            guard await self.connect(), let remote = self.remote else {
+                guard self.generation == token, !Task.isCancelled else { return }
+                self.onCommandError?(self.statusText)
+                return
+            }
+            guard self.generation == token, self.enabled, !Task.isCancelled else { return }
             var w = ProtoWriter()
             w.message(10) { $0.varint(1, code); $0.varint(2, 3) }
             remote.send(w.data)
@@ -233,26 +266,17 @@ import Security
     }
 
     private func handleRemote(_ frame: Data, from connection: BoxConnection) {
-        guard let message = ProtoMessage(frame) else { return }
-        var reply = ProtoWriter()
-        if let configure = message.message(1) {
-            deviceModel = configure.message(2)?.string(1) ?? deviceModel
-            let supported = configure.int(1) ?? Self.features
-            reply.message(1) { c in
-                c.varint(1, Self.features & supported)
-                c.message(2) { d in d.varint(3, 1); d.string(4, "1"); d.string(5, "atvremote"); d.string(6, "1.0.0") }
-            }
-        } else if message.has(2) {
-            reply.message(2) { $0.varint(1, Self.features) }
-            markReady()
-        } else if message.has(40) {
-            markReady()
-        } else if let ping = message.message(8) {
-            reply.message(9) { $0.varint(1, ping.int(1) ?? 0) }
-        } else if let ime = message.message(20) {
-            currentApp = ime.message(1)?.string(12) ?? currentApp
+        guard remote === connection else { return }
+        let reply = remoteSession.receive(frame)
+        deviceModel = remoteSession.model
+        currentApp = remoteSession.currentApp
+        guard remoteSession.supportsKeys else {
+            state = .failed("Kutu Wi-Fi kumanda tuşlarını desteklediğini bildirmedi.")
+            connection.cancel()
+            return
         }
-        if !reply.data.isEmpty { connection.send(reply.data) }
+        if !reply.isEmpty { connection.send(reply) }
+        if remoteSession.ready { markReady() }
     }
 
     /// Android key codes for the LG remote keys; keys without a box meaning (volume, mute) stay on the TV.

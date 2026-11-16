@@ -1,10 +1,10 @@
-LG Kumanda 1.0 (16)
+LG Kumanda 1.0 (17)
 
-- IP adresi değişen kayıtlı TV'yi otomatik bulup yeniden bağlanma.
-- TV'nin kalıcı webOS cihaz kimliği ve kayıtlı TLS sertifikası birlikte kontrol edilir. Aynı adı veya sertifikayı taşıyan başka TV'ye otomatik geçilmez.
-- Yeni IP, kayıtlı TV bağlantıyı kabul ettikten sonra kaydedilir. Eşleştirme, cihaz adı, kısayollar ve uyandırma bilgileri korunur.
-- Ağ aramasından bulunan kayıtlı TV'nin yeni adresi de mevcut cihaz kaydıyla açılır.
+- TV fiziksel kumandadan kapatıldığında güç bildirimiyle “TV kapalı” durumunu gösterme. Bekleme bildirimi geldiğinde kumanda bağlantısı kapanır ve gereksiz IP araması başlatılmaz.
+- Güç durumu ayrıca 5 saniyede bir kontrol edilir; yanıt ve bağlantı kontrolleri 3 saniyeyle sınırlandırılır. Güç API'sini desteklemeyen TV'lerde bağlantı kontrolü sürer. Sadece ekranın kapandığı ses moduyla tam bekleme birbirinden ayrılır.
+- Tivibu/Android TV kutusunda oturum tamamen hazır olmadan tuş gönderilmesi düzeltildi. Yalnız kutunun kabul ettiği özellikler kullanılır; art arda gelen tuşlar sırayla gönderilir.
+- Wi-Fi ile eşleşen kutunun yön/OK tuşları LG işaretçi bağlantısından bağımsız çalışır. Kutuya bağlanılamazsa hata gösterilir. Uygulama arka plana geçtiğinde kutu bağlantısı temizlenir; sonraki tuşta yeniden açılır.
 
-İlk kullanım: TV açıkken bu sürümle bir kez bağlanıp birkaç saniye bekle; kalıcı kimliği otomatik kaydedilir. Bundan sonraki bağlantı hatalarında ağ taranarak yeni IP aranır. TV'nin açık olması ve aynı yerel ağdan erişilebilmesi gerekir. Arama bulunamazsa veya kimlik eşleşmesi belirsizse kullanıcıya bilgi verilir. İptal veya başka TV seçimi devam eden yeniden bulma işlemini durdurur.
+Tivibu ilk kurulum: Kumanda > Kontrol hedefi > HDMI kutusu yardımı > Wi-Fi ile kutu kumandası. Kutuyu seç, TV'deki 6 karakterlik kodu gir ve bağlı olduğu HDMI girişini seç (bu kurulumda HDMI 3). Her iPhone'da bir kez eşleştirmek gerekir; başka cihazın eşleştirmesi otomatik aktarılmaz.
 
-Kalıcı kimlik vermeyen eski modellerde veya TV sertifikası değiştiğinde otomatik taşıma yapılmaz; Cihazlar'dan seçim/yeniden eşleştirme gerekir. Uyandırma başarısı ayrı bir konudur; bu sürüm Apple multicast yetkisini eklemez.
+Doğrulama: güç durumları ve kutu oturumu testleri ile iPhone gezinme/klavye kontrolleri geçti. Fiziksel kumandadan kapanma ve Tivibu menüsünün gerçekten hareket etmesi ayrıca cihazda doğrulanmalıdır. Uyandırma için Apple multicast yetkisi bu sürümde de eklenmez.

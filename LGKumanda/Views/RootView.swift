@@ -3,6 +3,7 @@ import SwiftUI
 struct RootView: View {
     @EnvironmentObject private var client: TVClient
     @EnvironmentObject private var shortcuts: ShortcutStore
+    @EnvironmentObject private var box: BoxClient
     @Environment(\.scenePhase) private var phase
     @State private var tab = 0
     var body: some View {
@@ -22,7 +23,7 @@ struct RootView: View {
             if ready { shortcuts.seed(tv: client.selected?.id, apps: client.apps, inputs: client.inputs) }
         }
         .onChange(of: phase) { _, phase in
-            if phase == .background { client.disconnect() }
+            if phase == .background { client.disconnect(); box.disconnect() }
             else if phase == .active, let tv = client.selected, client.state == .disconnected { client.connect(to: tv) }
         }
     }
@@ -73,6 +74,7 @@ struct RemoteView: View {
     @State private var editingShortcuts = false
     @State private var hdmiHelp = false
     private var connected: Bool { client.state == .connected }
+    private var keysAvailable: Bool { client.pointerReady || box.handles(foregroundAppID: client.foregroundAppID) }
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -128,13 +130,13 @@ struct RemoteView: View {
                             RemoteButton(title: "Geri", symbol: "arrow.uturn.backward") { client.key(.back) }
                             RemoteButton(title: "TV ana ekranı", symbol: "house", prominent: true) { client.key(.home) }
                             RemoteButton(title: "Ayarlar", symbol: "gearshape") { client.key(.settings) }
-                        }.disabled(!client.pointerReady)
+                        }.disabled(!keysAvailable)
                     }.disabled(!connected)
                     HStack(spacing: 12) {
                         RemoteButton(title: client.muted ? "Sesi aç" : "Sessiz", symbol: client.muted ? "speaker.slash.fill" : "speaker.wave.2") {
                             client.command("audio/setMute", ["mute": !client.muted])
                         }
-                        RemoteButton(title: "Rehber", symbol: "list.bullet.rectangle") { client.key(.guide) }.disabled(!client.pointerReady)
+                        RemoteButton(title: "Rehber", symbol: "list.bullet.rectangle") { client.key(.guide) }.disabled(!keysAvailable)
                     }.disabled(!connected)
                     extraControls.disabled(!connected)
                     Text("LG webOS için bağımsız kumanda.").font(.footnote).foregroundStyle(.secondary).padding(.bottom, 12)
@@ -177,7 +179,7 @@ struct RemoteView: View {
                     Text(client.selected?.name ?? "Televizyonunu ekle").font(.headline).foregroundStyle(.primary)
                     HStack(spacing: 6) {
                         Circle().fill(connected ? Color.green : Color.secondary).frame(width: 6, height: 6)
-                        Text(client.selected == nil ? "Aynı Wi-Fi üzerinden bağlan" : client.state.label + (connected ? " · " + client.controlLabel : "")).font(.subheadline).foregroundStyle(.secondary)
+                        Text(client.selected == nil ? "Aynı Wi-Fi üzerinden bağlan" : client.connectionLabel + (connected ? " · " + client.controlLabel : "")).font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
                 Spacer()
@@ -190,11 +192,11 @@ struct RemoteView: View {
         HStack(spacing: 12) {
             rocker(title: "SES", value: client.volume.map(String.init) ?? "—", plus: "plus", minus: "minus",
                    increase: { client.command("audio/volumeUp") }, decrease: { client.command("audio/volumeDown") }).frame(width: 56)
-            if mode == 0 { DirectionPad(diameter: diameter).disabled(!client.pointerReady) }
-            else { TouchPad(forceCursorless: client.isHDMIActive).frame(width: diameter, height: diameter).disabled(!client.pointerReady) }
+            if mode == 0 { DirectionPad(diameter: diameter).disabled(!keysAvailable) }
+            else { TouchPad(forceCursorless: client.isHDMIActive).frame(width: diameter, height: diameter).disabled(!keysAvailable) }
             rocker(title: "KANAL", value: nil, plus: "chevron.up", minus: "chevron.down",
                    increase: { client.channel(up: true) }, decrease: { client.channel(up: false) }).frame(width: 56)
-                .disabled(client.controlContext != .television && !client.pointerReady)
+                .disabled(client.controlContext != .television && !keysAvailable)
         }.fixedSize(horizontal: true, vertical: false)
     }
     private func rocker(title: String, value: String?, plus: String, minus: String, increase: @escaping () -> Void, decrease: @escaping () -> Void) -> some View {
@@ -216,25 +218,25 @@ struct RemoteView: View {
                 RemoteButton(title: "Oynat", symbol: "play.fill") { client.media(.play) }
                 RemoteButton(title: "Duraklat", symbol: "pause.fill") { client.media(.pause) }
                 RemoteButton(title: "İleri sar", symbol: "forward.fill") { client.media(.fastForward) }
-            }.disabled(client.controlContext != .television && !client.pointerReady)
+            }.disabled(client.controlContext != .television && !keysAvailable)
             HStack(spacing: 10) {
-                RemoteButton(title: "Durdur", symbol: "stop.fill") { client.media(.stop) }.disabled(client.controlContext != .television && !client.pointerReady)
-                RemoteButton(title: "Bilgi", symbol: "info.circle") { client.key(.info) }.disabled(!client.pointerReady)
-                RemoteButton(title: "Çıkış", symbol: "rectangle.portrait.and.arrow.right") { client.key(.exit) }.disabled(!client.pointerReady)
+                RemoteButton(title: "Durdur", symbol: "stop.fill") { client.media(.stop) }.disabled(client.controlContext != .television && !keysAvailable)
+                RemoteButton(title: "Bilgi", symbol: "info.circle") { client.key(.info) }.disabled(!keysAvailable)
+                RemoteButton(title: "Çıkış", symbol: "rectangle.portrait.and.arrow.right") { client.key(.exit) }.disabled(!keysAvailable)
             }
-            numericPad.disabled(!client.pointerReady)
+            numericPad.disabled(!keysAvailable)
             HStack(spacing: 12) {
                 colorKey("Kırmızı", key: .red, color: .red, shape: "circle.fill")
                 colorKey("Yeşil", key: .green, color: .green, shape: "square.fill")
                 colorKey("Sarı", key: .yellow, color: .yellow, shape: "triangle.fill")
                 colorKey("Mavi", key: .blue, color: .blue, shape: "diamond.fill")
-            }.disabled(!client.pointerReady)
+            }.disabled(!keysAvailable)
             HStack(spacing: 10) {
                 RemoteButton(title: "Altyazı") { client.key(.subtitles) }
                 RemoteButton(title: "Teletekst") { client.key(.teletext) }
                 RemoteButton(title: "Liste") { client.key(.list) }
-            }.disabled(!client.pointerReady)
-            RemoteButton(title: "Menü", symbol: "line.3.horizontal") { client.key(.menu) }.disabled(!client.pointerReady)
+            }.disabled(!keysAvailable)
+            RemoteButton(title: "Menü", symbol: "line.3.horizontal") { client.key(.menu) }.disabled(!keysAvailable)
         }
     }
     private var numericPad: some View {

@@ -62,7 +62,7 @@ struct DevicesView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(tv.name).font(.headline)
                                     Text(tv.host).font(.subheadline).foregroundStyle(.secondary)
-                                    if client.selected?.id == tv.id { Text(client.state.label).font(.caption).foregroundStyle(Theme.accent) }
+                                    if client.selected?.id == tv.id { Text(client.connectionLabel).font(.caption).foregroundStyle(Theme.accent) }
                                 }
                                 Spacer()
                                 editButton(tv)
@@ -77,7 +77,7 @@ struct DevicesView: View {
                 }
                 if let tv = client.selected {
                     Section {
-                        LabeledContent("Durum", value: client.state.label)
+                        LabeledContent("Durum", value: client.connectionLabel)
                         if client.state == .connecting || client.state == .pairing {
                             HStack { ProgressView(); Text(client.state == .pairing ? "TV ekranındaki bağlantı isteğini kabul et." : "Televizyonla bağlantı kuruluyor…").font(.subheadline) }
                             Button("İptal et", role: .cancel) { client.disconnect() }.frame(minHeight: 44)

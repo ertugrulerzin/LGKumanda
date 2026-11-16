@@ -91,6 +91,14 @@ Kaynak: [Apple TN3179](https://developer.apple.com/documentation/technotes/tn317
 
 2026-11-16 tarihinde fiziksel iPhone 14 Pro (192.168.1.9) üzerinden aynı tarama koduyla TV **192.168.1.3** adresinde bulundu. TV'nin IP'si değişmemişti; 1311 servisi bağlantıyı reddederken 3001 TLS yöntemi TV'yi tanıdı. Tarama 253 adresi tamamladı. Bu düzeltme TestFlight **1.0 (15)** paketindedir.
 
+### Fiziksel kumandadan kapatma ve Tivibu
+
+TestFlight **1.0 (17)**, TV'nin güç durumu bildirimlerini dinler ve ayrıca 5 saniyede bir güç durumunu sorgular. `Active Standby`, `Suspend` veya `Power Off` bildirimi geldiğinde **TV kapalı** gösterilir, kumanda bağlantısı temizlenir ve IP kurtarma taraması başlatılmaz. Ekranı kapalı ses modu ayrı tutulur. Yanıt ve ping kontrolleri 3 saniyeyle sınırlıdır; güç API'si desteklenmiyorsa bağlantı kontrolü sürer. Ağdan hiç yanıt alınmaması tek başına TV'nin kapandığını kanıtlamaz; bu durumda bağlantı kaybı/yeniden arama durumu gösterilir.
+
+Tivibu/Android TV kutusu **kullanılan iPhone'da** kodla eşleştirilmeli ve doğru HDMI girişiyle ilişkilendirilmelidir. Başka bilgisayardaki veya simülatördeki eşleştirme telefona aktarılmaz. Uygulamada **Kumanda → Kontrol hedefi → HDMI kutusu yardımı → Wi-Fi ile kutu kumandası** yolunu izle. TV'yi kutunun girişine al, 6 karakterlik kodu gir ve HDMI girişini seç. Wi-Fi ile kumanda HDMI-CEC gerektirmez; ses TV'ye gönderilmeye devam eder.
+
+Kutu protokolü `RemoteStart` gelmeden hazır kabul edilmez; `SetActive` yanıtında yalnız sunucuyla ortak özellikler kullanılır. Tuşlar sıraya alınır ve iptal edilmiş bağlantının sonuçları yeni oturuma uygulanmaz. Wi-Fi eşleştirmesi aktifken yön/OK için LG işaretçi bağlantısı gerekmez. Bağlantı hataları görünür; arka plana geçişte eski kutu oturumu kapatılır. Protokol başvurusu: [androidtvremote2](https://github.com/tronikos/androidtvremote2/blob/main/src/androidtvremote2/remote.py). Gerçek TV'de güç değişimi ve kutu menüsünün hareket etmesi ayrıca denenmelidir.
+
 ### IP adresi değişirse
 
 TestFlight **1.0 (16)**, TV'nin adresini kalıcı webOS cihaz UUID'sinden ayrı tutar. Bu sürümle TV açıkken bir kez bağlanıp birkaç saniye bekle; kalıcı kimlik otomatik kaydedilir. Önceki sürümlerin TV kayıtları ve eşleştirmeleri korunur.
