@@ -132,10 +132,18 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         connect(to: tv)
     }
     private var wakeTask: Task<Void, Never>?
+    private var powerOnWatch: Task<Void, Never>?
+    /// A booting TV can briefly report standby; such reports are ignored until this instant.
+    private var ignoreStandbyUntil: ContinuousClock.Instant?
     func disconnect() {
+        powerOnWatch?.cancel(); powerOnWatch = nil
+        wakeTask?.cancel(); wakeTask = nil
+        resetConnection()
+    }
+    /// Closes the current connection but keeps a running power-on watch alive.
+    private func resetConnection() {
         addressRecoveryTask?.cancel(); addressRecoveryTask = nil
         persistAddressOnRegistration = false
-        wakeTask?.cancel(); wakeTask = nil
         webVideoSession = nil
         stopPointerMotion()
         generation = UUID()
@@ -154,7 +162,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         connect(to: tv, allowAddressRecovery: true, persistNewAddress: false)
     }
     private func connect(to tv: Television, allowAddressRecovery: Bool, persistNewAddress: Bool) {
-        disconnect(); error = nil; notice = nil
+        resetConnection(); error = nil; notice = nil
         guard TVProtocol.validHost(tv.host) else { error = "TV'nin yerel IPv4 adresini gir (ör. 192.168.1.50)."; return }
         selected = tv; preferences.set(tv.id.uuidString, forKey: "selectedTV")
         controlMode = ControlMode(rawValue: preferences.string(forKey: "controlMode.\(tv.id)") ?? "") ?? .automatic
@@ -214,9 +222,12 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         guard addressRecoveryAllowed, state != .pairing, let tv = selected, tv.secure, tv.deviceUUID != nil,
               televisions.contains(where: { $0.id == tv.id }),
               let fingerprint = KeychainStore.read("cert.\(tv.id)") else {
-            disconnect(); error = message; return
+            resetConnection()
+            // While waiting for a TV to boot, failed attempts are retried silently.
+            if powerOnWatch == nil { error = message }
+            return
         }
-        disconnect()
+        resetConnection()
         let recoveryToken = generation
         state = .connecting
         error = nil
@@ -541,12 +552,14 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         let reported = TVPowerState.read(payload)
         guard reported != .unknown else { return }
         if reported.isStandby {
+            if let until = ignoreStandbyUntil, ContinuousClock.now < until { return }
             // A confirmed power event must not start DHCP recovery and leave
             // the UI claiming the powered-off TV is still connected.
-            disconnect()
+            resetConnection()
             powerState = .standby
             error = nil
             notice = "TV kapalı. Yeniden açmak için Uyandır'ı kullanabilirsin."
+            if let tv = selected { watchForPowerOn(tv, requireClosedFirst: true, timeout: nil) }
         } else { powerState = reported }
     }
     func powerOff() {
@@ -557,6 +570,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
                 try await send(TVProtocol.request(id: UUID().uuidString, uri: "system/turnOff"))
                 disconnect()
                 notice = "Kapatma komutu gönderildi."
+                if let tv = selected { watchForPowerOn(tv, requireClosedFirst: true, timeout: nil) }
             } catch { self.error = error.localizedDescription }
         }
     }
@@ -575,22 +589,51 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             catch is CancellationError { return }
             catch { self.notice = nil; self.error = error.localizedDescription; return }
             guard !Task.isCancelled else { return }
-            let port: UInt16 = tv.secure ? 3001 : 3000
-            if await TVReachability.waitUntilListening(host: tv.host, port: port, within: 20) {
+            self.notice = "TV açılıyor…"
+            self.watchForPowerOn(tv, requireClosedFirst: false, timeout: .seconds(40)) { [weak self] in
+                guard let self, self.state == .disconnected else { return }
+                if delivery.broadcast, tv.deviceUUID != nil {
+                    // The TV may have woken with a new DHCP address; connecting runs address recovery.
+                    self.connect(to: tv)
+                    self.notice = "TV eski adresinde yanıt vermedi; ağda aranıyor…"
+                } else {
+                    self.notice = nil
+                    self.error = Self.wakeFailure(delivery)
+                }
+            }
+        }
+    }
+    /// Waits for the TV to answer on its webOS port and connects, retrying while it boots.
+    /// Right after a power-off the port can stay open briefly, so a standby watch only
+    /// reconnects after it has seen the port closed (the TV was really turned back on).
+    private func watchForPowerOn(_ tv: Television, requireClosedFirst: Bool, timeout: Duration?, onTimeout: (() -> Void)? = nil) {
+        powerOnWatch?.cancel()
+        let port: UInt16 = tv.secure ? 3001 : 3000
+        powerOnWatch = Task { [weak self] in
+            let start = ContinuousClock.now
+            var seenClosed = !requireClosedFirst
+            var lastAttempt: ContinuousClock.Instant?
+            while !Task.isCancelled {
+                guard let client = self, client.selected?.id == tv.id else { return }
+                if client.state == .connected { client.powerOnWatch = nil; return }
+                if let timeout, ContinuousClock.now - start > timeout {
+                    client.powerOnWatch = nil
+                    onTimeout?()
+                    return
+                }
+                let open = await TVReachability.isListening(host: tv.host, port: port)
                 guard !Task.isCancelled else { return }
-                connect(to: tv)
-                notice = "TV açıldı, bağlanılıyor…"
-                return
+                if !open {
+                    seenClosed = true
+                } else if seenClosed, client.state == .disconnected,
+                          lastAttempt.map({ ContinuousClock.now - $0 > .seconds(4) }) ?? true {
+                    lastAttempt = .now
+                    client.ignoreStandbyUntil = .now + .seconds(30)
+                    client.connect(to: tv, allowAddressRecovery: false, persistNewAddress: false)
+                    client.notice = "TV açıldı, bağlanılıyor…"
+                }
+                try? await Task.sleep(for: .seconds(2))
             }
-            guard !Task.isCancelled else { return }
-            if delivery.broadcast, tv.deviceUUID != nil {
-                // The TV may have woken with a new DHCP address; connecting runs address recovery.
-                connect(to: tv)
-                notice = "TV eski adresinde yanıt vermedi; ağda aranıyor…"
-                return
-            }
-            notice = nil
-            error = Self.wakeFailure(delivery)
         }
     }
     // Tested on a Tivibu (ZTE Android TV) box: it stays awake while the TV is off and
