@@ -333,6 +333,9 @@ class _BrowserPageState extends State<BrowserPage> {
                         ),
                         initialSettings: InAppWebViewSettings(
                           incognito: true,
+                          userAgent: webOSBrowserUserAgent,
+                          preferredContentMode:
+                              UserPreferredContentMode.DESKTOP,
                           useShouldOverrideUrlLoading: true,
                           javaScriptCanOpenWindowsAutomatically: false,
                           supportMultipleWindows: false,

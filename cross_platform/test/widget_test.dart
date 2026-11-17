@@ -86,7 +86,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('İşaretçisiz'), findsOneWidget);
       await tester.enterText(find.byType(TextField).first, 'Merhaba');
-      await tester.tap(find.byTooltip('Metni TV’ye gönder'));
+      await tester.tap(find.byTooltip('Metni gönder'));
       await tester.pumpAndSettle();
       expect(find.text('Metin TV’ye gönderildi.'), findsOneWidget);
       void selectCatalog(int index) {

@@ -106,7 +106,8 @@ class BoxClient extends ChangeNotifier {
       _activeKey = 'androidTVBoxes.active',
       _enabledKey = 'androidTVBox.enabled',
       _identityKey = 'androidTVBox.identity';
-  static const _features = 1 | 2 | 32 | 64 | 512;
+  // Ping, key, IME (text), power, volume, app links.
+  static const _features = 1 | 2 | 4 | 32 | 64 | 512;
 
   final List<SavedBox> boxes = [];
   String? activeID;
@@ -117,6 +118,8 @@ class BoxClient extends ChangeNotifier {
   int _generation = 0, _pairGeneration = 0;
   Future<void> _keyQueue = Future.value();
   int _activeFeatures = _features;
+  // Counters the box sends for its focused text field; text edits must echo them.
+  int _imeCounter = 0, _imeField = 0;
   bool? isOn;
   void Function(String)? onCommandError;
   BoxPairing pairing = BoxPairing.idle;
@@ -537,6 +540,45 @@ class BoxClient extends ChangeNotifier {
     return true;
   }
 
+  /// Replaces the text in the box's focused text field (Android TV IME).
+  bool sendText(String text) {
+    if (box?.paired != true || !enabled || text.isEmpty) return false;
+    final token = _generation;
+    _keyQueue = _keyQueue
+        .then((_) async {
+          if (token != _generation || _disposed) return;
+          if (!await connect()) {
+            if (token == _generation) onCommandError?.call(status);
+            return;
+          }
+          if (token != _generation || _disposed) return;
+          final w = ProtoWriter()
+            ..message(
+              21,
+              (e) => e
+                ..varint(1, _imeCounter)
+                ..varint(2, _imeField)
+                ..message(
+                  3,
+                  (i) => i
+                    ..varint(1, 1)
+                    ..message(
+                      2,
+                      (f) => f
+                        ..varint(1, text.length - 1)
+                        ..varint(2, text.length - 1)
+                        ..string(3, text),
+                    ),
+                ),
+            );
+          _remoteSocket?.add(ProtoWriter.frame(w.bytes));
+        })
+        .catchError((Object e) {
+          if (token == _generation) onCommandError?.call(_describe(e));
+        });
+    return true;
+  }
+
   bool playPause() => sendCode(85);
   Future<void> sendChannel(String number) async {
     if (!RegExp(r'^\d{1,4}$').hasMatch(number)) {
@@ -572,6 +614,11 @@ class BoxClient extends ChangeNotifier {
       });
     } else if (m.has(2)) {
       reply.message(2, (a) => a.varint(1, _activeFeatures));
+    } else if (m.message(21) case final edit?) {
+      _imeCounter = edit.integer(1) ?? _imeCounter;
+      _imeField = edit.integer(2) ?? _imeField;
+    } else if (m.message(22) case final show?) {
+      _imeField = show.message(2)?.integer(1) ?? _imeField;
     } else if (m.has(40)) {
       isOn = m.message(40)?.integer(1) == 1;
       if (_ready?.isCompleted == false) _ready!.complete(true);

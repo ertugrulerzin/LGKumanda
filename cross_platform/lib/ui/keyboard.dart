@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 
+import '../core/android_tv/box_client.dart';
 import '../core/tv_client.dart';
 import 'browser.dart';
 
@@ -15,15 +16,41 @@ class _KeyboardPageState extends State<KeyboardPage> {
   final text = TextEditingController();
   bool sending = false;
   String? result;
+
+  /// Where typing goes: null is the TV, otherwise a paired box ID.
+  /// Until chosen it follows the TV: a box input in front selects that box.
+  String? _chosen;
+  bool _userChose = false;
+
   @override
   void dispose() {
     text.dispose();
     super.dispose();
   }
 
-  Future<void> send() async {
+  SavedBox? _target(BoxClient? boxes) {
+    if (boxes == null) return null;
+    final id = _userChose
+        ? _chosen
+        : boxes.boxForForeground(widget.client.foreground)?.id;
+    return boxes.pairedBoxes.where((b) => b.id == id).firstOrNull;
+  }
+
+  Future<void> send(SavedBox? target) async {
     if (sending || text.text.isEmpty) return;
     final draft = text.text;
+    if (target != null) {
+      final boxes = BoxClient.shared!;
+      boxes.select(target.id);
+      final sent = boxes.sendText(draft);
+      setState(() {
+        if (sent) text.clear();
+        result = sent
+            ? 'Metin ${target.title(widget.client.inputs)} kutusuna gönderildi. Kutuda bir arama veya metin alanı açık olmalı.'
+            : 'Kutuya gönderilemedi. Kutu ayarlarından eşleştirmeyi kontrol et.';
+      });
+      return;
+    }
     setState(() {
       sending = true;
       result = null;
@@ -41,45 +68,109 @@ class _KeyboardPageState extends State<KeyboardPage> {
     if (mounted) setState(() => sending = false);
   }
 
+  void _boxKey(SavedBox target, int code) {
+    final boxes = BoxClient.shared!;
+    boxes.select(target.id);
+    boxes.sendCode(code);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final boxes = BoxClient.shared;
+    return ListenableBuilder(
+      listenable: Listenable.merge([widget.client, ?boxes]),
+      builder: (context, _) => _page(context, boxes),
+    );
+  }
+
+  Widget _page(BuildContext context, BoxClient? boxes) {
     final client = widget.client;
-    final enabled = client.connected && !client.isHDMI;
+    final target = _target(boxes);
+    final name = target?.title(client.inputs) ?? 'TV';
+    final enabled = target != null || (client.connected && !client.isHDMI);
     return Align(
       alignment: Alignment.topCenter,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 720),
         child: Column(
           children: [
+            if (boxes != null && boxes.pairedBoxes.isNotEmpty)
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                child: Row(
+                  children: [
+                    Text(
+                      'Yazılacak yer:',
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
+                    const SizedBox(width: 8),
+                    ChoiceChip(
+                      key: const ValueKey('keyboardTarget.tv'),
+                      avatar: const Icon(Icons.tv),
+                      label: const Text('TV'),
+                      selected: target == null,
+                      onSelected: (_) => setState(() {
+                        _userChose = true;
+                        _chosen = null;
+                        result = null;
+                      }),
+                    ),
+                    for (final item in boxes.pairedBoxes)
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8),
+                        child: ChoiceChip(
+                          key: ValueKey('keyboardTarget.${item.id}'),
+                          avatar: const Icon(Icons.router_outlined),
+                          label: Text(item.title(client.inputs)),
+                          selected: target?.id == item.id,
+                          onSelected: (_) => setState(() {
+                            _userChose = true;
+                            _chosen = item.id;
+                            result = null;
+                          }),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             Expanded(
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
                 children: [
-                  if (client.isHDMI)
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        'HDMI kutusunda işaretçisiz yön/OK kullanılır. TV klavyesi ve fare imleci kutuya aktarılmaz.',
+                  if (target == null) ...[
+                    if (client.isHDMI)
+                      const Padding(
+                        padding: EdgeInsets.only(bottom: 16),
+                        child: Text(
+                          'TV bir HDMI girişinde. Kutuya yazmak için yukarıdan kutuyu seç.',
+                        ),
                       ),
+                    TouchPad(client: client),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Yazmadan önce TV’de arama veya metin alanını seç. Gönderim başarısız olursa yazdıkların korunur.',
                     ),
-                  TouchPad(client: client),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Yazmadan önce TV’de arama veya metin alanını seç. Gönderim başarısız olursa yazdıkların korunur.',
-                  ),
-                  const SizedBox(height: 16),
-                  OutlinedButton.icon(
-                    onPressed: client.connected
-                        ? () => Navigator.push(
-                            context,
-                            MaterialPageRoute<void>(
-                              builder: (_) => BrowserPage(client: client),
-                            ),
-                          )
-                        : null,
-                    icon: const Icon(Icons.language),
-                    label: const Text('Web adresi veya Google araması'),
-                  ),
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      onPressed: client.connected
+                          ? () => Navigator.push(
+                              context,
+                              MaterialPageRoute<void>(
+                                builder: (_) => BrowserPage(client: client),
+                              ),
+                            )
+                          : null,
+                      icon: const Icon(Icons.language),
+                      label: const Text('Web adresi veya Google araması'),
+                    ),
+                  ] else ...[
+                    Text(
+                      'Yazdıkların $name kutusundaki seçili metin alanına gider. Önce kutuda arama veya metin alanını yön tuşlarıyla seç.',
+                    ),
+                    const SizedBox(height: 16),
+                    _BoxPad(onKey: (code) => _boxKey(target, code)),
+                  ],
                 ],
               ),
             ),
@@ -103,16 +194,19 @@ class _KeyboardPageState extends State<KeyboardPage> {
                           enabled: enabled && !sending,
                           minLines: 1,
                           maxLines: 3,
-                          decoration: const InputDecoration(
-                            labelText: 'TV’ye yaz',
+                          onSubmitted: (_) => send(target),
+                          decoration: InputDecoration(
+                            labelText: 'Yaz → $name',
                             hintText: 'Aranacak metin…',
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       IconButton.filled(
-                        tooltip: 'Metni TV’ye gönder',
-                        onPressed: enabled && !sending ? send : null,
+                        tooltip: 'Metni gönder',
+                        onPressed: enabled && !sending
+                            ? () => send(target)
+                            : null,
                         icon: sending
                             ? const SizedBox.square(
                                 dimension: 20,
@@ -129,27 +223,31 @@ class _KeyboardPageState extends State<KeyboardPage> {
                     spacing: 16,
                     children: [
                       TextButton.icon(
-                        onPressed: enabled
-                            ? () => client.run(() async {
+                        onPressed: !enabled
+                            ? null
+                            : target != null
+                            ? () => _boxKey(target, 66)
+                            : () => client.run(() async {
                                 await client.request(
                                   'com.webos.service.ime/sendEnterKey',
                                 );
-                              })
-                            : null,
+                              }),
                         icon: const Icon(Icons.keyboard_return),
-                        label: const Text('TV Enter'),
+                        label: const Text('Enter'),
                       ),
                       TextButton.icon(
-                        onPressed: enabled
-                            ? () => client.run(() async {
+                        onPressed: !enabled
+                            ? null
+                            : target != null
+                            ? () => _boxKey(target, 67)
+                            : () => client.run(() async {
                                 await client.request(
                                   'com.webos.service.ime/deleteCharacters',
                                   {'count': 1},
                                 );
-                              })
-                            : null,
+                              }),
                         icon: const Icon(Icons.backspace_outlined),
-                        label: const Text('TV’de son karakteri sil'),
+                        label: const Text('Son karakteri sil'),
                       ),
                     ],
                   ),
@@ -159,6 +257,48 @@ class _KeyboardPageState extends State<KeyboardPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Arrows and OK for picking a text field on the box before typing.
+class _BoxPad extends StatelessWidget {
+  const _BoxPad({required this.onKey});
+  final void Function(int code) onKey;
+  @override
+  Widget build(BuildContext context) {
+    Widget key(IconData icon, String label, int code) => IconButton.filledTonal(
+      tooltip: label,
+      iconSize: 28,
+      onPressed: () => onKey(code),
+      icon: Icon(icon),
+    );
+    return Column(
+      children: [
+        key(Icons.keyboard_arrow_up, 'Yukarı', 19),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            key(Icons.keyboard_arrow_left, 'Sol', 21),
+            const SizedBox(width: 8),
+            IconButton.filled(
+              tooltip: 'Tamam',
+              iconSize: 28,
+              onPressed: () => onKey(23),
+              icon: const Icon(Icons.circle_outlined),
+            ),
+            const SizedBox(width: 8),
+            key(Icons.keyboard_arrow_right, 'Sağ', 22),
+          ],
+        ),
+        key(Icons.keyboard_arrow_down, 'Aşağı', 20),
+        const SizedBox(height: 8),
+        TextButton.icon(
+          onPressed: () => onKey(4),
+          icon: const Icon(Icons.undo),
+          label: const Text('Geri'),
+        ),
+      ],
     );
   }
 }

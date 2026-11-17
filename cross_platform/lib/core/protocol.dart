@@ -171,7 +171,16 @@ Uri browserTarget(String input) {
   final hasScheme = RegExp(r'^[a-zA-Z][a-zA-Z0-9+.-]*:').hasMatch(text);
   final address =
       hasScheme || (!text.contains(RegExp(r'\s')) && text.contains('.'));
-  if (!address) return Uri.https('www.google.com', '/search', {'q': text});
+  // Same language, region and no personalisation on every screen, so the TV
+  // and the phone or computer get the same results for the same words.
+  if (!address) {
+    return Uri.https('www.google.com', '/search', {
+      'q': text,
+      'hl': 'tr',
+      'gl': 'tr',
+      'pws': '0',
+    });
+  }
   final uri = Uri.tryParse(hasScheme ? text : 'https://$text');
   if (uri == null ||
       !['http', 'https'].contains(uri.scheme) ||
@@ -205,3 +214,9 @@ Uint8List magicPacket(String mac) {
 }
 
 String encodeMessage(Json value) => jsonEncode(value);
+
+/// The LG webOS browser's identity. The phone/desktop mirror presents itself
+/// the same way so sites (Google above all) serve the page the TV sees.
+const webOSBrowserUserAgent =
+    'Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) '
+    'Chrome/108.0.0.0 Safari/537.36 WebAppManager';
