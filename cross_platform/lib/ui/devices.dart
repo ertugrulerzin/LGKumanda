@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../core/discovery.dart';
 import '../core/android_tv/box_client.dart';
@@ -226,6 +227,8 @@ class _DevicesPageState extends State<DevicesPage> {
             const Text(
               'Wake-on-LAN için MAC adresini ve gerekirse yerel yayın adresini cihaz ayarlarından gir. TV’nin ağ üzerinden açılma ayarı da açık olmalı.',
             ),
+            const SizedBox(height: 16),
+            const AppVersionText(),
           ],
         ),
       ),
@@ -396,5 +399,23 @@ class _DeviceEditorState extends State<_DeviceEditor> {
         child: const Text('Kaydet ve bağlan'),
       ),
     ],
+  );
+}
+
+/// "Kumanda · Sürüm 1.0.0 (23)" from the installed package.
+class AppVersionText extends StatelessWidget {
+  const AppVersionText({super.key});
+  @override
+  Widget build(BuildContext context) => FutureBuilder<PackageInfo>(
+    future: PackageInfo.fromPlatform(),
+    builder: (context, snapshot) {
+      final info = snapshot.data;
+      if (info == null) return const SizedBox.shrink();
+      return Text(
+        'Kumanda · Sürüm ${info.version} (${info.buildNumber})',
+        key: const Key('appVersion'),
+        style: Theme.of(context).textTheme.bodySmall,
+      );
+    },
   );
 }

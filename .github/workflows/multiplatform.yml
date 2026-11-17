@@ -52,9 +52,9 @@ jobs:
         if: matrix.target == 'macos'
       - run: |
           mkdir -p build/dmg-root
-          ditto 'build/macos/Build/Products/Release/LG Kumanda.app' 'build/dmg-root/LG Kumanda.app'
+          ditto 'build/macos/Build/Products/Release/Kumanda.app' 'build/dmg-root/Kumanda.app'
           ln -s /Applications build/dmg-root/Applications
-          hdiutil create -volname 'LG Kumanda' -srcfolder build/dmg-root -ov -format UDZO build/LGKumanda-macOS.dmg
+          hdiutil create -volname 'Kumanda' -srcfolder build/dmg-root -ov -format UDZO build/LGKumanda-macOS.dmg
         if: matrix.target == 'macos'
       - name: Build Windows application
         if: matrix.target == 'windows'

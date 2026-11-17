@@ -30,7 +30,7 @@ class RemoteApp extends StatelessWidget {
   final TVClient client;
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'LG Kumanda',
+    title: 'Kumanda',
     debugShowCheckedModeBanner: false,
     locale: const Locale('tr'),
     supportedLocales: const [Locale('tr'), Locale('en')],

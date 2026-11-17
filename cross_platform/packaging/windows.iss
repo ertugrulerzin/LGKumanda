@@ -1,13 +1,13 @@
 ; Install the entire Flutter runtime, not just the launcher EXE.
 [Setup]
 AppId={{77D37AA5-7A42-4A86-9BC7-6C3C5F67BBAC}
-AppName=LG Kumanda
-AppVersion=1.0.0-preview.22
-VersionInfoVersion=1.0.0.22
+AppName=Kumanda
+AppVersion=1.0.0-preview.23
+VersionInfoVersion=1.0.0.23
 AppPublisher=Ertugrul Erzin
 AppPublisherURL=https://github.com/ertugrulerzin/LGKumanda
 DefaultDirName={localappdata}\Programs\LGKumanda
-DefaultGroupName=LG Kumanda
+DefaultGroupName=Kumanda
 PrivilegesRequired=lowest
 OutputDir=..\build
 OutputBaseFilename=LGKumanda-Windows-Setup
@@ -27,8 +27,8 @@ Name: desktopicon; Description: "Masaüstü kısayolu oluştur"; Flags: unchecke
 Source: "..\build\windows\x64\runner\Release\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\LG Kumanda"; Filename: "{app}\lg_kumanda.exe"
-Name: "{autodesktop}\LG Kumanda"; Filename: "{app}\lg_kumanda.exe"; Tasks: desktopicon
+Name: "{group}\Kumanda"; Filename: "{app}\lg_kumanda.exe"
+Name: "{autodesktop}\Kumanda"; Filename: "{app}\lg_kumanda.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\lg_kumanda.exe"; Description: "LG Kumanda’yı aç"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\lg_kumanda.exe"; Description: "Kumanda’yı aç"; Flags: nowait postinstall skipifsilent

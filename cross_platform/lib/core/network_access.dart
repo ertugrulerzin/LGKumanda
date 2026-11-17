@@ -6,7 +6,7 @@ class LocalNetworkDenied implements Exception {
   const LocalNetworkDenied();
   @override
   String toString() =>
-      'Yerel ağ izni verilmedi. Android ayarlarında LG Kumanda için Yakındaki cihazlar / Yerel ağ iznini aç.';
+      'Yerel ağ izni verilmedi. Android ayarlarında Kumanda için Yakındaki cihazlar / Yerel ağ iznini aç.';
 }
 
 Future<void>? _pendingPermission;

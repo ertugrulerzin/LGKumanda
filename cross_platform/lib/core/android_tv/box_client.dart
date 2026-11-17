@@ -316,7 +316,7 @@ class BoxClient extends ChangeNotifier {
       _sendPairing(
         (w) => w.message(10, (r) {
           r.string(1, 'atvremote');
-          r.string(2, 'LG Kumanda');
+          r.string(2, 'Kumanda');
         }),
       );
     } catch (e) {

@@ -1,6 +1,13 @@
 import SwiftUI
 
 struct DevicesView: View {
+    /// "Kumanda · Sürüm 1.0 (23)" from the bundle.
+    static var versionText: String {
+        let info = Bundle.main.infoDictionary
+        let version = info?["CFBundleShortVersionString"] as? String ?? "?"
+        let build = info?["CFBundleVersion"] as? String ?? "?"
+        return "Kumanda · Sürüm \(version) (\(build))"
+    }
     @ObservedObject private var ads = AdsManager.shared
     @EnvironmentObject private var client: TVClient
     @EnvironmentObject private var box: BoxClient
@@ -133,6 +140,8 @@ struct DevicesView: View {
                 Section {
                     Text("Kumanda bağımsız bir uygulamadır; LG Electronics ile bağlantılı değildir. Özellik desteği TV modeli ve webOS sürümüne göre değişir. Kızılötesi ve TV'nin sesli asistanı desteklenmez. iPhone klavyesindeki dikteyi metin girişi için kullanabilirsin.")
                         .font(.footnote).foregroundStyle(.secondary)
+                    Text(Self.versionText).font(.footnote).foregroundStyle(.secondary)
+                        .accessibilityIdentifier("appVersion")
                 }
             }
             .navigationTitle("Cihazlar")
