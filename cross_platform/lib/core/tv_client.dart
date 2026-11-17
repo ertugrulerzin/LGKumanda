@@ -484,9 +484,18 @@ class TVClient extends ChangeNotifier {
     }
     if (generation == _generation) {
       _emit();
-      await refreshLibrary();
-      await _captureUUID(generation);
+      // The wake identity is captured first and each step is isolated: a
+      // failure here (for example reading the TLS identity) must not skip
+      // saving the MAC address, or the TV can never be woken.
       await _captureWakeIdentity(generation);
+      try {
+        await refreshLibrary();
+      } catch (_) {}
+      try {
+        await _captureUUID(generation);
+      } catch (_) {
+        /* The UUID only helps recover a changed address. */
+      }
     }
   }
 
