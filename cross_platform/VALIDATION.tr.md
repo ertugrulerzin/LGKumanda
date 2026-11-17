@@ -10,6 +10,14 @@
 - Android release ARM64 APK: v2 imzası ve sürüm kodu 2022 doğrulandı; QA test verisi içermez. 20.322.039 bayt APK Faturabot tarafından kabul edildi.
 - Gerçek LG / Android TV kutularıyla çoklu kutu, güç değişikliği, adres değişikliği ve video oynatma uçtan uca bu aktarımda denenmedi. iPhone sonuçları bu platformların gerçek cihaz doğrulaması sayılmaz.
 
+## Yayımlanan 32. sürüm paketleri (Mac ve Windows)
+
+Kaynak: `8267f8cedf4fe688f87cf946ccc74f0f026c0eb3`. [Sürüm ve indirmeler](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.32). Android paketi bu sürümde yayımlanmadı.
+
+- macOS 1.0.0 (32): x86_64 + arm64; `codesign --verify --deep --strict` başarılı (ad-hoc, Developer ID/noter onayı yok); `hdiutil verify` DMG için başarılı. 24.226.625 bayt.
+- Windows EXE: [CI çalışması 44166246630](https://github.com/ertugrulerzin/LGKumanda/actions/runs/44166246630) çıktısı; Android, macOS ve Windows işleri başarılı. 12.005.749 bayt.
+- Gerçek cihaz: Mac Pro'da (M1) uyandırma ve 3–4 saniyede yeniden bağlanma, Android'de uyandırma kullanıcı tarafından doğrulandı. Kutuya metin gönderme Tivibu'da henüz denenmedi. Tivibu kutusu Wi-Fi üzerinden POWER, SLEEP ve uzun POWER komutlarını yok sayıyor.
+
 ## Yayımlanan 22. sürüm paketleri
 
 Kaynak: `cdb055668d3f71175982eee5b96e3f85f76ce674`. [Sürüm ve indirmeler](https://github.com/ertugrulerzin/LGKumanda/releases/tag/v1.0.0-preview.22).
