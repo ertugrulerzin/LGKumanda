@@ -142,6 +142,9 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     }
     /// Closes the current connection but keeps a running power-on watch alive.
     private func resetConnection() {
+        #if DEBUG
+        if previewMode { return }
+        #endif
         addressRecoveryTask?.cancel(); addressRecoveryTask = nil
         persistAddressOnRegistration = false
         webVideoSession = nil
@@ -159,6 +162,9 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         apps = []; inputs = []; channels = []
     }
     func connect(to tv: Television) {
+        #if DEBUG
+        if previewMode { return }
+        #endif
         connect(to: tv, allowAddressRecovery: true, persistNewAddress: false)
     }
     private func connect(to tv: Television, allowAddressRecovery: Bool, persistNewAddress: Bool) {
@@ -342,11 +348,21 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         }
     }
     private func send(_ object: [String: Any]) async throws {
+        #if DEBUG
+        if previewMode { return }
+        #endif
         guard let socket else { throw Failure.message("Önce bir TV'ye bağlan.") }
         let data = try JSONSerialization.data(withJSONObject: object)
         try await socket.send(.string(String(decoding: data, as: UTF8.self)))
     }
+    #if DEBUG
+    /// Screenshot/demo mode: commands succeed without a TV on the network.
+    var previewMode = false
+    #endif
     func request(_ uri: String, _ payload: [String: Any] = [:], timeout: Duration = .seconds(10)) async throws -> [String: Any] {
+        #if DEBUG
+        if previewMode { return [:] }
+        #endif
         guard state == .connected else { throw Failure.message("Önce bir TV'ye bağlan.") }
         let id = UUID().uuidString
         return try await withCheckedThrowingContinuation { continuation in
@@ -689,6 +705,7 @@ extension TVClient {
     /// App Store screenshots only (UITEST_SCREENSHOTS): shows a connected TV with sample content.
     /// Never compiled into release builds.
     func loadScreenshotPreview() {
+        previewMode = true
         let tv = Television(name: "Salon TV", host: "192.168.1.20")
         televisions = [tv]
         selected = tv

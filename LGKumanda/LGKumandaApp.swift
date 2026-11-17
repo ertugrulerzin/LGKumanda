@@ -17,10 +17,13 @@ import SwiftUI
             }.environmentObject(client)
                 .environmentObject(box)
                 .onAppear {
+                    var preview = false
                     #if DEBUG
-                    if ProcessInfo.processInfo.environment["UITEST_SCREENSHOTS"] != nil { client.loadScreenshotPreview() }
+                    preview = ProcessInfo.processInfo.environment["UITEST_SCREENSHOTS"] != nil
+                    if preview { client.loadScreenshotPreview() }
                     #endif
-                    box.onCommandError = { [weak client] reason in client?.error = reason }
+                    // The preview box is not on the network; its send failures are not shown.
+                    if !preview { box.onCommandError = { [weak client] reason in client?.error = reason } }
                     client.keyRouter = { [weak client, weak box] key in
                         guard let client, let box else { return false }
                         return box.route(key, foregroundAppID: client.foregroundAppID)
