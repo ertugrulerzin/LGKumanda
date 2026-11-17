@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 
 import '../core/android_tv/box_client.dart';
 import '../core/tv_client.dart';
-import 'devices.dart';
 import 'remote.dart';
 
 class BoxRemotePage extends StatefulWidget {
@@ -96,11 +95,15 @@ class _BoxRemotePageState extends State<BoxRemotePage> {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
-                  BoxPowerButton(box: widget.box, saved: widget.saved),
                 ],
               ),
               const SizedBox(height: 8),
               Text(widget.box.status),
+              const SizedBox(height: 4),
+              Text(
+                'Kutu Wi-Fi’den kapatılamaz; kapatmak için kutunun kendi kumandasını kullan. TV’yi TV sekmesinden açıp kapatabilirsin.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
               const SizedBox(height: 20),
               Row(
                 children: [
@@ -370,61 +373,4 @@ class _BoxRemotePageState extends State<BoxRemotePage> {
     widget.box.select(widget.saved.id);
     await widget.client.run(() => widget.box.sendChannel(channel.text));
   }
-}
-
-/// Power key on a box tab: turns this box (not the TV) off and on.
-class BoxPowerButton extends StatefulWidget {
-  const BoxPowerButton({super.key, required this.box, required this.saved});
-  final BoxClient box;
-  final SavedBox saved;
-  @override
-  State<BoxPowerButton> createState() => _BoxPowerButtonState();
-}
-
-class _BoxPowerButtonState extends State<BoxPowerButton> {
-  bool busy = false;
-  @override
-  Widget build(BuildContext context) => ListenableBuilder(
-    listenable: widget.box,
-    builder: (context, _) {
-      final on = widget.box.isOn != false;
-      return FilledButton.tonalIcon(
-        key: const ValueKey('boxPower'),
-        onPressed: busy || !widget.saved.enabled
-            ? null
-            : () async {
-                widget.box.select(widget.saved.id);
-                if (on &&
-                    !await confirm(
-                      context,
-                      'Kutu kapatılsın mı?',
-                      'Kutu derin uykuya geçerse Wi-Fi’den yeniden açılamayabilir; o zaman kutunun kendi kumandasını kullan.',
-                    )) {
-                  return;
-                }
-                setState(() => busy = true);
-                final ok = await widget.box.setPower(!on);
-                if (!mounted) return;
-                setState(() => busy = false);
-                if (!ok && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'Kutuya Wi-Fi’den ulaşılamadı. Kutu derin uykudaysa kendi kumandasıyla aç.',
-                      ),
-                    ),
-                  );
-                }
-              },
-        icon: busy
-            ? const SizedBox(
-                width: 18,
-                height: 18,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Icon(Icons.power_settings_new),
-        label: Text(busy ? 'Bekle…' : (on ? 'Kapat' : 'Aç')),
-      );
-    },
-  );
 }

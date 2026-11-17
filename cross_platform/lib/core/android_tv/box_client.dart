@@ -128,6 +128,7 @@ class BoxClient extends ChangeNotifier {
   BoxIdentity? _identity;
   SecureSocket? _pairSocket, _remoteSocket;
   Completer<bool>? _ready;
+  DateTime? _lastHeard;
   Future<bool>? _connecting;
   bool _disposed = false;
 
@@ -433,6 +434,17 @@ class BoxClient extends ChangeNotifier {
   // Remote session
 
   Future<bool> connect() {
+    // The box pings every few seconds. Silence means it handed the session
+    // to another remote (it keeps only one) without closing ours.
+    final heard = _lastHeard;
+    if (link == BoxLink.connected &&
+        heard != null &&
+        DateTime.now().difference(heard) > const Duration(seconds: 12)) {
+      final stale = _remoteSocket;
+      _remoteSocket = null;
+      stale?.destroy();
+      link = BoxLink.idle;
+    }
     if (link == BoxLink.connected) return Future.value(true);
     final token = _generation;
     return _connecting ??= _connect().whenComplete(() {
@@ -456,6 +468,7 @@ class BoxClient extends ChangeNotifier {
         return false;
       }
       _remoteSocket = socket;
+      _lastHeard = DateTime.now();
       final ready = _ready = Completer<bool>();
       final framer = ProtoFramer();
       socket.listen(
@@ -579,23 +592,6 @@ class BoxClient extends ChangeNotifier {
     return true;
   }
 
-  /// Box power. Turning off sends POWER; turning on sends WAKEUP and, if
-  /// the box still reports off, POWER. A box in deep sleep drops Wi-Fi and
-  /// can then only be woken with its own remote.
-  Future<bool> setPower(bool on) async {
-    if (box?.paired != true) return false;
-    if (!on) return sendCode(26);
-    if (!await connect()) return false;
-    sendCode(224);
-    await _keyQueue;
-    await Future<void>.delayed(const Duration(milliseconds: 1500));
-    if (isOn == false) {
-      sendCode(26);
-      await _keyQueue;
-    }
-    return true;
-  }
-
   bool playPause() => sendCode(85);
   Future<void> sendChannel(String number) async {
     if (!RegExp(r'^\d{1,4}$').hasMatch(number)) {
@@ -610,6 +606,7 @@ class BoxClient extends ChangeNotifier {
 
   void _onRemote(Uint8List frame, SecureSocket socket) {
     if (_remoteSocket != socket) return;
+    _lastHeard = DateTime.now();
     final m = ProtoMessage.parse(frame);
     if (m == null) return;
     final reply = ProtoWriter();
