@@ -61,6 +61,12 @@ class TVClient extends ChangeNotifier {
   int _dx = 0, _dy = 0;
 
   bool get connected => state == LinkState.connected;
+
+  /// A wake packet went out and the app is waiting for the TV to come up.
+  bool get waking => _wakeActive;
+
+  /// The TV is on and controllable, so the power key means "turn off".
+  bool get isOn => connected && powerState != TVPowerState.standby;
   bool get isHDMI => foreground?.startsWith('com.webos.app.hdmi') ?? false;
   bool get useTuner =>
       mode == ControlMode.television ||

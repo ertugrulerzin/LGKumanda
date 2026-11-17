@@ -250,21 +250,7 @@ class TVRemotePage extends StatelessWidget {
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
                   ),
-                  IconButton(
-                    tooltip: 'TV’yi kapat',
-                    onPressed: client.connected
-                        ? () async {
-                            if (await confirm(
-                              context,
-                              'TV kapatılsın mı?',
-                              'TV’yi yeniden açmak için fiziksel kumanda veya destekleniyorsa uyandırma kullanılabilir.',
-                            )) {
-                              await client.run(client.powerOff);
-                            }
-                          }
-                        : null,
-                    icon: const Icon(Icons.power_settings_new),
-                  ),
+                  TVPowerButton(client: client),
                 ],
               ),
               const SizedBox(height: 20),
@@ -776,5 +762,47 @@ class _ShortcutEditorState extends State<_ShortcutEditor> {
         child: const Text('Kaydet'),
       ),
     ],
+  );
+}
+
+/// One power key for every remote tab: turns the TV off while it is on and
+/// wakes it while it is off. Android TV boxes stay powered when the TV
+/// sleeps, so on a box tab the key also controls the TV.
+class TVPowerButton extends StatelessWidget {
+  const TVPowerButton({super.key, required this.client});
+  final TVClient client;
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+    listenable: client,
+    builder: (context, _) {
+      final on = client.isOn;
+      final busy = client.waking || client.state == LinkState.connecting;
+      return FilledButton.tonalIcon(
+        key: const ValueKey('tvPower'),
+        onPressed: client.selected == null || (busy && !on)
+            ? null
+            : () async {
+                if (on) {
+                  if (await confirm(
+                    context,
+                    'TV kapatılsın mı?',
+                    'Aynı tuşla yeniden açabilirsin. Açmak için TV’de ağ üzerinden açma (Mobil ile TV Açma) ayarı açık olmalı.',
+                  )) {
+                    await client.run(client.powerOff);
+                  }
+                } else {
+                  await client.run(client.wake);
+                }
+              },
+        icon: busy && !on
+            ? const SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : const Icon(Icons.power_settings_new),
+        label: Text(on ? 'Kapat' : (busy ? 'Açılıyor…' : 'Aç')),
+      );
+    },
   );
 }

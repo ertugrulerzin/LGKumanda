@@ -87,9 +87,16 @@ class _BoxRemotePageState extends State<BoxRemotePage> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
             children: [
-              Text(
-                widget.saved.title(tv.inputs),
-                style: Theme.of(context).textTheme.headlineSmall,
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.saved.title(tv.inputs),
+                      style: Theme.of(context).textTheme.headlineSmall,
+                    ),
+                  ),
+                  TVPowerButton(client: tv),
+                ],
               ),
               const SizedBox(height: 8),
               Text(widget.box.status),
