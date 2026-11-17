@@ -48,11 +48,14 @@
 		A6705BFA967F460B10277412 /* BrowserAddress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */; };
 		A9B5838B9425C22C6126C972 /* KeyboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */; };
 		B149F1AF63F6E8118B6D54D7 /* ClickDiagnosticTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */; };
+		B55D87D9FB7EB21F89830CCE /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = CB310F0B8EAB895AD17F6F38 /* GoogleMobileAds */; };
+		B7C92D19A111299F6BCEEF46 /* GoogleUserMessagingPlatform in Frameworks */ = {isa = PBXBuildFile; productRef = 8889C7567817A1917FDE61E5 /* GoogleUserMessagingPlatform */; };
 		B988A1F2939D9E71C9264495 /* TVAddressRecovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6ADDEC6F044A8E51CC674F29 /* TVAddressRecovery.swift */; };
 		BD6E80040CB3D3D4B3812377 /* ControlRouting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B391A0D1456234881FF34889 /* ControlRouting.swift */; };
 		CE2F795C318EEE72CB88474F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BB2FA42BC65BB9471CAE932F /* Assets.xcassets */; };
 		D46FA35C05041E12831201C2 /* ProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 832BE2A832A35E8D598903E4 /* ProtocolTests.swift */; };
 		DAF39BCEC852EDE01F1D80E6 /* AddressRecoveryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E1C1D3B38E5674CF2C22BF3 /* AddressRecoveryTests.swift */; };
+		E2CC1607F158EF43AC54BB35 /* Ads.swift in Sources */ = {isa = PBXBuildFile; fileRef = D692FD2564DC1A268F4F5727 /* Ads.swift */; };
 		E7251C2E4F3B16DEA8EA9A26 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8684CA02FB86C77877C10FA8 /* LibraryView.swift */; };
 		EACDD33B32664AA19A58DAC6 /* BoxSetupView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F91E2A1C787CD0241665E7C /* BoxSetupView.swift */; };
 		ED2894E7A7B81FCF35B2735D /* LiveTVTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64B4248E71432B6A6DE64F43 /* LiveTVTests.swift */; };
@@ -126,6 +129,7 @@
 		C2509A981B771E29DD3631F7 /* LGKumandaUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = LGKumandaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C91E235FA540824088F6046B /* TVPowerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TVPowerState.swift; sourceTree = "<group>"; };
 		D3D2798C2491C155F38F8E4A /* LGKumandaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LGKumandaApp.swift; sourceTree = "<group>"; };
+		D692FD2564DC1A268F4F5727 /* Ads.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Ads.swift; sourceTree = "<group>"; };
 		E5D0CC22268C3F4C6A2C4A9A /* ScreenshotTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotTests.swift; sourceTree = "<group>"; };
 		ECD35A1380DCCF6015F19FC0 /* KeyboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardView.swift; sourceTree = "<group>"; };
 		ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
@@ -134,6 +138,18 @@
 		F432E84BEC25AB5FB920DB8D /* PhoneBrowserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneBrowserTests.swift; sourceTree = "<group>"; };
 		FAEB4357D99CDF98285739D1 /* ClickDiagnosticTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClickDiagnosticTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		7C6E928C363A14E000057D4A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B55D87D9FB7EB21F89830CCE /* GoogleMobileAds in Frameworks */,
+				B7C92D19A111299F6BCEEF46 /* GoogleUserMessagingPlatform in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		233A0830DFB04F2D6A62FB08 /* LGKumanda */ = {
@@ -180,6 +196,7 @@
 		478AD4DDFBA1430D154E672C /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				D692FD2564DC1A268F4F5727 /* Ads.swift */,
 				3947BE04F0DD453132BFBA2A /* BrowserAddress.swift */,
 				B391A0D1456234881FF34889 /* ControlRouting.swift */,
 				ECF65CBCC97B9723EE3B6A91 /* KeychainStore.swift */,
@@ -280,6 +297,7 @@
 			buildPhases = (
 				5C4657BEE4AE5E8D8919C0CD /* Sources */,
 				718D5B27A16A9C482E11E8EF /* Resources */,
+				7C6E928C363A14E000057D4A /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -287,6 +305,8 @@
 			);
 			name = LGKumanda;
 			packageProductDependencies = (
+				CB310F0B8EAB895AD17F6F38 /* GoogleMobileAds */,
+				8889C7567817A1917FDE61E5 /* GoogleUserMessagingPlatform */,
 			);
 			productName = LGKumanda;
 			productReference = 5AC1A0A7AE90EA326A05E526 /* LGKumanda.app */;
@@ -340,6 +360,10 @@
 			);
 			mainGroup = 34B556DC63370AD36C5C83F4;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				FB84D4FA1CD8529E1032736A /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+				64D1D89B404B24E87FED089F /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 77C8B716CF9ABB90C48E9F76 /* Products */;
 			projectDirPath = "";
@@ -388,6 +412,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E2CC1607F158EF43AC54BB35 /* Ads.swift in Sources */,
 				93AAB5683334C0B6494AE648 /* BoxCertificate.swift in Sources */,
 				81A9CE7ECFF11E001A7EEAE0 /* BoxClient.swift in Sources */,
 				F9561C27A440C5F2208761B6 /* BoxConnection.swift in Sources */,
@@ -720,6 +745,38 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		64D1D89B404B24E87FED089F /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-user-messaging-platform.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+		FB84D4FA1CD8529E1032736A /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 13.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8889C7567817A1917FDE61E5 /* GoogleUserMessagingPlatform */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 64D1D89B404B24E87FED089F /* XCRemoteSwiftPackageReference "swift-package-manager-google-user-messaging-platform" */;
+			productName = GoogleUserMessagingPlatform;
+		};
+		CB310F0B8EAB895AD17F6F38 /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = FB84D4FA1CD8529E1032736A /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = CC46FEFE9EE760C5718F163F /* Project object */;
 }

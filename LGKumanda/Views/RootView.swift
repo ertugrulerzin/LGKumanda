@@ -8,11 +8,11 @@ struct RootView: View {
     @State private var tab = 0
     var body: some View {
         TabView(selection: $tab) {
-            RemoteView(openDevices: { tab = 3 }).tabItem { Label("Kumanda", systemImage: "appletvremote.gen4") }.tag(0)
-            LibraryView(kind: .apps).tabItem { Label("Uygulamalar", systemImage: "square.grid.2x2") }.tag(1)
-            LibraryView(kind: .channels).tabItem { Label("Kanallar", systemImage: "tv") }.tag(2)
+            RemoteView(openDevices: { tab = 3 }).adBanner().tabItem { Label("Kumanda", systemImage: "appletvremote.gen4") }.tag(0)
+            LibraryView(kind: .apps).adBanner().tabItem { Label("Uygulamalar", systemImage: "square.grid.2x2") }.tag(1)
+            LibraryView(kind: .channels).adBanner().tabItem { Label("Kanallar", systemImage: "tv") }.tag(2)
             KeyboardView(isSheet: false).tabItem { Label("Klavye", systemImage: "keyboard") }.tag(4)
-            DevicesView().tabItem { Label("Cihazlar", systemImage: "wifi") }.tag(3)
+            DevicesView().adBanner().tabItem { Label("Cihazlar", systemImage: "wifi") }.tag(3)
         }
         .alert("İşlem tamamlanamadı", isPresented: Binding(get: { client.error != nil }, set: { if !$0 { client.error = nil } })) {
             Button("Tamam", role: .cancel) { client.error = nil }

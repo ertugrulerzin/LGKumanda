@@ -23,6 +23,7 @@ import SwiftUI
                     if preview { client.loadScreenshotPreview() }
                     #endif
                     // The preview box is not on the network; its send failures are not shown.
+                    if !preview { AdsManager.shared.start() }
                     if !preview { box.onCommandError = { [weak client] reason in client?.error = reason } }
                     client.keyRouter = { [weak client, weak box] key in
                         guard let client, let box else { return false }

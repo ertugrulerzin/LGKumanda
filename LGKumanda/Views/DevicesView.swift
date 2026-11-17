@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct DevicesView: View {
+    @ObservedObject private var ads = AdsManager.shared
     @EnvironmentObject private var client: TVClient
     @EnvironmentObject private var box: BoxClient
     @State private var addingBox = false
@@ -120,6 +121,9 @@ struct DevicesView: View {
                 }
                 Section {
                     Toggle("Tuş titreşimi", isOn: $haptics)
+                    if ads.privacyOptionsRequired {
+                        Button("Reklam gizlilik seçenekleri") { Task { try? await ads.showPrivacyOptions() } }
+                    }
                 }
                 Section("Bağlantı yardımı") {
                     help(title: "Aynı ağa bağlan", text: "iPhone ve TV aynı yerel ağda olmalı. iPhone Ayarlar uygulamasından Kumanda için Yerel Ağ iznini aç.")
