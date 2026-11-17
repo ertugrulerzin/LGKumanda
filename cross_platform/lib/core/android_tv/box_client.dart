@@ -579,6 +579,23 @@ class BoxClient extends ChangeNotifier {
     return true;
   }
 
+  /// Box power. Turning off sends POWER; turning on sends WAKEUP and, if
+  /// the box still reports off, POWER. A box in deep sleep drops Wi-Fi and
+  /// can then only be woken with its own remote.
+  Future<bool> setPower(bool on) async {
+    if (box?.paired != true) return false;
+    if (!on) return sendCode(26);
+    if (!await connect()) return false;
+    sendCode(224);
+    await _keyQueue;
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
+    if (isOn == false) {
+      sendCode(26);
+      await _keyQueue;
+    }
+    return true;
+  }
+
   bool playPause() => sendCode(85);
   Future<void> sendChannel(String number) async {
     if (!RegExp(r'^\d{1,4}$').hasMatch(number)) {
@@ -620,7 +637,11 @@ class BoxClient extends ChangeNotifier {
     } else if (m.message(22) case final show?) {
       _imeField = show.message(2)?.integer(1) ?? _imeField;
     } else if (m.has(40)) {
-      isOn = m.message(40)?.integer(1) == 1;
+      final on = m.message(40)?.integer(1) == 1;
+      if (on != isOn) {
+        isOn = on;
+        _emit();
+      }
       if (_ready?.isCompleted == false) _ready!.complete(true);
     } else {
       final ping = m.message(8);
