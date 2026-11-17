@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 import 'dart:convert';
 
@@ -577,6 +578,15 @@ class TVClient extends ChangeNotifier {
   void _updatePower(Json payload) {
     final power = readPowerState(payload);
     if (power == TVPowerState.unknown) return;
+    if (power == TVPowerState.standby && _wakeActive && connected) {
+      // While booting after a wake the TV briefly reports standby. Keep the
+      // connection: it reports Active on the same socket moments later, and
+      // reconnecting from scratch costs several seconds.
+      powerState = power;
+      notice = 'TV açılıyor…';
+      _emit();
+      return;
+    }
     if (power == TVPowerState.standby) {
       final waking = _wakeActive;
       disconnect(preserveWake: waking);
@@ -671,6 +681,21 @@ class TVClient extends ChangeNotifier {
       await saveTV(updated);
       selected = updated;
       _emit();
+    }
+  }
+
+  bool _probing = false;
+  static Future<bool> _portOpen(String host, int port) async {
+    try {
+      final socket = await Socket.connect(
+        host,
+        port,
+        timeout: const Duration(milliseconds: 800),
+      );
+      socket.destroy();
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 
@@ -979,7 +1004,7 @@ class TVClient extends ChangeNotifier {
     _wakeActive = true;
     _wakeDeadline = DateTime.now().add(const Duration(seconds: 60));
     _wakeTimer?.cancel();
-    _wakeTimer = Timer.periodic(const Duration(seconds: 2), (_) {
+    _wakeTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (!_wakeActive || _disposed) return;
       if (DateTime.now().isAfter(_wakeDeadline!)) {
         disconnect();
@@ -988,8 +1013,22 @@ class TVClient extends ChangeNotifier {
         _emit();
         return;
       }
-      if (state == LinkState.disconnected && selected != null) {
-        unawaited(connect(selected!, fromWake: true));
+      if (state == LinkState.disconnected && selected != null && !_probing) {
+        // A quick port check first: a full connect to a TV that is still
+        // booting waits up to its 10 s timeout before the next try.
+        final tv = selected!;
+        _probing = true;
+        unawaited(
+          _portOpen(tv.host, tv.secure ? 3001 : 3000).then((open) {
+            _probing = false;
+            if (open &&
+                _wakeActive &&
+                state == LinkState.disconnected &&
+                selected == tv) {
+              unawaited(connect(tv, fromWake: true));
+            }
+          }),
+        );
       }
     });
     _emit();
