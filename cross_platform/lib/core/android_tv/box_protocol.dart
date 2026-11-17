@@ -74,7 +74,9 @@ class ProtoMessage {
         case 2:
           final len = _readVarint(bytes, i);
           if (len == null || len.$2 + len.$1 > bytes.length) return null;
-          blobs[field] = Uint8List.fromList(bytes.sublist(len.$2, len.$2 + len.$1));
+          blobs[field] = Uint8List.fromList(
+            bytes.sublist(len.$2, len.$2 + len.$1),
+          );
           i = len.$2 + len.$1;
         case 1:
           i += 8;
@@ -88,11 +90,15 @@ class ProtoMessage {
     return ProtoMessage._(varints, blobs);
   }
 
-  bool has(int field) => _varints.containsKey(field) || _blobs.containsKey(field);
+  bool has(int field) =>
+      _varints.containsKey(field) || _blobs.containsKey(field);
   int? integer(int field) => _varints[field];
   Uint8List? data(int field) => _blobs[field];
-  String? string(int field) => _blobs[field] == null ? null : utf8.decode(_blobs[field]!, allowMalformed: true);
-  ProtoMessage? message(int field) => _blobs[field] == null ? null : parse(_blobs[field]!);
+  String? string(int field) => _blobs[field] == null
+      ? null
+      : utf8.decode(_blobs[field]!, allowMalformed: true);
+  ProtoMessage? message(int field) =>
+      _blobs[field] == null ? null : parse(_blobs[field]!);
 
   /// Returns (value, next index) or null when the varint is incomplete.
   static (int, int)? _readVarint(List<int> b, int start) {
@@ -142,10 +148,13 @@ class Der {
     return out.toBytes();
   }
 
-  static Uint8List sequence(List<List<int>> items) => tlv(0x30, items.expand((e) => e).toList());
-  static Uint8List set(List<List<int>> items) => tlv(0x31, items.expand((e) => e).toList());
+  static Uint8List sequence(List<List<int>> items) =>
+      tlv(0x30, items.expand((e) => e).toList());
+  static Uint8List set(List<List<int>> items) =>
+      tlv(0x31, items.expand((e) => e).toList());
   static final Uint8List nullValue = Uint8List.fromList([0x05, 0x00]);
-  static Uint8List explicit(int tag, List<int> content) => tlv(0xa0 | tag, content);
+  static Uint8List explicit(int tag, List<int> content) =>
+      tlv(0xa0 | tag, content);
   static Uint8List bigInt(BigInt v) {
     var bytes = unsignedBytes(v);
     if (bytes.isEmpty) bytes = Uint8List.fromList([0]);
@@ -170,14 +179,20 @@ class Der {
   static Uint8List utcTime(DateTime t) {
     final u = t.toUtc();
     String two(int v) => v.toString().padLeft(2, '0');
-    return tlv(0x17, ascii.encode('${two(u.year % 100)}${two(u.month)}${two(u.day)}${two(u.hour)}${two(u.minute)}${two(u.second)}Z'));
+    return tlv(
+      0x17,
+      ascii.encode(
+        '${two(u.year % 100)}${two(u.month)}${two(u.day)}${two(u.hour)}${two(u.minute)}${two(u.second)}Z',
+      ),
+    );
   }
 
   static Uint8List unsignedBytes(BigInt v) {
     final hex = v.toRadixString(16);
     final padded = hex.length.isOdd ? '0$hex' : hex;
     return Uint8List.fromList([
-      for (var i = 0; i < padded.length; i += 2) int.parse(padded.substring(i, i + 2), radix: 16),
+      for (var i = 0; i < padded.length; i += 2)
+        int.parse(padded.substring(i, i + 2), radix: 16),
     ]);
   }
 
@@ -228,18 +243,28 @@ class Der {
     if (modulus == null) return null;
     final exponent = read(der, modulus.$3);
     if (exponent == null) return null;
-    BigInt value((int, int, int) t) => der.sublist(t.$2, t.$3).fold(BigInt.zero, (a, b) => (a << 8) | BigInt.from(b));
+    BigInt value((int, int, int) t) => der
+        .sublist(t.$2, t.$3)
+        .fold(BigInt.zero, (a, b) => (a << 8) | BigInt.from(b));
     return (value(modulus), value(exponent));
   }
 }
 
 /// Client identity: RSA key and a self-signed certificate, as PEM for dart:io's SecurityContext.
 class BoxIdentity {
-  BoxIdentity(this.certificatePem, this.privateKeyPem, this.modulus, this.exponent);
+  BoxIdentity(
+    this.certificatePem,
+    this.privateKeyPem,
+    this.modulus,
+    this.exponent,
+  );
   final String certificatePem, privateKeyPem;
   final BigInt modulus, exponent;
 
-  Map<String, String> toJson() => {'cert': certificatePem, 'key': privateKeyPem};
+  Map<String, String> toJson() => {
+    'cert': certificatePem,
+    'key': privateKeyPem,
+  };
 
   static BoxIdentity? fromJson(Map<String, dynamic> j) {
     final cert = j['cert'] as String?, key = j['key'] as String?;
@@ -255,7 +280,10 @@ class BoxIdentity {
 
   static String _pem(String label, List<int> der) {
     final b64 = base64.encode(der);
-    final lines = [for (var i = 0; i < b64.length; i += 64) b64.substring(i, min(i + 64, b64.length))];
+    final lines = [
+      for (var i = 0; i < b64.length; i += 64)
+        b64.substring(i, min(i + 64, b64.length)),
+    ];
     return '-----BEGIN $label-----\n${lines.join('\n')}\n-----END $label-----\n';
   }
 
@@ -263,30 +291,58 @@ class BoxIdentity {
   static BoxIdentity generate() {
     final random = Random.secure();
     final secure = FortunaRandom()
-      ..seed(KeyParameter(Uint8List.fromList(List.generate(32, (_) => random.nextInt(256)))));
+      ..seed(
+        KeyParameter(
+          Uint8List.fromList(List.generate(32, (_) => random.nextInt(256))),
+        ),
+      );
     final generator = RSAKeyGenerator()
-      ..init(ParametersWithRandom(RSAKeyGeneratorParameters(BigInt.from(65537), 2048, 64), secure));
+      ..init(
+        ParametersWithRandom(
+          RSAKeyGeneratorParameters(BigInt.from(65537), 2048, 64),
+          secure,
+        ),
+      );
     final pair = generator.generateKeyPair();
     final pub = pair.publicKey, priv = pair.privateKey;
 
-    final sha256WithRSA = Der.sequence([Der.oid([1, 2, 840, 113549, 1, 1, 11]), Der.nullValue]);
+    final sha256WithRSA = Der.sequence([
+      Der.oid([1, 2, 840, 113549, 1, 1, 11]),
+      Der.nullValue,
+    ]);
     final name = Der.sequence([
-      Der.set([Der.sequence([Der.oid([2, 5, 4, 3]), Der.utf8String('atvremote')])]),
+      Der.set([
+        Der.sequence([
+          Der.oid([2, 5, 4, 3]),
+          Der.utf8String('atvremote'),
+        ]),
+      ]),
     ]);
     final now = DateTime.now();
     final validity = Der.sequence([
       Der.utcTime(now.subtract(const Duration(days: 1))),
       Der.utcTime(now.add(const Duration(days: 365 * 20))),
     ]);
-    final rsaPublicKey = Der.sequence([Der.bigInt(pub.modulus!), Der.bigInt(pub.publicExponent!)]);
+    final rsaPublicKey = Der.sequence([
+      Der.bigInt(pub.modulus!),
+      Der.bigInt(pub.publicExponent!),
+    ]);
     final spki = Der.sequence([
-      Der.sequence([Der.oid([1, 2, 840, 113549, 1, 1, 1]), Der.nullValue]),
+      Der.sequence([
+        Der.oid([1, 2, 840, 113549, 1, 1, 1]),
+        Der.nullValue,
+      ]),
       Der.bitString(rsaPublicKey),
     ]);
-    final serial = BigInt.parse(
-      List.generate(15, (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0')).join(),
-      radix: 16,
-    ) + BigInt.one;
+    final serial =
+        BigInt.parse(
+          List.generate(
+            15,
+            (_) => random.nextInt(256).toRadixString(16).padLeft(2, '0'),
+          ).join(),
+          radix: 16,
+        ) +
+        BigInt.one;
     final tbs = Der.sequence([
       Der.explicit(0, Der.bigInt(BigInt.two)),
       Der.bigInt(serial),
@@ -299,7 +355,11 @@ class BoxIdentity {
     final signer = RSASigner(SHA256Digest(), '0609608648016503040201')
       ..init(true, PrivateKeyParameter<RSAPrivateKey>(priv));
     final signature = signer.generateSignature(tbs).bytes;
-    final certificate = Der.sequence([tbs, sha256WithRSA, Der.bitString(signature)]);
+    final certificate = Der.sequence([
+      tbs,
+      sha256WithRSA,
+      Der.bitString(signature),
+    ]);
 
     final p = priv.p!, q = priv.q!, d = priv.privateExponent!;
     final privateKey = Der.sequence([
@@ -331,7 +391,10 @@ Uint8List? pairingSecret({
 }) {
   final c = code.trim().toUpperCase();
   if (!RegExp(r'^[0-9A-F]{6}$').hasMatch(c)) return null;
-  final tail = [int.parse(c.substring(2, 4), radix: 16), int.parse(c.substring(4, 6), radix: 16)];
+  final tail = [
+    int.parse(c.substring(2, 4), radix: 16),
+    int.parse(c.substring(4, 6), radix: 16),
+  ];
   final digest = sha256.convert([
     ...Der.unsignedBytes(client.$1),
     ...Der.unsignedBytes(client.$2),
@@ -339,15 +402,47 @@ Uint8List? pairingSecret({
     ...Der.unsignedBytes(server.$2),
     ...tail,
   ]).bytes;
-  return digest.first == int.parse(c.substring(0, 2), radix: 16) ? Uint8List.fromList(digest) : null;
+  return digest.first == int.parse(c.substring(0, 2), radix: 16)
+      ? Uint8List.fromList(digest)
+      : null;
 }
 
 /// Android key codes for the app's LG remote key names; null keeps the key on the TV.
 int? androidKeyCode(String lgName) => const {
-  'UP': 19, 'DOWN': 20, 'LEFT': 21, 'RIGHT': 22, 'ENTER': 23,
-  'HOME': 3, 'BACK': 4, 'EXIT': 4, 'MENU': 82, 'GUIDE': 172, 'INFO': 165, 'QMENU': 176,
-  'RED': 183, 'GREEN': 184, 'YELLOW': 185, 'BLUE': 186,
-  '0': 7, '1': 8, '2': 9, '3': 10, '4': 11, '5': 12, '6': 13, '7': 14, '8': 15, '9': 16,
-  'FLASHBK': 229, 'CC': 175, 'TEXT': 233, 'CHANNELUP': 166, 'CHANNELDOWN': 167,
-  'PLAY': 126, 'PAUSE': 127, 'STOP': 86, 'REWIND': 89, 'FASTFORWARD': 90,
+  'UP': 19,
+  'DOWN': 20,
+  'LEFT': 21,
+  'RIGHT': 22,
+  'ENTER': 23,
+  'HOME': 3,
+  'BACK': 4,
+  'EXIT': 4,
+  'MENU': 82,
+  'GUIDE': 172,
+  'INFO': 165,
+  'QMENU': 176,
+  'RED': 183,
+  'GREEN': 184,
+  'YELLOW': 185,
+  'BLUE': 186,
+  '0': 7,
+  '1': 8,
+  '2': 9,
+  '3': 10,
+  '4': 11,
+  '5': 12,
+  '6': 13,
+  '7': 14,
+  '8': 15,
+  '9': 16,
+  'FLASHBK': 229,
+  'CC': 175,
+  'TEXT': 233,
+  'CHANNELUP': 166,
+  'CHANNELDOWN': 167,
+  'PLAY': 126,
+  'PAUSE': 127,
+  'STOP': 86,
+  'REWIND': 89,
+  'FASTFORWARD': 90,
 }[lgName];

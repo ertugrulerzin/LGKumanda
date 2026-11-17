@@ -22,6 +22,19 @@ void main() {
     expect(updated?.name, 'Salon');
     expect(wakeTargets(updated!), ['192.168.5.40', '192.168.7.255']);
   });
+  test('reads the wake MAC from the DIAL announcement', () {
+    expect(
+      wakeMacFromSsdp(
+        'HTTP/1.1 200 OK\r\nST: urn:dial-multiscreen-org:service:dial:1\r\n'
+        'WAKEUP: MAC=d0:cd:bf:5d:fb:9a;Timeout=60\r\n\r\n',
+      ),
+      'D0:CD:BF:5D:FB:9A',
+    );
+    expect(
+      wakeMacFromSsdp('HTTP/1.1 200 OK\r\nST: upnp:rootdevice\r\n'),
+      isNull,
+    );
+  });
   test('adds the /24 broadcast when the subnet mask is unknown', () {
     expect(
       wakeTargets(

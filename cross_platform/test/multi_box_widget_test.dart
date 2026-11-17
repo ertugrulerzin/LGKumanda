@@ -73,7 +73,16 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(BoxRemotePage), findsOneWidget);
       final digit = find.widgetWithText(OutlinedButton, '1');
-      await tester.scrollUntilVisible(digit, 220, scrollable: find.descendant(of: find.byType(BoxRemotePage), matching: find.byType(Scrollable)).first);
+      await tester.scrollUntilVisible(
+        digit,
+        220,
+        scrollable: find
+            .descendant(
+              of: find.byType(BoxRemotePage),
+              matching: find.byType(Scrollable),
+            )
+            .first,
+      );
       await tester.pumpAndSettle();
       await tester.tap(digit);
       await tester.runAsync(flush);

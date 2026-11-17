@@ -142,10 +142,16 @@ class _DevicesPageState extends State<DevicesPage> {
                   subtitle: Text(tv.host),
                   trailing: TextButton(
                     onPressed: () async {
-                      final saved = await widget.client.savedForDiscovered(tv, discovery.fingerprints[tv.host]);
+                      final saved = await widget.client.savedForDiscovered(
+                        tv,
+                        discovery.fingerprints[tv.host],
+                      );
                       if (!context.mounted) return;
-                      if (saved != null) { await widget.client.connect(saved); }
-                      else { await editDevice(context, widget.client, tv); }
+                      if (saved != null) {
+                        await widget.client.connect(saved);
+                      } else {
+                        await editDevice(context, widget.client, tv);
+                      }
                     },
                     child: const Text('Bağlan'),
                   ),

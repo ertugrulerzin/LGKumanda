@@ -70,7 +70,9 @@ class _BrowserPageState extends State<BrowserPage> {
                         if (context.mounted) Navigator.pop(context);
                       } catch (_) {
                         if (context.mounted) Navigator.pop(context);
-                        widget.client.reportError('TV videoyu açamadı. TV tarayıcısındaki dokunmatik denetimini dene.');
+                        widget.client.reportError(
+                          'TV videoyu açamadı. TV tarayıcısındaki dokunmatik denetimini dene.',
+                        );
                       }
                     },
                   ),
@@ -355,7 +357,9 @@ class _BrowserPageState extends State<BrowserPage> {
                               if (mounted &&
                                   video != null &&
                                   (videos.length < 32 ||
-                                      videos.containsKey(video.url.toString()))) {
+                                      videos.containsKey(
+                                        video.url.toString(),
+                                      ))) {
                                 setState(
                                   () => videos[video.url.toString()] = video,
                                 );

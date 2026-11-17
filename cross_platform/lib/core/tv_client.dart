@@ -15,6 +15,7 @@ class TVClient extends ChangeNotifier {
     required this.storage,
     this.openSocket = openTVSocket,
     this.ensureNetworkAccess = requireNetworkAccess,
+    this.wakeMacProbe = discoverWakeMac,
     this.requestTimeout = const Duration(seconds: 10),
     this.readIdentity = readTVIdentity,
     this.findAddress = findMovedTV,
@@ -22,6 +23,9 @@ class TVClient extends ChangeNotifier {
   final TVStorage storage;
   final SocketFactory openSocket;
   final Future<void> Function() ensureNetworkAccess;
+
+  /// Reads the TV's wake MAC from its network announcement (SSDP).
+  final Future<String?> Function(String host) wakeMacProbe;
   final Duration requestTimeout;
   final Future<String?> Function(String, String) readIdentity;
   final Future<Television?> Function(Television, String) findAddress;
@@ -114,14 +118,24 @@ class TVClient extends ChangeNotifier {
     _emit();
   }
 
-  Future<Television?> savedForDiscovered(Television tv, String? fingerprint) async {
+  Future<Television?> savedForDiscovered(
+    Television tv,
+    String? fingerprint,
+  ) async {
     if (tv.deviceUUID == null || fingerprint == null) return null;
     final matches = <Television>[];
-    for (final saved in televisions.where((t) => t.deviceUUID == tv.deviceUUID && t.secure)) {
-      if (await storage.readSecret('cert.${saved.storageID}') == fingerprint) matches.add(saved);
+    for (final saved in televisions.where(
+      (t) => t.deviceUUID == tv.deviceUUID && t.secure,
+    )) {
+      if (await storage.readSecret('cert.${saved.storageID}') == fingerprint) {
+        matches.add(saved);
+      }
     }
-    return matches.length == 1 ? copyTelevision(matches.single, host: tv.host) : null;
+    return matches.length == 1
+        ? copyTelevision(matches.single, host: tv.host)
+        : null;
   }
+
   Future<void> removeTV(Television tv) async {
     if (selected?.storageID == tv.storageID) {
       disconnect();
@@ -484,13 +498,12 @@ class TVClient extends ChangeNotifier {
     }
     if (generation == _generation) {
       _emit();
-      // The wake identity is captured first and each step is isolated: a
-      // failure here (for example reading the TLS identity) must not skip
-      // saving the MAC address, or the TV can never be woken.
-      await _captureWakeIdentity(generation);
+      // Each step is isolated: a failure in one (for example reading the TLS
+      // identity) must not skip saving the MAC address, or waking never works.
       try {
         await refreshLibrary();
       } catch (_) {}
+      await _captureWakeIdentity(generation);
       try {
         await _captureUUID(generation);
       } catch (_) {
@@ -634,7 +647,8 @@ class TVClient extends ChangeNotifier {
           selected!.mac.isNotEmpty) {
         return;
       }
-      final updated = wakeIdentity(tv, info, status);
+      final updated =
+          wakeIdentity(tv, info, status) ?? await _wakeIdentityFromSsdp(tv);
       if (updated == null ||
           !televisions.any((t) => t.host == tv.host && t.mac.isEmpty)) {
         return;
@@ -645,8 +659,33 @@ class TVClient extends ChangeNotifier {
         _emit();
       }
     } catch (_) {
-      /* Wake metadata is optional; normal remote controls still work. */
+      // The network-info request can be refused; the DIAL announcement
+      // still carries the wake MAC.
+      final updated = await _wakeIdentityFromSsdp(tv);
+      if (updated == null ||
+          generation != _generation ||
+          selected?.storageID != tv.storageID ||
+          selected!.mac.isNotEmpty) {
+        return;
+      }
+      await saveTV(updated);
+      selected = updated;
+      _emit();
     }
+  }
+
+  Future<Television?> _wakeIdentityFromSsdp(Television tv) async {
+    final mac = await wakeMacProbe(tv.host);
+    if (mac == null) return null;
+    return Television(
+      host: tv.host,
+      deviceUUID: tv.deviceUUID,
+      id: tv.storageID,
+      name: tv.name,
+      secure: tv.secure,
+      mac: mac,
+      broadcast: tv.broadcast,
+    );
   }
 
   void _pointerLost(int generation) {

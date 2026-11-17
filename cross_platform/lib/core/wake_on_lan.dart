@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'protocol.dart';
@@ -144,6 +145,72 @@ Future<void> sendWakePackets(
       );
     }
   } finally {
+    socket.close();
+  }
+}
+
+/// MAC from the TV's DIAL announcement ("WAKEUP: MAC=d0:cd:...;Timeout=60").
+/// LG TVs advertise the address they wake on; this works even when the
+/// network-info request is refused.
+String? wakeMacFromSsdp(String response) {
+  for (final line in response.split(RegExp(r'\r?\n'))) {
+    final colon = line.indexOf(':');
+    if (colon < 0 ||
+        line.substring(0, colon).trim().toUpperCase() != 'WAKEUP') {
+      continue;
+    }
+    final match = RegExp(r'MAC=([0-9A-Fa-f]{2}(?:[:-][0-9A-Fa-f]{2}){5})')
+        .firstMatch(line.substring(colon + 1));
+    if (match == null) continue;
+    final mac = match.group(1)!.toUpperCase().replaceAll('-', ':');
+    if (mac == '00:00:00:00:00:00' || mac == 'FF:FF:FF:FF:FF:FF') continue;
+    return mac;
+  }
+  return null;
+}
+
+/// Asks [host] for its DIAL announcement and returns the wake MAC it reports.
+Future<String?> discoverWakeMac(
+  String host, {
+  Duration wait = const Duration(seconds: 3),
+}) async {
+  final local = await localAddressFacing(host);
+  RawDatagramSocket socket;
+  try {
+    socket = await RawDatagramSocket.bind(local ?? InternetAddress.anyIPv4, 0);
+  } on SocketException {
+    return null;
+  }
+  final request =
+      'M-SEARCH * HTTP/1.1\r\n'
+      'HOST: 239.255.255.250:1900\r\n'
+      'MAN: "ssdp:discover"\r\n'
+      'MX: 1\r\n'
+      'ST: urn:dial-multiscreen-org:service:dial:1\r\n\r\n';
+  final bytes = request.codeUnits;
+  final result = Completer<String?>();
+  final timer = Timer(wait, () {
+    if (!result.isCompleted) result.complete(null);
+  });
+  final sub = socket.listen((event) {
+    if (event != RawSocketEvent.read) return;
+    final datagram = socket.receive();
+    if (datagram == null || datagram.address.address != host) return;
+    final mac = wakeMacFromSsdp(String.fromCharCodes(datagram.data));
+    if (mac != null && !result.isCompleted) result.complete(mac);
+  }, onError: (Object _) {});
+  try {
+    for (final target in [host, '239.255.255.250']) {
+      try {
+        socket.send(bytes, InternetAddress(target), 1900);
+      } on SocketException {
+        // The other target may still work.
+      }
+    }
+    return await result.future;
+  } finally {
+    timer.cancel();
+    await sub.cancel();
     socket.close();
   }
 }

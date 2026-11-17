@@ -12,7 +12,10 @@ void main() {
       ),
       isTrue,
     );
-    expect(isLGTelevisionCertificate('/CN=router.local', '/CN=router.local'), isFalse);
+    expect(
+      isLGTelevisionCertificate('/CN=router.local', '/CN=router.local'),
+      isFalse,
+    );
   });
 
   test('live TV answers on 3001 (opt-in: LG_TV_HOST)', () async {
