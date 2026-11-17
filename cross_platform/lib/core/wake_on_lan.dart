@@ -78,7 +78,31 @@ List<String> wakeTargets(Television tv) {
       !(tv.broadcast == '255.255.255.255' || isLocalHost(tv.broadcast))) {
     throw const FormatException('Geçerli bir yerel yayın IPv4 adresi gir.');
   }
-  return {tv.host, tv.broadcast}.toList();
+  // A sleeping TV answers no ARP, so only broadcast reaches it. Without a
+  // known mask, also try the /24 broadcast: Android may not send the limited
+  // broadcast (255.255.255.255) over Wi-Fi, especially with mobile data on.
+  final guess = tv.broadcast == '255.255.255.255'
+      ? subnetBroadcast(tv.host, '255.255.255.0')
+      : null;
+  return {tv.host, ?guess, tv.broadcast}.toList();
+}
+
+/// The phone's IPv4 address on the TV's network, so packets leave over Wi-Fi.
+Future<InternetAddress?> localAddressFacing(String host) async {
+  final prefix = host.substring(0, host.lastIndexOf('.') + 1);
+  try {
+    final interfaces = await NetworkInterface.list(
+      type: InternetAddressType.IPv4,
+    );
+    for (final interface in interfaces) {
+      for (final address in interface.addresses) {
+        if (address.address.startsWith(prefix)) return address;
+      }
+    }
+  } on SocketException {
+    // Fall back to the default route.
+  }
+  return null;
 }
 
 Future<void> sendWakePackets(
@@ -87,7 +111,13 @@ Future<void> sendWakePackets(
 }) async {
   final packet = magicPacket(tv.mac);
   final destinations = wakeTargets(tv);
-  final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+  final local = await localAddressFacing(tv.host);
+  RawDatagramSocket socket;
+  try {
+    socket = await RawDatagramSocket.bind(local ?? InternetAddress.anyIPv4, 0);
+  } on SocketException {
+    socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+  }
   try {
     socket.broadcastEnabled = true;
     var delivered = false;

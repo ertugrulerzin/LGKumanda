@@ -2,8 +2,8 @@
 [Setup]
 AppId={{77D37AA5-7A42-4A86-9BC7-6C3C5F67BBAC}
 AppName=Kumanda
-AppVersion=1.0.0-preview.23
-VersionInfoVersion=1.0.0.23
+AppVersion=1.0.0-preview.24
+VersionInfoVersion=1.0.0.24
 AppPublisher=Ertugrul Erzin
 AppPublisherURL=https://github.com/ertugrulerzin/LGKumanda
 DefaultDirName={localappdata}\Programs\LGKumanda

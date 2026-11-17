@@ -22,6 +22,14 @@ void main() {
     expect(updated?.name, 'Salon');
     expect(wakeTargets(updated!), ['192.168.5.40', '192.168.7.255']);
   });
+  test('adds the /24 broadcast when the subnet mask is unknown', () {
+    expect(
+      wakeTargets(
+        const Television(host: '192.168.1.3', mac: 'D0:CD:BF:5D:FB:9A'),
+      ),
+      ['192.168.1.3', '192.168.1.255', '255.255.255.255'],
+    );
+  });
   test('does not guess between inactive interfaces or a different TV IP', () {
     expect(wakeIdentity(tv, info, {}), isNull);
     expect(
