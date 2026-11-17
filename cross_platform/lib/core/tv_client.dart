@@ -244,13 +244,16 @@ class TVClient extends ChangeNotifier {
       if (generation != _generation) return;
       shortcuts = savedShortcuts;
       if (tv.secure && tv.deviceUUID != null && pin != null) {
-        final uuid = await readIdentity(tv.host, pin);
+        final identity = readIdentity(tv.host, pin);
+        final uuid = fromWake
+            ? await identity.timeout(_wakeStep, onTimeout: () => null)
+            : await identity;
         if (generation != _generation) return;
         if (uuid != tv.deviceUUID) {
           throw StateError('Kayıtlı TV bu adreste doğrulanamadı.');
         }
       }
-      final socket = await openSocket(
+      final opening = openSocket(
         Uri(
           scheme: tv.secure ? 'wss' : 'ws',
           host: tv.host,
@@ -258,6 +261,17 @@ class TVClient extends ChangeNotifier {
         ),
         pin,
       );
+      // A TV that is still booting accepts TCP but answers late. While
+      // waking, give up quickly; the wake loop retries every second.
+      final socket = fromWake
+          ? await opening.timeout(
+              _wakeStep,
+              onTimeout: () {
+                unawaited(opening.then((s) => s.close(), onError: (_) {}));
+                throw TimeoutException('TV henüz hazır değil.');
+              },
+            )
+          : await opening;
       if (generation != _generation) {
         await socket.close();
         return;
@@ -272,12 +286,17 @@ class TVClient extends ChangeNotifier {
       socket.send(encodeMessage(registration(key)));
       _setDeadline(
         generation,
-        const Duration(seconds: 20),
+        fromWake ? _wakeStep : const Duration(seconds: 20),
         'TV’ye ulaşılamadı. IP adresini ve ağ izinlerini kontrol et.',
       );
     } catch (e) {
       if (generation != _generation) return;
-      if (e is! LocalNetworkDenied && _allowRecovery && tv.deviceUUID != null) {
+      // While waking, a slow answer means "still booting", not "moved":
+      // retry the same address instead of scanning the network.
+      if (e is! LocalNetworkDenied &&
+          !_wakeActive &&
+          _allowRecovery &&
+          tv.deviceUUID != null) {
         await _recover(tv, generation);
         return;
       }
@@ -691,6 +710,7 @@ class TVClient extends ChangeNotifier {
   }
 
   bool _probing = false;
+  static const _wakeStep = Duration(seconds: 4);
   static Future<bool> _portOpen(String host, int port) async {
     try {
       final socket = await Socket.connect(
