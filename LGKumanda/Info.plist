@@ -21,11 +21,11 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-3117486801133085~3216899581</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>KumandaBannerAdUnitID</key>
-	<string></string>
+	<string>ca-app-pub-3117486801133085/5570445232</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsLocalNetworking</key>

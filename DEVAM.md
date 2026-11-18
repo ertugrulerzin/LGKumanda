@@ -11,6 +11,9 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   ücretsiz, 175 ülke, telif, yaş anketi (sınırsız web erişimi = evet),
   App Privacy "Data Not Collected" (yayınlandı), inceleme notu ve iletişim bilgisi,
   derleme 1.0 (23) sürüme bağlı, yayın şekli: elle (manual release).
+- 18 Kasım: sürüme derleme 24 bağlandı. Gönderim iki uyum formu yüzünden
+  engelli (güvenlik ve yapay zekâ içeriği; kullanıcı ASC'de dolduracak).
+  Gönderim 9b52bbe2-… READY_FOR_REVIEW, içi boş.
 - **Eksik:** incelemeye gönderme. ASC API `reviewSubmissions` 500 dönüyor; bir
   READY_FOR_REVIEW gönderimi oluşmuş olabilir (9b52bbe2-e523-4652-a7ce-0998cddc75e3).
   Arka planda `scratchpad/store/submitloop.py` 1 saat denedi; durum
@@ -29,10 +32,13 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   Klavye ve tarayıcıda reklam yok. Cihazlar'da "Reklam gizlilik seçenekleri".
 - Release'de `KumandaBannerAdUnitID` boşken reklam yok; DEBUG Google test birimi.
   `GADApplicationIdentifier` şimdilik Google örnek kimliği.
-- Bekleyen: kullanıcı AdMob hesabı açıp uygulama kimliği (`ca-app-pub-…~…`) ve
-  banner kimliği (`ca-app-pub-…/…`) gönderecek. Sonra: project.yml'e yaz,
-  App Privacy'yi reklam verileriyle güncelle, yaş anketinde advertising=true,
-  PRIVACY.md güncelle, derleme 24 → 1.1 olarak gönder.
+- AdMob hesabı açıldı (18 Kasım; Google hesabı incelemede, ≤24 saat). Uygulama
+  "Kumanda" iOS: `ca-app-pub-3117486801133085~3216899581`, banner birimi
+  `ca-app-pub-3117486801133085/5570445232`; ikisi de project.yml'de.
+  AdMob, uygulama App Store'da yayınlanınca mağazaya bağlanmalı (Apps > Kumanda >
+  App settings > Add store). Kalan: App Privacy'yi reklam verileriyle güncelle,
+  yaş anketinde advertising=true, PRIVACY.md, ödeme/vergi bilgisi (kullanıcı),
+  derleme 25 → 1.1.
 
 ## Diğer
 

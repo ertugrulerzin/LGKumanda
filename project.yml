@@ -38,10 +38,10 @@ targets:
         NSBonjourServices: [_androidtvremote2._tcp]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
-        # AdMob: Google's sample app ID until the real one is set. Without
+        # AdMob app "Kumanda" (iOS) and its bottom banner unit. Without
         # KumandaBannerAdUnitID, release builds show no ads.
-        GADApplicationIdentifier: ca-app-pub-3940256099942544~1458002511
-        KumandaBannerAdUnitID: ''
+        GADApplicationIdentifier: ca-app-pub-3117486801133085~3216899581
+        KumandaBannerAdUnitID: ca-app-pub-3117486801133085/5570445232
         SKAdNetworkItems:
           - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
         UIApplicationSceneManifest:
