@@ -25,8 +25,12 @@ enum BrowserAddress {
     static func googleSearch(_ query: String) -> URL {
         var allowed = CharacterSet.alphanumerics; allowed.insert(charactersIn: "-._~")
         let encoded = query.addingPercentEncoding(withAllowedCharacters: allowed) ?? ""
-        return URL(string: "https://www.google.com/search?q=\(encoded)")!
+        // Same language, region and no personalisation everywhere, so the phone preview
+        // and the TV browser show the same results page.
+        return URL(string: "https://www.google.com/search?q=\(encoded)&hl=tr&gl=tr&pws=0")!
     }
+    /// The TV's own browser identity; the phone preview asks for the same page the TV gets.
+    static let webOSUserAgent = "Mozilla/5.0 (Web0S; Linux/SmartTV) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36 WebAppManager"
 
     private static func webURL(_ candidate: String) throws -> URL {
         guard let parts = URLComponents(string: candidate),

@@ -77,6 +77,7 @@ struct RemoteView: View {
     @State private var switching = false
     @State private var addingBox = false
     private var connected: Bool { client.state == .connected }
+    private var powerTitle: String { client.waking ? "Açılıyor…" : connected ? "Kapat" : "Aç" }
     private var keysAvailable: Bool { client.pointerReady || box.handles(foregroundAppID: client.foregroundAppID) }
     var body: some View {
         NavigationStack {
@@ -104,11 +105,18 @@ struct RemoteView: View {
                     }
                     targetPicker
                     HStack(spacing: 12) {
-                        RemoteButton(title: connected ? "Kapat" : "Uyandır", symbol: "power", color: Theme.accent) {
-                            if connected { powerOff = true } else { client.wake() }
+                        // The box ignores power keys over Wi-Fi, so the power key belongs to the TV tab.
+                        if target == .tv {
+                            RemoteButton(title: powerTitle, symbol: "power", color: Theme.accent) {
+                                if connected { powerOff = true } else { client.wake() }
+                            }.disabled(client.waking).accessibilityIdentifier("tvPower")
                         }
                         RemoteButton(title: "Giriş", symbol: "rectangle.on.rectangle") { sources = true }.disabled(!connected)
                         RemoteButton(title: "Klavye", symbol: "keyboard") { keyboard = true }.disabled(!connected)
+                    }
+                    if target != .tv {
+                        Text("Kutu Wi-Fi'den kapatılamaz; kapatmak için kutunun kendi kumandasını kullan. TV'yi TV sekmesinden açıp kapatabilirsin.")
+                            .font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading)
                     }
                     if case .box(let id) = target, box.pairedBoxes.contains(where: { $0.id == id }) {
                         BoxRemoteView(id: id)

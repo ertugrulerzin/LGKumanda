@@ -34,6 +34,8 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     @Published private(set) var selected: Television?
     @Published private(set) var state: ConnectionState = .disconnected
     @Published private(set) var powerState: TVPowerState = .unknown
+    /// A wake packet went out and the TV has not answered yet.
+    @Published private(set) var waking = false
     var connectionLabel: String { powerState.isStandby ? "TV kapalı" : state.label }
     @Published private(set) var volume: Int?
     @Published private(set) var muted = false
@@ -98,12 +100,15 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     private let preferences: UserDefaults
     private let readDeviceIdentity: @Sendable (String, String) async -> String?
     private let findTVAddress: @MainActor (Television, String) async -> TVAddressRecovery.Result
+    private let probeWakeMAC: @Sendable (String) async -> String?
     init(preferences: UserDefaults = .standard,
+         wakeMACProbe: @escaping @Sendable (String) async -> String? = { await WakeOnLAN.discoverMAC(host: $0) },
          identityReader: @escaping @Sendable (String, String) async -> String? = { await TVIdentityProbe.read(host: $0, fingerprint: $1) },
          addressFinder: @escaping @MainActor (Television, String) async -> TVAddressRecovery.Result = { await TVAddressRecovery.find($0, fingerprint: $1) }) {
         self.preferences = preferences
         self.readDeviceIdentity = identityReader
         self.findTVAddress = addressFinder
+        self.probeWakeMAC = wakeMACProbe
         if let data = preferences.data(forKey: "televisions"),
            let saved = try? JSONDecoder().decode([Television].self, from: data) {
             televisions = saved
@@ -137,6 +142,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     private var ignoreStandbyUntil: ContinuousClock.Instant?
     func disconnect() {
         powerOnWatch?.cancel(); powerOnWatch = nil
+        waking = false
         wakeTask?.cancel(); wakeTask = nil
         resetConnection()
     }
@@ -213,7 +219,8 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
                 self.connectionFailed(token: token, message: "TV bağlantısı kesildi. TV'nin açık olduğunu, aynı Wi-Fi'da olduğunu ve yerel ağ iznini kontrol et. \(error.localizedDescription)")
             }
         }
-        setDeadline(seconds: 20, token: token, message: "TV'ye ulaşılamadı. IP adresini kontrol edip yeniden dene.")
+        // While a woken TV boots, a stalled attempt is dropped quickly and the watch retries.
+        setDeadline(seconds: waking ? 4 : 20, token: token, message: "TV'ye ulaşılamadı. IP adresini kontrol edip yeniden dene.")
     }
     private func setDeadline(seconds: UInt64, token: UUID, message: String) {
         deadline?.cancel()
@@ -300,6 +307,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
             persistAddressOnRegistration = false
             addressRecoveryAllowed = true
             state = .connected; deadline?.cancel()
+            if waking { waking = false; notice = nil }
             Task { await bootstrap(token: token) }
             heartbeat = Task { [weak self] in
                 var queryPower = true
@@ -530,11 +538,15 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     }
     private func captureWakeIdentity(token: UUID) async {
         guard generation == token, let tv = selected, tv.mac.isEmpty else { return }
-        guard let info = try? await request("com.webos.service.connectionmanager/getinfo"), generation == token else { return }
-        let status = (try? await request("com.webos.service.connectionmanager/getStatus")) ?? [:]
-        guard generation == token, selected?.id == tv.id,
-              let index = televisions.firstIndex(where: { $0.id == tv.id }), televisions[index].mac.isEmpty,
-              let identity = WakeOnLAN.networkIdentity(info: info, status: status, host: tv.host) else { return }
+        var identity: (mac: String, broadcast: String?)?
+        if let info = try? await request("com.webos.service.connectionmanager/getinfo"), generation == token {
+            let status = (try? await request("com.webos.service.connectionmanager/getStatus")) ?? [:]
+            identity = WakeOnLAN.networkIdentity(info: info, status: status, host: tv.host)
+        }
+        // Some firmware lists no usable MAC; the TV's DIAL reply names the one that wakes it.
+        if identity == nil, generation == token, let mac = await probeWakeMAC(tv.host) { identity = (mac, nil) }
+        guard generation == token, selected?.id == tv.id, let identity,
+              let index = televisions.firstIndex(where: { $0.id == tv.id }), televisions[index].mac.isEmpty else { return }
         var updated = televisions[index]
         updated.mac = identity.mac
         if updated.broadcast == "255.255.255.255", let broadcast = identity.broadcast { updated.broadcast = broadcast }
@@ -599,15 +611,18 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         wakeTask?.cancel()
         error = nil
         notice = "TV açılıyor…"
+        waking = true
         wakeTask = Task {
             let delivery: WakeOnLAN.Delivery
             do { delivery = try await WakeOnLAN.send(mac: tv.mac, host: tv.host, broadcast: tv.broadcast) }
             catch is CancellationError { return }
-            catch { self.notice = nil; self.error = error.localizedDescription; return }
+            catch { self.waking = false; self.notice = nil; self.error = error.localizedDescription; return }
             guard !Task.isCancelled else { return }
             self.notice = "TV açılıyor…"
             self.watchForPowerOn(tv, requireClosedFirst: false, timeout: .seconds(40)) { [weak self] in
-                guard let self, self.state == .disconnected else { return }
+                guard let self else { return }
+                self.waking = false
+                guard self.state == .disconnected else { return }
                 if delivery.broadcast, tv.deviceUUID != nil {
                     // The TV may have woken with a new DHCP address; connecting runs address recovery.
                     self.connect(to: tv)
@@ -637,18 +652,19 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
                     onTimeout?()
                     return
                 }
-                let open = await TVReachability.isListening(host: tv.host, port: port)
+                let open = await TVReachability.isListening(host: tv.host, port: port, timeout: client.waking ? .milliseconds(800) : .seconds(1))
                 guard !Task.isCancelled else { return }
                 if !open {
                     seenClosed = true
                 } else if seenClosed, client.state == .disconnected,
-                          lastAttempt.map({ ContinuousClock.now - $0 > .seconds(4) }) ?? true {
+                          lastAttempt.map({ ContinuousClock.now - $0 > (client.waking ? .seconds(2) : .seconds(4)) }) ?? true {
                     lastAttempt = .now
                     client.ignoreStandbyUntil = .now + .seconds(30)
                     client.connect(to: tv, allowAddressRecovery: false, persistNewAddress: false)
                     client.notice = "TV açıldı, bağlanılıyor…"
                 }
-                try? await Task.sleep(for: .seconds(2))
+                // After a wake the TV answers within seconds; check often so it connects at once.
+                try? await Task.sleep(for: client.waking ? .seconds(1) : .seconds(2))
             }
         }
     }

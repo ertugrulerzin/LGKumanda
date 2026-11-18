@@ -146,6 +146,7 @@ private struct PhoneWebView: UIViewRepresentable {
         configuration.websiteDataStore = .nonPersistent()
         configuration.allowsInlineMediaPlayback = true
         configuration.mediaTypesRequiringUserActionForPlayback = .all
+        configuration.defaultWebpagePreferences.preferredContentMode = .desktop
         configuration.userContentController.addUserScript(WKUserScript(source: WebVideoDiscovery.script, injectionTime:.atDocumentStart, forMainFrameOnly:false))
         configuration.userContentController.add(context.coordinator, name:"mediaPlay")
         configuration.userContentController.add(context.coordinator, name:"videoSource")
@@ -153,6 +154,7 @@ private struct PhoneWebView: UIViewRepresentable {
         view.navigationDelegate = context.coordinator
         view.uiDelegate = context.coordinator
         view.allowsBackForwardNavigationGestures = true
+        view.customUserAgent = BrowserAddress.webOSUserAgent
         view.accessibilityIdentifier = "phoneBrowser"
         page.webView = view
         context.coordinator.sent = start

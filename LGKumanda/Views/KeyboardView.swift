@@ -14,12 +14,33 @@ struct KeyboardView: View {
     @FocusState private var focused: Bool
     @AppStorage("pointerSensitivity") private var sensitivity = 0.8
     @AppStorage("cursorless") private var cursorless = true
+    /// Where typed text goes: the TV or a paired Android TV box.
+    @State private var target: RemoteTarget = .tv
     private var connected: Bool { client.state == .connected }
+    private var boxID: UUID? { if case .box(let id) = target { return id }; return nil }
+    private var targetBox: BoxClient.Box? { boxID.flatMap { id in box.pairedBoxes.first { $0.id == id } } }
+    private var targetName: String { targetBox?.title(inputs: client.inputs) ?? client.selected?.name ?? "TV" }
+    /// Text can be sent: to a paired box, or to the TV while it is not showing an HDMI input.
+    private var canSend: Bool { targetBox != nil || (connected && !client.isHDMIActive) }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 12) {
+                    if !box.pairedBoxes.isEmpty { targetPicker }
+                    if targetBox != nil {
+                        Text(box.statusText).font(.caption).foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        DirectionPad(diameter: 200, send: { box.send($0) })
+                        HStack(spacing: 12) {
+                            RemoteButton(title: "Geri", symbol: "arrow.uturn.backward") { box.send(.back) }
+                            RemoteButton(title: "Ana sayfa", symbol: "house") { box.send(.home) }
+                        }
+                        if !focused {
+                            Text("Kutuda arama veya metin alanını seç, sonra yaz. Metin kutunun ekran klavyesine gider.")
+                                .font(.footnote).foregroundStyle(.secondary)
+                        }
+                    } else {
                     HStack {
                         Text(client.selected?.name ?? "Önce Cihazlar'dan TV ekle").lineLimit(1)
                         Spacer()
@@ -49,6 +70,7 @@ struct KeyboardView: View {
                         Text("Yazmadan önce TV'de arama veya metin alanını seç. iPhone klavyesindeki mikrofonla dikte de kullanabilirsin.")
                             .font(.footnote).foregroundStyle(.secondary)
                     }
+                    }
                 }.padding(.horizontal, 20).padding(.top, 12)
             }
             .scrollDismissesKeyboard(.never)
@@ -64,9 +86,13 @@ struct KeyboardView: View {
                 else { ToolbarItem(placement: .topBarTrailing) { Button(focused ? "Gizle" : "Yaz") { focused.toggle() } } }
             }
             .sheet(isPresented: $browserAddress) { BrowserAddressView() }
-            .onAppear { focused = connected && !client.isHDMIActive }
+            .onAppear {
+                // Start where the TV is: a box's input means the box's text field.
+                if let linked = box.box(forForeground: client.foregroundAppID), linked.paired { choose(.box(linked.id)) }
+                focused = canSend
+            }
             .onDisappear { focused = false; client.stopPointerMotion() }
-            .onChange(of: client.isHDMIActive) { _, hdmi in if hdmi { focused = false } }
+            .onChange(of: client.isHDMIActive) { _, hdmi in if hdmi, targetBox == nil { focused = false } }
             .onChange(of: text) { _, _ in result = nil }
         }
     }
@@ -75,7 +101,7 @@ struct KeyboardView: View {
             if let failure { Text(failure).font(.footnote).foregroundStyle(.red).frame(maxWidth: .infinity, alignment: .leading) }
             if let result { Label(result, systemImage: "checkmark.circle").font(.footnote).foregroundStyle(.secondary).frame(maxWidth: .infinity, alignment: .leading) }
             HStack(alignment: .bottom, spacing: 10) {
-                TextField("TV'ye yaz…", text: $text, axis: .vertical)
+                TextField(targetBox == nil ? "TV'ye yaz…" : "Kutuya yaz…", text: $text, axis: .vertical)
                     .lineLimit(1...4).padding(.horizontal, 14).padding(.vertical, 12)
                     .background(Theme.background, in: RoundedRectangle(cornerRadius: 16))
                     .focused($focused).submitLabel(.send).onSubmit { send() }
@@ -86,25 +112,62 @@ struct KeyboardView: View {
                         else { Image(systemName: "arrow.up").font(.title3.weight(.semibold)) }
                     }.foregroundStyle(.white).frame(width: 48, height: 48)
                         .background(Theme.accent, in: Circle())
-                }.disabled(text.isEmpty || sending || !connected || client.isHDMIActive)
-                    .opacity(text.isEmpty || !connected || client.isHDMIActive ? 0.4 : 1)
-                    .accessibilityLabel("Metni TV'ye gönder")
+                }.disabled(text.isEmpty || sending || !canSend)
+                    .opacity(text.isEmpty || !canSend ? 0.4 : 1)
+                    .accessibilityLabel(targetBox == nil ? "Metni TV'ye gönder" : "Metni kutuya gönder")
             }
             HStack(spacing: 12) {
-                Button { command("com.webos.service.ime/sendEnterKey") } label: { Label("TV Enter", systemImage: "return") }
-                    .disabled(!connected || client.isHDMIActive)
+                Button {
+                    if targetBox != nil { box.send(code: 66) } else { command("com.webos.service.ime/sendEnterKey") }
+                } label: { Label("Enter", systemImage: "return") }
+                    .disabled(!canSend)
                 Spacer(minLength: 0)
-                Button { command("com.webos.service.ime/deleteCharacters", ["count": 1]) } label: { Image(systemName: "delete.left") }
-                    .disabled(!connected || client.isHDMIActive).accessibilityLabel("TV'de son karakteri sil")
+                Text("Yaz → \(targetName)").font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                Spacer(minLength: 0)
+                Button {
+                    if targetBox != nil { box.send(code: 67) } else { command("com.webos.service.ime/deleteCharacters", ["count": 1]) }
+                } label: { Image(systemName: "delete.left") }
+                    .disabled(!canSend).accessibilityLabel(targetBox == nil ? "TV'de son karakteri sil" : "Kutuda son karakteri sil")
                 Button { focused.toggle() } label: { Image(systemName: focused ? "keyboard.chevron.compact.down" : "keyboard") }
                     .accessibilityLabel(focused ? "iPhone klavyesini gizle" : "iPhone klavyesini aç")
             }.buttonStyle(.borderless).font(.subheadline).frame(minHeight: 44)
         }.padding(.horizontal, 16).padding(.top, 10)
             .background(Theme.surface)
     }
+    private var targetPicker: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Text("Yazılacak yer:").font(.footnote).foregroundStyle(.secondary)
+                chip(client.selected?.name ?? "TV", symbol: "tv", selected: targetBox == nil) { choose(.tv) }
+                ForEach(box.pairedBoxes) { item in
+                    chip(item.title(inputs: client.inputs), symbol: "wifi", selected: boxID == item.id) { choose(.box(item.id)) }
+                }
+            }
+        }.accessibilityIdentifier("keyboardTarget")
+    }
+    private func chip(_ title: String, symbol: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(title, systemImage: symbol).font(.subheadline.weight(.semibold)).lineLimit(1)
+                .padding(.horizontal, 14).frame(minHeight: 40)
+                .foregroundStyle(selected ? Color.white : Color.primary)
+                .background(selected ? Theme.accent : Theme.surface, in: Capsule())
+        }.buttonStyle(PressStyle()).accessibilityAddTraits(selected ? .isSelected : [])
+    }
+    private func choose(_ next: RemoteTarget) {
+        target = next; failure = nil; result = nil
+        if case .box(let id) = next { box.select(id) }
+    }
     private func send() {
-        guard !text.isEmpty, !sending, connected, !client.isHDMIActive else { return }
+        guard !text.isEmpty, !sending, canSend else { return }
         let value = text
+        if targetBox != nil {
+            failure = nil
+            if box.sendText(value) {
+                text = ""
+                result = "Metin kutuya gönderildi."
+            } else { failure = "Kutu metin almaya hazır değil." }
+            return
+        }
         sending = true; failure = nil; result = nil
         Task {
             defer { sending = false }

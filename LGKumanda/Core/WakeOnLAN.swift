@@ -88,4 +88,54 @@ enum WakeOnLAN {
         guard delivery.unicast || delivery.broadcast else { throw Failure.send }
         return delivery
     }
+    /// LG TVs announce their wake MAC in the DIAL SSDP reply ("WAKEUP: MAC=…;Timeout=60").
+    /// Used when the webOS network API does not report a usable MAC.
+    static func wakeMAC(fromSSDP response: String) -> String? {
+        for line in response.split(whereSeparator: \.isNewline) {
+            guard let colon = line.firstIndex(of: ":"),
+                  line[..<colon].trimmingCharacters(in: .whitespaces).uppercased() == "WAKEUP" else { continue }
+            let value = String(line[line.index(after: colon)...])
+            guard let range = value.range(of: "MAC=([0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5})", options: .regularExpression) else { continue }
+            let mac = value[range].dropFirst(4).uppercased().replacingOccurrences(of: "-", with: ":")
+            if mac == "00:00:00:00:00:00" || mac == "FF:FF:FF:FF:FF:FF" { continue }
+            return mac
+        }
+        return nil
+    }
+    /// Asks the TV directly (unicast, no multicast entitlement needed) for its DIAL announcement.
+    static func discoverMAC(host: String, wait: Duration = .seconds(3)) async -> String? {
+        guard TVProtocol.validHost(host) else { return nil }
+        return await Task.detached(priority: .utility) { () -> String? in
+            let descriptor = Darwin.socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)
+            guard descriptor >= 0 else { return nil }
+            defer { Darwin.close(descriptor) }
+            var address = sockaddr_in()
+            address.sin_len = UInt8(MemoryLayout<sockaddr_in>.size)
+            address.sin_family = sa_family_t(AF_INET)
+            address.sin_port = UInt16(1900).bigEndian
+            guard inet_pton(AF_INET, host, &address.sin_addr) == 1 else { return nil }
+            let request = Array("M-SEARCH * HTTP/1.1\r\nHOST: 239.255.255.250:1900\r\nMAN: \"ssdp:discover\"\r\nMX: 1\r\nST: urn:dial-multiscreen-org:service:dial:1\r\n\r\n".utf8)
+            let sent = withUnsafePointer(to: &address) { pointer in
+                pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                    Darwin.sendto(descriptor, request, request.count, 0, $0, socklen_t(MemoryLayout<sockaddr_in>.size))
+                }
+            }
+            guard sent == request.count else { return nil }
+            let deadline = ContinuousClock.now + wait
+            var buffer = [UInt8](repeating: 0, count: 2048)
+            while ContinuousClock.now < deadline, !Task.isCancelled {
+                var poller = pollfd(fd: descriptor, events: Int16(POLLIN), revents: 0)
+                guard Darwin.poll(&poller, 1, 250) > 0 else { continue }
+                var from = sockaddr_in(); var length = socklen_t(MemoryLayout<sockaddr_in>.size)
+                let count = withUnsafeMutablePointer(to: &from) { pointer in
+                    pointer.withMemoryRebound(to: sockaddr.self, capacity: 1) {
+                        Darwin.recvfrom(descriptor, &buffer, buffer.count, 0, $0, &length)
+                    }
+                }
+                guard count > 0, from.sin_addr.s_addr == address.sin_addr.s_addr else { continue }
+                if let mac = wakeMAC(fromSSDP: String(decoding: buffer[0..<count], as: UTF8.self)) { return mac }
+            }
+            return nil
+        }.value
+    }
 }

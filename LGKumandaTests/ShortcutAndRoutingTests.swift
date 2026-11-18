@@ -77,8 +77,8 @@ final class BrowserAddressTests: XCTestCase {
         }
     }
     func testWordsBecomeGoogleSearchButAddressesStayAddresses() throws {
-        XCTAssertEqual(try BrowserAddress.target("hava durumu istanbul"), .search(URL(string:"https://www.google.com/search?q=hava%20durumu%20istanbul")!))
-        XCTAssertEqual(try BrowserAddress.target("c++ & swift").url.absoluteString, "https://www.google.com/search?q=c%2B%2B%20%26%20swift")
+        XCTAssertEqual(try BrowserAddress.target("hava durumu istanbul"), .search(URL(string:"https://www.google.com/search?q=hava%20durumu%20istanbul&hl=tr&gl=tr&pws=0")!))
+        XCTAssertEqual(try BrowserAddress.target("c++ & swift").url.absoluteString, "https://www.google.com/search?q=c%2B%2B%20%26%20swift&hl=tr&gl=tr&pws=0")
         XCTAssertTrue(try BrowserAddress.target("netflix").isSearch)
         XCTAssertTrue(try BrowserAddress.target("saat: 15").isSearch)
         XCTAssertTrue(try BrowserAddress.target("not a host").isSearch)

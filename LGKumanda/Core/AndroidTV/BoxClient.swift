@@ -78,6 +78,7 @@ import Security
     private var pairingConnection: BoxConnection?
     private var connectTask: Task<Bool, Never>?
     private var readyWaiter: CheckedContinuation<Void, Never>?
+    private var lastHeard: ContinuousClock.Instant?
 
     init() {
         let defaults = UserDefaults.standard
@@ -260,6 +261,13 @@ import Security
 
     /// Opens the remote session if needed. Returns false if the box cannot be reached.
     @discardableResult func connect() async -> Bool {
+        // The box pings every few seconds. Silence means it gave the session to another
+        // remote (it keeps only one) without closing ours, so open a fresh one.
+        if state == .connected, let lastHeard, ContinuousClock.now - lastHeard > .seconds(12) {
+            remote?.onClose = nil; remote?.cancel(); remote = nil
+            isReady = false
+            state = .idle
+        }
         if state == .connected { return true }
         if let connectTask { return await connectTask.value }
         guard let box, box.paired else { return false }
@@ -285,6 +293,7 @@ import Security
                     }
                 }
                 self.remote = connection
+                self.lastHeard = .now
                 try await connection.start()
                 guard self.generation == token, self.remote === connection, !Task.isCancelled else {
                     connection.cancel(); return false
@@ -379,8 +388,32 @@ import Security
         return true
     }
 
+    /// Replaces the text in the box's focused text field (Android TV keyboard). Queued after keys.
+    @discardableResult func sendText(_ text: String) -> Bool {
+        guard box?.paired == true, enabled, !text.isEmpty else { return false }
+        let previous = keyTask
+        let token = generation
+        keyTask = Task { [weak self] in
+            await previous?.value
+            guard let self, self.generation == token, self.enabled, !Task.isCancelled else { return }
+            guard await self.connect(), let remote = self.remote else {
+                guard self.generation == token, !Task.isCancelled else { return }
+                self.onCommandError?(self.statusText)
+                return
+            }
+            guard self.generation == token, !Task.isCancelled else { return }
+            guard self.remoteSession.supportsText else {
+                self.onCommandError?("Kutu Wi-Fi ile metin girişini desteklemiyor. Yön tuşlarıyla ekran klavyesini kullan.")
+                return
+            }
+            remote.send(self.remoteSession.textEdit(text))
+        }
+        return true
+    }
+
     private func handleRemote(_ frame: Data, from connection: BoxConnection) {
         guard remote === connection else { return }
+        lastHeard = .now
         let reply = remoteSession.receive(frame)
         deviceModel = remoteSession.model
         currentApp = remoteSession.currentApp
