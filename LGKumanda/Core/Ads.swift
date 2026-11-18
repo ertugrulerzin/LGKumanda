@@ -17,12 +17,19 @@ import UserMessagingPlatform
     nonisolated static var bannerUnitID: String? {
         let configured = (Bundle.main.object(forInfoDictionaryKey: "KumandaBannerAdUnitID") as? String)?
             .trimmingCharacters(in: .whitespaces)
-        if let configured, configured.hasPrefix("ca-app-pub-") { return configured }
+        if let configured, configured.hasPrefix("ca-app-pub-") {
+            // TestFlight installs show Google's test ads so testers never generate invalid traffic.
+            return isTestFlight ? googleTestBannerUnit : configured
+        }
         #if DEBUG
         return googleTestBannerUnit
         #else
         return nil
         #endif
+    }
+    /// TestFlight builds carry a sandbox App Store receipt.
+    nonisolated static var isTestFlight: Bool {
+        Bundle.main.appStoreReceiptURL?.lastPathComponent == "sandboxReceipt"
     }
     /// Screenshots, UI tests and builds without an ad unit show no ads.
     var enabled: Bool {

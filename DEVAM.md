@@ -35,9 +35,14 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   "Kumanda" iOS: `ca-app-pub-3117486801133085~3216899581`, banner birimi
   `ca-app-pub-3117486801133085/5570445232`; ikisi de project.yml'de.
   AdMob, uygulama App Store'da yayınlanınca mağazaya bağlanmalı (Apps > Kumanda >
-  App settings > Add store). Kalan: App Privacy'yi reklam verileriyle güncelle,
-  yaş anketinde advertising=true, PRIVACY.md, ödeme/vergi bilgisi (kullanıcı),
-  derleme 25 → 1.1.
+  App settings > Add store).
+- 1.1 (25) yüklendi (18 Kasım). TestFlight kurulumları Google test birimini
+  kullanır (sandbox makbuzu); App Store kurulumu gerçek birimi. PRIVACY.md reklam
+  bölümüyle güncellendi.
+- Kalan (1.0 incelemesi bitince, ASC'de yeni sürüm açılabildiğinde): 1.1 sürümünü
+  oluştur, derleme 25'i bağla, App Privacy'yi reklam verileriyle güncelle (web
+  arayüzü), yaş anketinde advertising=true, "Yenilikler" metni, incelemeye gönder.
+  Ödeme/vergi bilgisi kullanıcıda.
 
 ## Diğer
 
