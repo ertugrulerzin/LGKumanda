@@ -1,10 +1,12 @@
-LG Kumanda 1.0 (22)
+Kumanda 1.0 (24)
 
-Android TV kutuları (set üstü kutu, Google TV) artık genel ve çoklu
-- Her eşleşmiş kutu Kumanda'da TV'nin yanında kendi sekmesini alır. Sekmenin adı kutunun bağlı olduğu TV girişinin adıdır (ör. TVP); istersen ayarlardan kendi adını verebilirsin.
-- Yeni kutu: Kumanda'daki "+ Ekle" ya da Cihazlar > Android TV kutuları > Android TV kutusu ekle. Kutuları buradan yeniden adlandırabilir, girişini değiştirebilir veya kaldırabilirsin.
-- Eşleştirirken TV'yi kutunun girişine al: kod kutunun ekranında çıktığı için giriş otomatik doğru kaydedilir. (Önceden giriş, kutunun adına bakılarak tahmin ediliyordu; bu yüzden kutu yanlış girişe bağlanabiliyordu.)
-- Mevcut eşleşmen korunur. Sekme yanlış girişin adını gösteriyorsa: kutu sekmesinde en alttaki ayarlar > "Kutunun bağlı olduğu giriş"ten doğru girişi seç veya TV o girişteyken "TV'nin şu anki girişini kullan"a dokun.
-- TV kutunun girişine geçince kumanda o kutunun sekmesine kendiliğinden geçer; sekmeye dokununca TV de o girişe geçer.
+Android ve masaüstündeki düzeltmeler iPhone'a geldi
+- Güç tuşu: TV sekmesinde TV açıksa "Kapat", kapalıysa "Aç", açılırken "Açılıyor…" yazar. Kutu sekmelerinde güç tuşu yok; kutu Wi-Fi'den kapatılamıyor, artık yanlışlıkla TV'yi de kapatmıyor.
+- TV açılınca kumanda çok daha hızlı bağlanır: TV her saniye yoklanır, takılan bir deneme 4 saniyede bırakılıp yenisi başlar.
+- Uyandırma için MAC adresi, TV webOS'tan vermezse TV'nin ağ duyurusundan (DIAL) alınır.
+- Klavye: üstten "Yazılacak yer" seç (TV ya da eşleşmiş Android kutusu). Kutuya yazılan metin kutunun ekran klavyesine gider; yön, OK, Geri, Ana sayfa, Enter ve silme de kutuya gider.
+- Kutu, başka bir kumanda bağlantıyı devralınca kumanda bağlantıyı kendiliğinden yeniler.
+- Google aramaları telefonda ve TV'de aynı sonuç sayfasını açar.
 
-Doğrulama: birim ve arayüz testleri geçti. İki kutuyla gerçek cihazda denenmedi.
+Not: iPhone'dan uyandırma hâlâ Apple'ın yayın (broadcast) iznine bağlı; izin onaylanana kadar kapalı TV her zaman açılmayabilir.
+Doğrulama: birim ve arayüz testleri geçti. Kutuya metin gönderme Tivibu'da henüz denenmedi.
