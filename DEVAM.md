@@ -11,10 +11,9 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   ücretsiz, 175 ülke, telif, yaş anketi (sınırsız web erişimi = evet),
   App Privacy "Data Not Collected" (yayınlandı), inceleme notu ve iletişim bilgisi,
   derleme 1.0 (23) sürüme bağlı, yayın şekli: elle (manual release).
-- 18 Kasım: sürüme derleme 24 bağlandı. Gönderim iki uyum formu yüzünden
-  engelli (güvenlik ve yapay zekâ içeriği; kullanıcı ASC'de dolduracak).
-  Gönderim 9b52bbe2-… READY_FOR_REVIEW, içi boş.
-- **Eksik:** incelemeye gönderme. ASC API `reviewSubmissions` 500 dönüyor; bir
+- 18 Kasım: 1.0 (24) incelemeye gönderildi (WAITING_FOR_REVIEW, gönderim
+  9b52bbe2-…). Engel olan iki uyum formu (güvenlik değerlendirmesi, AIGC) yalnızca
+  Çin anakarası içindi; kullanıcı onayıyla Çin yayından çıkarıldı (174 ülke). ASC API `reviewSubmissions` 500 dönüyor; bir
   READY_FOR_REVIEW gönderimi oluşmuş olabilir (9b52bbe2-e523-4652-a7ce-0998cddc75e3).
   Arka planda `scratchpad/store/submitloop.py` 1 saat denedi; durum
   `GET /v1/appStoreVersions/8eae16a2-f5cf-47b0-9f9d-b900f004afea` ile kontrol edilir
