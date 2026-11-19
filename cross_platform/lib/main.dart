@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
+import 'core/ads.dart';
 import 'core/android_tv/box_client.dart';
 import 'core/storage.dart';
 import 'core/tv_client.dart';
@@ -22,6 +23,7 @@ Future<void> main() async {
   box.onCommandError = client.reportError;
   client.keyRouter = (name) => box.route(name, client.foreground);
   runApp(RemoteApp(client: client));
+  Ads.shared.start();
   if (client.selected != null) unawaited(client.connect(client.selected!));
 }
 

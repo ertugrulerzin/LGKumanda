@@ -26,3 +26,17 @@ Kesinleşmiş tercihler:
 - HDMI kutusuna komut iletimi SIMPLINK/HDMI-CEC desteğine bağlı; TV uygulamasıyla kutu kumandası birbirine karıştırılmaz.
 
 Bir sonraki gerçek TV doğrulaması: işaretçisiz seçenek açıkken normal bağlantı, düğme, video ve cross-origin iframe içeren kontrollü sayfada yön/OK davranışını ölç. İframe’i doğrudan açmanın sitenin oturumunu/oynatıcısını bozabileceğini kontrol et. Bu aşamada gerçek TV’ye otomatik komut gönderilmedi.
+
+## Google Play ve reklam (19 Kasım 2026)
+
+- Play paket adı `com.ertugrul.kumanda` (Dart paket adı `lg_kumanda` olarak kaldı). Yayın
+  imzası `~/.kumanda/kumanda-upload.jks`; parolalar `~/.kumanda/key.properties`
+  içinde, `android/key.properties` ona bağlantıdır. İkisi de repoda değil. Anahtar
+  yoksa release derlemesi debug anahtarıyla imzalanır (CI için).
+- Android'de AdMob banner: uygulama `ca-app-pub-3117486801133085~3472120260`, birim
+  `ca-app-pub-3117486801133085/2287031101`. Klavye sekmesinde ve tarayıcıda reklam
+  yok; Mac/Windows'ta SDK hiç çalışmaz. Debug derlemeleri ve
+  `--dart-define=KUMANDA_TEST_ADS=true` ile derlenen test sürümleri Google test
+  birimini kullanır.
+- Play test kanalı için: `flutter build appbundle --release --dart-define=KUMANDA_TEST_ADS=true`.
+  Üretim için aynı komut, bayraksız.

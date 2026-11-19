@@ -7,6 +7,7 @@ import 'devices.dart';
 import 'remote.dart';
 import 'library.dart';
 import 'keyboard.dart';
+import 'ad_banner.dart';
 
 const destinations = [
   (Icons.settings_remote_outlined, Icons.settings_remote, 'Kumanda'),
@@ -175,6 +176,8 @@ class _RemoteShellState extends State<RemoteShell> with WidgetsBindingObserver {
                           ],
                         ),
                       Expanded(child: page),
+                      // No ads on the keyboard tab.
+                      if (index != 3) const AdBanner(),
                     ],
                   ),
                 ),

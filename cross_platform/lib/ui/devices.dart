@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../core/ads.dart';
 import '../core/discovery.dart';
 import '../core/android_tv/box_client.dart';
 import 'box_setup.dart';
@@ -234,6 +235,18 @@ class _DevicesPageState extends State<DevicesPage> {
               'Wake-on-LAN için MAC adresini ve gerekirse yerel yayın adresini cihaz ayarlarından gir. TV’nin ağ üzerinden açılma ayarı da açık olmalı.',
             ),
             const SizedBox(height: 16),
+            ListenableBuilder(
+              listenable: Ads.shared,
+              builder: (context, _) => Ads.shared.privacyOptionsRequired
+                  ? Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton(
+                        onPressed: Ads.shared.showPrivacyOptions,
+                        child: const Text('Reklam gizlilik seçenekleri'),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
             const AppVersionText(),
           ],
         ),
