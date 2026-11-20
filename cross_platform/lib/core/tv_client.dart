@@ -829,6 +829,9 @@ class TVClient extends ChangeNotifier {
   /// Lets another controller (an HDMI box over Wi-Fi) take keys; returns true when it handled the key.
   bool Function(String name)? keyRouter;
 
+  /// True after a web video was stretched and clicked; rewind/forward then reach the player as real arrow keys.
+  bool _webPlayerShown = false;
+
   Future<void> key(String name) {
     if (keyRouter?.call(name) == true) return Future.value();
     final generation = _generation;
@@ -845,6 +848,7 @@ class TVClient extends ChangeNotifier {
           browserActive &&
           action != null &&
           webFocusScript.isNotEmpty) {
+        _webPlayerShown = false;
         await request('system.launcher/launch', {
           'id': browserID,
           'params': {
@@ -861,6 +865,34 @@ class TVClient extends ChangeNotifier {
     return next;
   }
 
+  /// Play/pause for a web video: the page script loads the player and stretches it over the page (web_focus.js
+  /// `play`), then a real click lands in the screen centre. Real clicks reach cross-origin players; page scripts cannot.
+  Future<void> _playWebVideo() {
+    final generation = _generation;
+    final shown = _webPlayerShown;
+    final next = _keyQueue.catchError((Object _) {}).then((_) async {
+      if (generation != _generation) return;
+      await request('system.launcher/launch', {
+        'id': browserID,
+        'params': {
+          'target':
+              'javascript:${Uri.encodeComponent("${webFocusScript.replaceAll('\n', ' ')}('play')")}',
+        },
+      });
+      // A first press may click the poster and wait for the player to load inside the page.
+      await Future<void>.delayed(Duration(milliseconds: shown ? 300 : 2200));
+      for (final (dx, dy) in pointerAbsolute(960, 540)) {
+        if (generation != _generation) return;
+        pointer('type:move\ndx:$dx\ndy:$dy\ndown:0\n\n');
+        await Future<void>.delayed(const Duration(milliseconds: 12));
+      }
+      pointer('type:click\n\n');
+      _webPlayerShown = true;
+    });
+    _keyQueue = next;
+    return next;
+  }
+
   Future<void> channel(bool up) async {
     if (useTuner) {
       await request(up ? 'tv/channelUp' : 'tv/channelDown');
@@ -870,6 +902,16 @@ class TVClient extends ChangeNotifier {
   }
 
   Future<void> media(String action) async {
+    if (webFocusEnabled &&
+        browserActive &&
+        pointerReady &&
+        webFocusScript.isNotEmpty) {
+      if (action == 'play' || action == 'pause') return _playWebVideo();
+      if ((action == 'rewind' || action == 'fastForward') && _webPlayerShown) {
+        pointer(buttonMessage(action == 'rewind' ? 'LEFT' : 'RIGHT'));
+        return;
+      }
+    }
     if (useTuner) {
       await request('media.controls/$action');
     } else {

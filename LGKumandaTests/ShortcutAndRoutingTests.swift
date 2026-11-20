@@ -107,6 +107,16 @@ final class PointerJumpTests: XCTestCase {
         XCTAssertTrue(PointerJump.steps(dx: 0, dy: 0).isEmpty)
         XCTAssertEqual(PointerJump.steps(dx: 99_999, dy: 0).reduce(0) { $0 + $1.0 }, PointerJump.limit)
     }
+
+    /// Screen centre with the measured scale (32 units = 58 px, 8 units = 22 px), after pinning to the corner.
+    func testAbsolutePlacementReachesScreenCentre() {
+        let steps = PointerJump.absolute(x: 960, y: 540)
+        let pin = steps.prefix(60)
+        XCTAssertTrue(pin.allSatisfy { $0 == (-32, -32) })
+        func pixels(_ units: [Int]) -> Int { units.reduce(0) { $0 + ($1 == 32 ? 58 : $1 == 8 ? 22 : 0) } }
+        XCTAssertEqual(pixels(steps.dropFirst(60).map(\.0)), 950)
+        XCTAssertEqual(pixels(steps.dropFirst(60).map(\.1)), 544)
+    }
 }
 
 final class WebFocusTests: XCTestCase {

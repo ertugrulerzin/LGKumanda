@@ -163,6 +163,25 @@ Json requestMessage(
 };
 String buttonMessage(String name) => 'type:button\nname:$name\n\n';
 
+/// Moves that put the pointer at a screen position (1920×1080 pointer space): pin it to the top-left corner, where it
+/// clamps, then count steps. Measured on the TV (2026-11-20): a 32-unit move travels 58 px, an 8-unit move 22 px.
+List<(int, int)> pointerAbsolute(int x, int y) {
+  List<int> plan(int value) {
+    final v = value < 0 ? 0 : value;
+    final big = v ~/ 58;
+    final small = ((v - big * 58) / 22).round();
+    return [...List.filled(big, 32), ...List.filled(small, 8)];
+  }
+
+  final xs = plan(x), ys = plan(y);
+  final steps = List<(int, int)>.filled(60, (-32, -32), growable: true);
+  final n = xs.length > ys.length ? xs.length : ys.length;
+  for (var i = 0; i < n; i++) {
+    steps.add((i < xs.length ? xs[i] : 0, i < ys.length ? ys[i] : 0));
+  }
+  return steps;
+}
+
 Uri browserTarget(String input) {
   final text = input.trim();
   if (text.isEmpty || RegExp(r'[\x00-\x1f]').hasMatch(text)) {

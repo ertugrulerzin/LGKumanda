@@ -1,8 +1,9 @@
-Kumanda 1.1 (26)
+Kumanda 1.1 (27)
 
 Yenilikler
-- Klavye: TV tarayıcısındaki sitelerin arama kutularına (ör. filmmakinesi) iPhone'dan yazı gidiyor. Önceden bu TV'de hata veriyordu.
-- TV arama: Apple multicast izni verdi; ağdaki TV artık doğrudan SSDP ile de bulunabiliyor.
-- 25'teki reklamlı düzen aynen sürüyor (TestFlight'ta yalnızca "Test Ad" etiketli reklamlar).
+- Web videoları: TV tarayıcısındayken Kumanda'daki Oynat veya Duraklat tuşu sayfadaki oynatıcıyı yükler, tam ekrana alır ve başlatır; tekrar basınca durdurur. Pembe çerçeve afişteyse önce afiş açılır.
+- Oynatıcı açıkken İleri sar ve Geri sar tuşları filmi ileri ve geri sarar.
+- Yön tuşları tam ekrandan çıkarıp pembe çerçeveye döner.
+- 26'daki düzeltmeler sürüyor: tarayıcı arama kutularına yazma, multicast TV araması.
 
-Kontrol: tarayıcıda bir arama kutusunu seçip iPhone'dan yaz ve Enter'a bas. Cihazlar'dan TV'yi silip "Ara" ile yeniden bul.
+Kontrol: filmmakinesi'de bir film sayfası aç, Oynat'a bas (yaklaşık 2 saniye sürer), sonra Duraklat, İleri sar ve Geri sar tuşlarını dene.

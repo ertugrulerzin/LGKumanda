@@ -99,6 +99,19 @@ struct PointerDeltaFilter {
 /// Splits a jump into protocol-sized moves (±32 per message), bounded to roughly one screen.
 enum PointerJump {
     static let limit = 2000
+    /// Moves that put the pointer at a screen position (1920×1080 pointer space): first pin it to the top-left corner,
+    /// where it clamps, then count steps. Measured on the TV (2026-11-20): a 32-unit move travels 58 px, an 8-unit move 22 px.
+    static func absolute(x: Int, y: Int) -> [(Int, Int)] {
+        func plan(_ value: Int) -> [Int] {
+            let big = max(0, value) / 58
+            let small = Int((Double(max(0, value) - big * 58) / 22).rounded())
+            return Array(repeating: 32, count: big) + Array(repeating: 8, count: small)
+        }
+        let xs = plan(x), ys = plan(y)
+        var steps = Array(repeating: (-32, -32), count: 60)
+        for i in 0..<max(xs.count, ys.count) { steps.append((i < xs.count ? xs[i] : 0, i < ys.count ? ys[i] : 0)) }
+        return steps
+    }
     static func steps(dx: Int, dy: Int) -> [(Int, Int)] {
         var x = max(-limit, min(limit, dx)), y = max(-limit, min(limit, dy))
         var result: [(Int, Int)] = []

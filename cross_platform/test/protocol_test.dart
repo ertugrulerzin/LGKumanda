@@ -119,4 +119,13 @@ void main() {
       expect(hdmiAppID('HDMI_4'), 'com.webos.app.hdmi4');
     },
   );
+
+  test('pointer reaches the screen centre after pinning to the corner', () {
+    final steps = pointerAbsolute(960, 540);
+    expect(steps.take(60).every((s) => s == (-32, -32)), isTrue);
+    int px(Iterable<int> u) =>
+        u.fold(0, (a, v) => a + (v == 32 ? 58 : v == 8 ? 22 : 0));
+    expect(px(steps.skip(60).map((s) => s.$1)), 950);
+    expect(px(steps.skip(60).map((s) => s.$2)), 544);
+  });
 }

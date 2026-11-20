@@ -46,7 +46,38 @@ void (function (a) {
       if (r.top < 0 || r.bottom > innerHeight || r.left < 0 || r.right > innerWidth) e.scrollIntoView({ block: 'center', inline: 'center' });
       N.draw();
     };
+    N.fill = function (e) {
+      if (N.full && N.full != e) N.unfill();
+      N.full = e; e.__lgs = e.getAttribute('style');
+      e.style.cssText += ';position:fixed!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;z-index:2147483646!important;background:black';
+      box.style.display = 'none';
+    };
+    N.unfill = function () {
+      var e = N.full; N.full = null;
+      if (!e) return;
+      if (e.__lgs == null) e.removeAttribute('style'); else e.setAttribute('style', e.__lgs);
+      N.draw();
+    };
+    N.player = function () {
+      var best = null, ba = 40000, q = d.querySelectorAll('iframe,video'), i;
+      for (i = 0; i < q.length; i++) { var r = N.rect(q[i]); if (r && r.width * r.height > ba) { ba = r.width * r.height; best = q[i]; } }
+      return best;
+    };
+    N.poster = function () {
+      var best = null, ba = 60000, L = N.list(), i;
+      for (i = 0; i < L.length; i++) { var r = N.rect(L[i]); if (r && r.bottom > 0 && r.top < innerHeight && r.width * r.height > ba) { ba = r.width * r.height; best = L[i]; } }
+      return best;
+    };
+    N.play = function () {
+      if (N.full && N.full.isConnected) return;
+      var p = N.player();
+      if (p) { N.fill(p); return; }
+      var c = N.cur && N.cur.isConnected ? N.cur : N.poster();
+      if (c) c.click();
+      setTimeout(function () { var q = N.player(); if (q) N.fill(q); }, 1500);
+    };
     N.move = function (dir) {
+      if (N.full) { N.unfill(); return; }
       var c = N.cur && N.cur.isConnected ? N.cur.getBoundingClientRect() : null;
       var cx = c ? c.left + c.width / 2 : innerWidth / 2, cy = c ? c.top + c.height / 2 : 0;
       var best = null, bestScore = 1e9, L = N.list();
@@ -75,7 +106,7 @@ void (function (a) {
       var e = N.cur;
       if (!e || !e.isConnected) return;
       var t = e.tagName;
-      if (t == 'IFRAME') { if (/^https?:/.test(e.src)) { ev.preventDefault(); location.href = e.src; } return; }
+      if (t == 'IFRAME') { ev.preventDefault(); N.fill(e); return; }
       if (t == 'VIDEO') { ev.preventDefault(); if (e.paused) e.play(); else e.pause(); return; }
       if (/^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(t) && d.activeElement === e) return;
       ev.preventDefault();
@@ -83,5 +114,6 @@ void (function (a) {
     }, true);
   }
   if (a == 'arm') { N.armed = 1; if (!N.cur || !N.cur.isConnected) N.armed = 0; }
+  else if (a == 'play') N.play();
   else N.move(a);
 })

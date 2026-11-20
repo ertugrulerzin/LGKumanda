@@ -396,11 +396,14 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     /// Arrows and OK move a highlight between links in the TV browser instead of needing the pointer (see WebFocus).
     var webFocusEnabled: Bool { preferences.object(forKey: "webFocus") as? Bool ?? true }
     private var webFocusQueue: Task<Void, Never>?
+    /// True after a web video was stretched and clicked; rewind/forward then go to the player as real arrow keys.
+    private var webPlayerShown = false
     /// Lets another controller (an HDMI box over Wi-Fi) take keys; returns true when it handled the key.
     var keyRouter: ((RemoteKey) -> Bool)?
     func key(_ key: RemoteKey) {
         if keyRouter?(key) == true { return }
         if isBrowserActive, webFocusEnabled, let app = browserAppID, let action = WebFocus.action(for: key) {
+            webPlayerShown = false
             let previous = webFocusQueue
             webFocusQueue = Task { [weak self] in
                 await previous?.value
@@ -418,7 +421,39 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         pointerMessage(key.wireMessage)
     }
     func channel(up: Bool) { sendRouted(ControlRouting.channel(up: up, context: controlContext)) }
-    func media(_ action: MediaAction) { sendRouted(ControlRouting.media(action, context: controlContext)) }
+    func media(_ action: MediaAction) {
+        if isBrowserActive, webFocusEnabled, pointerReady, let app = browserAppID {
+            switch action {
+            case .play, .pause: playWebVideo(app: app); return
+            case .rewind, .fastForward where webPlayerShown:
+                pointerMessage((action == .rewind ? RemoteKey.left : .right).wireMessage); return
+            default: break
+            }
+        }
+        sendRouted(ControlRouting.media(action, context: controlContext))
+    }
+    /// Play/pause for a web video: the page script loads the player and stretches it over the page (WebFocus `play`),
+    /// then a real click lands in the screen centre. Real clicks reach cross-origin players; page scripts cannot.
+    private func playWebVideo(app: String) {
+        let previous = webFocusQueue
+        let shown = webPlayerShown
+        webFocusQueue = Task { [weak self] in
+            await previous?.value
+            guard let self else { return }
+            do {
+                _ = try await self.request("system.launcher/launch", ["id": app, "params": ["target": WebFocus.url(.play)]])
+                // A first press may click the poster and wait for the player to load inside the page.
+                try await Task.sleep(nanoseconds: shown ? 300_000_000 : 2_200_000_000)
+                guard let pointer = self.pointer else { return }
+                for step in PointerJump.absolute(x: 960, y: 540) {
+                    try await pointer.send(.string("type:move\ndx:\(step.0)\ndy:\(step.1)\ndown:0\n\n"))
+                    try await Task.sleep(nanoseconds: 12_000_000)
+                }
+                try await pointer.send(.string("type:click\n\n"))
+                self.webPlayerShown = true
+            } catch { self.error = "Video oynatılamadı. Sayfada oynatıcı veya afiş seçili olsun." }
+        }
+    }
     private func sendRouted(_ action: RoutedControl) {
         switch action { case .request(let uri): command(uri); case .key(let key): self.key(key) }
     }

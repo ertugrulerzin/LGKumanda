@@ -7,11 +7,14 @@ import Foundation
 /// Each arrow press runs the script with a direction; it moves a visible highlight to the nearest link, button or
 /// clickable element in that direction, or scrolls when there is none. OK first "arms" the script, then a real ENTER
 /// key is sent, so the activation happens inside a trusted key event (video players accept it as a user gesture).
-/// Cross-origin players cannot be reached from the page, so OK on such a frame opens the player page itself.
+/// Cross-origin players cannot be reached from the page (and sites such as filmmakinesi block opening them on their own),
+/// so OK on such a frame stretches it over the page. `play` (the remote's play/pause key) also loads the player first by
+/// clicking the highlighted poster; TVClient then sends a real pointer click to the screen centre, which reaches the frame.
+/// The next arrow restores the page.
 /// Frames are only highlighted, never focused: a focused cross-origin frame would swallow the keys.
 /// The script is joined into one line, so it must not contain `//` comments, `%` or `#`.
 enum WebFocus {
-    enum Action: String { case up, down, left, right, arm }
+    enum Action: String { case up, down, left, right, arm, play }
 
     static func action(for key: RemoteKey) -> Action? {
         switch key {
@@ -78,7 +81,38 @@ enum WebFocus {
           if (r.top < 0 || r.bottom > innerHeight || r.left < 0 || r.right > innerWidth) e.scrollIntoView({ block: 'center', inline: 'center' });
           N.draw();
         };
+        N.fill = function (e) {
+          if (N.full && N.full != e) N.unfill();
+          N.full = e; e.__lgs = e.getAttribute('style');
+          e.style.cssText += ';position:fixed!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;margin:0!important;border:0!important;z-index:2147483646!important;background:black';
+          box.style.display = 'none';
+        };
+        N.unfill = function () {
+          var e = N.full; N.full = null;
+          if (!e) return;
+          if (e.__lgs == null) e.removeAttribute('style'); else e.setAttribute('style', e.__lgs);
+          N.draw();
+        };
+        N.player = function () {
+          var best = null, ba = 40000, q = d.querySelectorAll('iframe,video'), i;
+          for (i = 0; i < q.length; i++) { var r = N.rect(q[i]); if (r && r.width * r.height > ba) { ba = r.width * r.height; best = q[i]; } }
+          return best;
+        };
+        N.poster = function () {
+          var best = null, ba = 60000, L = N.list(), i;
+          for (i = 0; i < L.length; i++) { var r = N.rect(L[i]); if (r && r.bottom > 0 && r.top < innerHeight && r.width * r.height > ba) { ba = r.width * r.height; best = L[i]; } }
+          return best;
+        };
+        N.play = function () {
+          if (N.full && N.full.isConnected) return;
+          var p = N.player();
+          if (p) { N.fill(p); return; }
+          var c = N.cur && N.cur.isConnected ? N.cur : N.poster();
+          if (c) c.click();
+          setTimeout(function () { var q = N.player(); if (q) N.fill(q); }, 1500);
+        };
         N.move = function (dir) {
+          if (N.full) { N.unfill(); return; }
           var c = N.cur && N.cur.isConnected ? N.cur.getBoundingClientRect() : null;
           var cx = c ? c.left + c.width / 2 : innerWidth / 2, cy = c ? c.top + c.height / 2 : 0;
           var best = null, bestScore = 1e9, L = N.list();
@@ -103,7 +137,7 @@ enum WebFocus {
         };
         N.act = function (e, ev) {
           var t = e.tagName;
-          if (t == 'IFRAME') { if (/^https?:/.test(e.src)) { if (ev) ev.preventDefault(); location.href = e.src; } return; }
+          if (t == 'IFRAME') { if (ev) ev.preventDefault(); N.fill(e); return; }
           if (t == 'VIDEO') { if (ev) ev.preventDefault(); if (e.paused) e.play(); else e.pause(); return; }
           if (ev && /^(A|BUTTON|INPUT|SELECT|TEXTAREA|SUMMARY)$/.test(t) && d.activeElement === e) return;
           if (ev) ev.preventDefault();
@@ -121,6 +155,7 @@ enum WebFocus {
         if (cur && (cur.tagName == 'IFRAME' || !d.hasFocus())) N.act(cur, null);
         else if (cur) N.armed = 1;
       }
+      else if (a == 'play') N.play();
       else N.move(a);
     })
     """
