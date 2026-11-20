@@ -85,6 +85,8 @@ struct AddressBar: View {
                 .focused($focused)
                 .onSubmit { browser.go() }
 
+            AdBlockButton(blocker: browser.adBlocker) { browser.webView.reload() }
+
             Button("") { focused = true }
                 .keyboardShortcut("l", modifiers: .command)
                 .frame(width: 0, height: 0)
@@ -286,6 +288,73 @@ struct DownloadRow: View {
             Button("Aç") { NSWorkspace.shared.open(url) }
         case .muxing:
             EmptyView()
+        }
+    }
+}
+
+struct AdBlockButton: View {
+    @Bindable var blocker: AdBlocker
+    let reload: () -> Void
+    @State private var open = false
+
+    private var siteAllowed: Bool { blocker.isAllowed(blocker.currentHost) }
+    private var active: Bool { blocker.enabled && !siteAllowed }
+
+    var body: some View {
+        Button { open.toggle() } label: {
+            Image(systemName: active ? "shield.lefthalf.filled" : "shield.slash")
+                .foregroundStyle(active ? Color.green : Color.secondary)
+        }
+        .help("Reklam engelleyici")
+        .popover(isPresented: $open, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 12) {
+                Toggle(isOn: Binding(get: { blocker.enabled }, set: { blocker.enabled = $0; reload() })) {
+                    Text("Reklam engelleyici").font(.headline)
+                }
+                .toggleStyle(.switch)
+
+                if let host = blocker.currentHost {
+                    Toggle(isOn: Binding(get: { !siteAllowed }, set: { _ in blocker.toggleCurrentSite(); reload() })) {
+                        Text("\(host) için açık").lineLimit(1).truncationMode(.middle)
+                    }
+                    .disabled(!blocker.enabled)
+                }
+
+                Divider()
+
+                VStack(alignment: .leading, spacing: 4) {
+                    if blocker.isUpdating {
+                        HStack(spacing: 6) {
+                            ProgressView().controlSize(.small)
+                            Text("Filtre listeleri güncelleniyor…")
+                        }
+                    } else if blocker.ruleCount > 0 {
+                        Text("\(blocker.ruleCount.formatted()) kural etkin")
+                    } else {
+                        Text("Filtre listeleri henüz yüklenmedi")
+                    }
+                    if let date = blocker.lastUpdate {
+                        Text("Son güncelleme: \(date.formatted(date: .abbreviated, time: .shortened))")
+                            .foregroundStyle(.secondary)
+                    }
+                    Text(AdBlocker.sources.map(\.name).joined(separator: " · "))
+                        .foregroundStyle(.secondary)
+                    if let error = blocker.error {
+                        Text(error).foregroundStyle(.red)
+                    }
+                }
+                .font(.caption)
+
+                HStack {
+                    Text("Pop-up pencereler de engellenir.").font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Güncelle") { Task { await blocker.update(); reload() } }
+                        .disabled(blocker.isUpdating)
+                        .controlSize(.small)
+                }
+            }
+            .padding(14)
+            .frame(width: 300)
         }
     }
 }

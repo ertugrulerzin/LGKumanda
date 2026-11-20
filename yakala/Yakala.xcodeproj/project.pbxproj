@@ -12,21 +12,26 @@
 		339E0E4B341FD6755D9D6BBC /* HLS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC4F41053CAAADDE7F64EA4 /* HLS.swift */; };
 		345B47D48D9F85752C350C27 /* HLSDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833340F89DE96621CE3640E8 /* HLSDownloader.swift */; };
 		351C1E4982A425FDAA73E611 /* Muxer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F284D5783E36B404C4C917 /* Muxer.swift */; };
+		4931DE04CF0D69C9333E87E1 /* FilterConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AE54C848D7A928EFC2344F /* FilterConverter.swift */; };
+		4E31C0EE29D50A689E24E42F /* FilterConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AE54C848D7A928EFC2344F /* FilterConverter.swift */; };
 		53CF57A4C441B67A58AE0DB7 /* DownloadIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54610FB687D65C798682823A /* DownloadIntegrationTests.swift */; };
 		592FE43E95B4DE676ADAB92C /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A52AC18C3C9412C581AF84C /* Views.swift */; };
 		62F8DFA55B1D399B79985B9F /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9783D406043042A654A6877E /* FileDownloader.swift */; };
 		6B839ED04593075CD3B28620 /* HLSDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833340F89DE96621CE3640E8 /* HLSDownloader.swift */; };
 		7738681E1471DD77C9113F8B /* Sniffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73CFD102B32C7177A07ADEE0 /* Sniffer.swift */; };
+		89076403ABBF728DA269C747 /* AdBlocker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E255724755EED4EBCB2C889 /* AdBlocker.swift */; };
 		8989C42701B387F0935BEA13 /* HTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF36D10BD0E7FE10A67821 /* HTTP.swift */; };
 		8C47862F0A9DDFE1BEA019D1 /* HLSParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */; };
 		C22AD0A37808F15A1B848FCB /* BrowserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1E236CFB9CFFB46C715A10 /* BrowserModel.swift */; };
 		C9B0599892A5BE6B1A38E06E /* range_server.py in Resources */ = {isa = PBXBuildFile; fileRef = 9606259253496EABADE8E354 /* range_server.py */; };
+		D75DE9423247551733911140 /* FilterConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C627C5D6A4F46E9923D94A /* FilterConverterTests.swift */; };
 		DCDB712EA20757C1C1593877 /* Muxer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F284D5783E36B404C4C917 /* Muxer.swift */; };
 		E7FF989AA136B4B77B29778E /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F9D9FD2F0B0939A255B3C6 /* AppModel.swift */; };
 		E9C869D9772B1456DD59C2EB /* HTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF36D10BD0E7FE10A67821 /* HTTP.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0E255724755EED4EBCB2C889 /* AdBlocker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdBlocker.swift; sourceTree = "<group>"; };
 		2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLSParserTests.swift; sourceTree = "<group>"; };
 		3A52AC18C3C9412C581AF84C /* Views.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views.swift; sourceTree = "<group>"; };
 		4DA494340F8096E2495DC054 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -37,11 +42,13 @@
 		73CFD102B32C7177A07ADEE0 /* Sniffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sniffer.swift; sourceTree = "<group>"; };
 		7A8FCF128371A3043B1BEA5C /* Yakala.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Yakala.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		833340F89DE96621CE3640E8 /* HLSDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLSDownloader.swift; sourceTree = "<group>"; };
+		83C627C5D6A4F46E9923D94A /* FilterConverterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterConverterTests.swift; sourceTree = "<group>"; };
 		9606259253496EABADE8E354 /* range_server.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = range_server.py; sourceTree = "<group>"; };
 		9783D406043042A654A6877E /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
 		9DC4F41053CAAADDE7F64EA4 /* HLS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLS.swift; sourceTree = "<group>"; };
 		B5FF36D10BD0E7FE10A67821 /* HTTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTP.swift; sourceTree = "<group>"; };
 		C7F284D5783E36B404C4C917 /* Muxer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muxer.swift; sourceTree = "<group>"; };
+		C9AE54C848D7A928EFC2344F /* FilterConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterConverter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -58,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				54610FB687D65C798682823A /* DownloadIntegrationTests.swift */,
+				83C627C5D6A4F46E9923D94A /* FilterConverterTests.swift */,
 				2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */,
 				9606259253496EABADE8E354 /* range_server.py */,
 			);
@@ -77,6 +85,7 @@
 		B34280F34A87E5A25CDA067A /* UI */ = {
 			isa = PBXGroup;
 			children = (
+				0E255724755EED4EBCB2C889 /* AdBlocker.swift */,
 				55F9D9FD2F0B0939A255B3C6 /* AppModel.swift */,
 				4F1E236CFB9CFFB46C715A10 /* BrowserModel.swift */,
 				73CFD102B32C7177A07ADEE0 /* Sniffer.swift */,
@@ -98,6 +107,7 @@
 			isa = PBXGroup;
 			children = (
 				9783D406043042A654A6877E /* FileDownloader.swift */,
+				C9AE54C848D7A928EFC2344F /* FilterConverter.swift */,
 				9DC4F41053CAAADDE7F64EA4 /* HLS.swift */,
 				833340F89DE96621CE3640E8 /* HLSDownloader.swift */,
 				B5FF36D10BD0E7FE10A67821 /* HTTP.swift */,
@@ -199,6 +209,8 @@
 			files = (
 				53CF57A4C441B67A58AE0DB7 /* DownloadIntegrationTests.swift in Sources */,
 				62F8DFA55B1D399B79985B9F /* FileDownloader.swift in Sources */,
+				4931DE04CF0D69C9333E87E1 /* FilterConverter.swift in Sources */,
+				D75DE9423247551733911140 /* FilterConverterTests.swift in Sources */,
 				339E0E4B341FD6755D9D6BBC /* HLS.swift in Sources */,
 				6B839ED04593075CD3B28620 /* HLSDownloader.swift in Sources */,
 				8C47862F0A9DDFE1BEA019D1 /* HLSParserTests.swift in Sources */,
@@ -211,9 +223,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				89076403ABBF728DA269C747 /* AdBlocker.swift in Sources */,
 				E7FF989AA136B4B77B29778E /* AppModel.swift in Sources */,
 				C22AD0A37808F15A1B848FCB /* BrowserModel.swift in Sources */,
 				2B0A313AF1391C0FFE325328 /* FileDownloader.swift in Sources */,
+				4E31C0EE29D50A689E24E42F /* FilterConverter.swift in Sources */,
 				29405CD48481696A9BD80211 /* HLS.swift in Sources */,
 				345B47D48D9F85752C350C27 /* HLSDownloader.swift in Sources */,
 				8989C42701B387F0935BEA13 /* HTTP.swift in Sources */,

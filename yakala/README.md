@@ -15,6 +15,12 @@ Web sayfalarındaki videoları bulup indiren macOS uygulaması. Kumanda'dan ayr�
 | Düz dosya (MP4, WebM, FLV, MOV) | Sunucu destekliyorsa 8 MB'lık parçalar hâlinde 4 paralel bağlantıyla indirilir. |
 | Duraklat / devam | İnen parçalar diskte kalır; devam edince kalan yerden sürer. |
 
+## Reklam engelleyici
+
+Adres çubuğundaki kalkan düğmesi, AdGuard'ın Safari sürümüne benzer bir engelleyiciyi yönetir. EasyList, EasyPrivacy ve AdGuard Türkçe filtre listeleri indirilir, WebKit içerik kurallarına çevrilir (`Yakala/Engine/FilterConverter.swift`) ve engellemeyi doğrudan WebKit yapar: reklam/izleyici istekleri engellenir, reklam öğeleri gizlenir. Listeler 4 günde bir kendiliğinden güncellenir. Engelleyici tamamen ya da yalnızca geçerli site için kapatılabilir. Kullanıcı tıklamadan scriptlerin açtığı pop-up pencereler de engellenir.
+
+Scriptlet, CSS enjeksiyonu ve genişletilmiş seçiciler (`#?#`, `#$#`, `#%#`) desteklenmez. Bu yüzden YouTube'un video içi reklamları gibi script tabanlı reklamlar engellenmeyebilir.
+
 Video adresleri sayfanın `fetch`/`XHR` istekleri, `<video>`/`<source>` öğeleri ve kaynak zamanlama kayıtlarından yakalanır (`Yakala/UI/Sniffer.swift`). İndirme isteklerine tarayıcının çerezleri, `Referer` ve `User-Agent` bilgisi eklenir.
 
 ## Sınırlar

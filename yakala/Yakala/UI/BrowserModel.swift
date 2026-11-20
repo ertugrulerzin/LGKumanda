@@ -12,6 +12,7 @@ final class BrowserModel {
     var canGoForward = false
     var isLoading = false
     var userAgent: String?
+    let adBlocker = AdBlocker()
 
     weak var app: AppModel?
     @ObservationIgnored private var bridge: WebBridge?
@@ -34,6 +35,7 @@ final class BrowserModel {
         config.userContentController.add(bridge, name: Sniffer.handlerName)
         webView.navigationDelegate = bridge
         webView.uiDelegate = bridge
+        adBlocker.attach(config.userContentController)
 
         let refresh: (WKWebView) -> Void = { [weak self] _ in
             Task { @MainActor in self?.syncState() }
@@ -108,6 +110,14 @@ private final class WebBridge: NSObject, WKScriptMessageHandler, WKNavigationDel
         }
     }
 
+    func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
+                 decisionHandler: @escaping @MainActor (WKNavigationActionPolicy) -> Void) {
+        if navigationAction.targetFrame?.isMainFrame == true {
+            MainActor.assumeIsolated { model?.adBlocker.prepare(for: navigationAction.request.url) }
+        }
+        decisionHandler(.allow)
+    }
+
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         MainActor.assumeIsolated { model?.app?.pageChanged() }
     }
@@ -130,7 +140,13 @@ private final class WebBridge: NSObject, WKScriptMessageHandler, WKNavigationDel
 
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
-        if navigationAction.targetFrame == nil { webView.load(navigationAction.request) }
+        // Pop-up blocker: open new-window links only when the user clicked them,
+        // never for window.open() calls a script makes on its own.
+        let userClicked = navigationAction.navigationType == .linkActivated || navigationAction.modifierFlags.contains(.command)
+        let blocking = MainActor.assumeIsolated { model?.adBlocker.enabled ?? true }
+        if navigationAction.targetFrame == nil, userClicked || !blocking {
+            webView.load(navigationAction.request)
+        }
         return nil
     }
 }
