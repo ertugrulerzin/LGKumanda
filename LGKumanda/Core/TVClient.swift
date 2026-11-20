@@ -445,7 +445,8 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
                 // A first press may click the poster and wait for the player to load inside the page.
                 try await Task.sleep(nanoseconds: shown ? 300_000_000 : 2_200_000_000)
                 guard let pointer = self.pointer else { return }
-                for step in PointerJump.absolute(x: 960, y: 540) {
+                // After the first press the pointer already rests on the player: click in place, no visible sweep.
+                for step in shown ? [] : PointerJump.absolute(x: 960, y: 540) {
                     try await pointer.send(.string("type:move\ndx:\(step.0)\ndy:\(step.1)\ndown:0\n\n"))
                     try await Task.sleep(nanoseconds: 12_000_000)
                 }
@@ -496,6 +497,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
         else { try await launchApp(shortcut.targetID) }
     }
     func movePointer(dx: Int, dy: Int) {
+        webPlayerShown = false
         guard pointerReady else { return }
         pendingMotion.x = max(-64, min(64, pendingMotion.x + dx))
         pendingMotion.y = max(-64, min(64, pendingMotion.y + dy))
@@ -518,6 +520,7 @@ private final class TVTrustDelegate: NSObject, URLSessionDelegate, @unchecked Se
     }
     /// Moves the pointer to its destination at once, so there is no gliding cursor on screen.
     func jumpPointer(dx: Int, dy: Int) {
+        webPlayerShown = false
         guard pointerReady, let pointer, dx != 0 || dy != 0 else { return }
         stopPointerMotion()
         let steps = PointerJump.steps(dx: dx, dy: dy)

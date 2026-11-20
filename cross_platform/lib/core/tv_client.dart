@@ -881,7 +881,9 @@ class TVClient extends ChangeNotifier {
       });
       // A first press may click the poster and wait for the player to load inside the page.
       await Future<void>.delayed(Duration(milliseconds: shown ? 300 : 2200));
-      for (final (dx, dy) in pointerAbsolute(960, 540)) {
+      // After the first press the pointer already rests on the player: click in place, no visible sweep.
+      for (final (dx, dy)
+          in shown ? const <(int, int)>[] : pointerAbsolute(960, 540)) {
         if (generation != _generation) return;
         pointer('type:move\ndx:$dx\ndy:$dy\ndown:0\n\n');
         await Future<void>.delayed(const Duration(milliseconds: 12));
@@ -972,6 +974,7 @@ class TVClient extends ChangeNotifier {
   }
 
   void move(int dx, int dy) {
+    _webPlayerShown = false;
     if (!pointerReady) return;
     _dx = (_dx + dx).clamp(-64, 64);
     _dy = (_dy + dy).clamp(-64, 64);
@@ -994,6 +997,7 @@ class TVClient extends ChangeNotifier {
   }
 
   void jump(int dx, int dy) {
+    _webPlayerShown = false;
     var x = dx.clamp(-2000, 2000), y = dy.clamp(-2000, 2000);
     while (x != 0 || y != 0) {
       final sx = x.clamp(-32, 32), sy = y.clamp(-32, 32);

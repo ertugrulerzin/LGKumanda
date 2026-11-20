@@ -1,8 +1,9 @@
-Kumanda 1.1 (27)
+Kumanda 1.1 (28)
 
 Yenilikler
 - Web videoları: TV tarayıcısındayken Kumanda'daki Oynat veya Duraklat tuşu sayfadaki oynatıcıyı yükler, tam ekrana alır ve başlatır; tekrar basınca durdurur. Pembe çerçeve afişteyse önce afiş açılır.
 - Oynatıcı açıkken İleri sar ve Geri sar tuşları filmi ileri ve geri sarar.
+- Fare oku yalnızca ilk Oynat'ta ortaya atlar; Duraklat ve sonraki Oynat oku hareket ettirmeden tıklar (kedi dostu).
 - Yön tuşları tam ekrandan çıkarıp pembe çerçeveye döner.
 - 26'daki düzeltmeler sürüyor: tarayıcı arama kutularına yazma, multicast TV araması.
 
