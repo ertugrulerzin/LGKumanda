@@ -53,6 +53,7 @@ final class DetectedMedia: Identifiable {
     var status: Status = .probing
     var variants: [HLSVariant] = []
     var master: HLSMasterPlaylist?
+    var dash: DASHManifest?
     var selected: HLSVariant?
     var subtitleTracks: [HLSRendition] = []
     /// "all", "none", or one track's URL.
@@ -85,6 +86,7 @@ final class DetectedMedia: Identifiable {
 final class DownloadItem: Identifiable {
     enum Source: Codable {
         case hls(video: URL, audio: URL?, subtitles: [SubtitleSource])
+        case dash(manifest: URL, video: String?, audio: String?, subtitles: [SubtitleSource])
         case file(URL, ext: String)
         case subtitle(SubtitleSource)
     }
@@ -223,7 +225,7 @@ final class AppModel {
         do {
             switch item.kind {
             case .dash:
-                item.status = .failed("DASH henüz desteklenmiyor.")
+                try await probeDASH(item)
             case .hls:
                 try await probeHLS(item)
             case .subtitle:
@@ -244,6 +246,48 @@ final class AppModel {
         } catch {
             item.status = .failed(error.localizedDescription)
         }
+    }
+
+    /// DASH qualities reuse the variant picker; each carries its representation id in the URL fragment.
+    static func dashVariantURL(_ manifest: URL, _ id: String) -> URL {
+        var c = URLComponents(url: manifest, resolvingAgainstBaseURL: false)!
+        c.fragment = "yakala-rep=" + id
+        return c.url ?? manifest
+    }
+
+    static func dashRepID(_ url: URL?) -> String? {
+        guard let f = url?.fragment, f.hasPrefix("yakala-rep=") else { return nil }
+        return String(f.dropFirst("yakala-rep=".count))
+    }
+
+    private func probeDASH(_ item: DetectedMedia) async throws {
+        let m = try DASHParser.parse(try await HTTP.data(item.ctx.request(item.url)), url: item.url)
+        if m.isLive { item.status = .failed("Canlı DASH yayınları desteklenmiyor."); return }
+        if m.hasDRM { item.status = .failed(DownloadError.drm.localizedDescription); return }
+        item.dash = m
+        item.duration = m.duration
+        item.variants = m.videos.filter { !$0.encrypted }.map { rep in
+            var resolution: String?
+            if let w = rep.width, let h = rep.height { resolution = "\(w)x\(h)" }
+            return HLSVariant(url: Self.dashVariantURL(item.url, rep.id), bandwidth: rep.bandwidth,
+                              resolution: resolution, codecs: rep.codecs)
+        }
+        item.selected = item.variants.first
+        item.subtitleTracks = m.subtitleFiles.compactMap { r in
+            guard case .single(let url) = r.plan else { return nil }
+            return HLSRendition(type: "SUBTITLES", groupID: "", name: r.label ?? r.language, language: r.language, isDefault: false, url: url)
+        }
+        // Segment requests of this manifest would otherwise show up as separate files.
+        for r in m.representations {
+            switch r.plan {
+            case .segments(let p): p.segments.prefix(1).forEach { hlsFolders.insert(folder($0.url)) }
+            case .single(let u): childURLs.insert(u.absoluteString)
+            }
+        }
+        for d in detected where d.id != item.id && (childURLs.contains(d.url.absoluteString) || hlsFolders.contains(folder(d.url))) {
+            d.hidden = true
+        }
+        item.status = .ready
     }
 
     private func probeHLS(_ item: DetectedMedia) async throws {
@@ -294,12 +338,18 @@ final class AppModel {
                 r.url.map { SubtitleSource(url: $0, name: r.name ?? r.language ?? "Altyazı", language: r.language, isPlaylist: true) }
             }
             source = .hls(video: variant?.url ?? media.url, audio: audio, subtitles: subtitles)
+        case .dash:
+            let subtitles = media.subtitleTracks.filter {
+                media.subtitleSelection == "all" || $0.url?.absoluteString == media.subtitleSelection
+            }.compactMap { r in
+                r.url.map { SubtitleSource(url: $0, name: r.name ?? r.language ?? "Altyazı", language: r.language, isPlaylist: false) }
+            }
+            source = .dash(manifest: media.url, video: Self.dashRepID(media.selected?.url),
+                           audio: media.dash?.bestAudio?.id, subtitles: subtitles)
         case .file(let ext):
             source = .file(media.url, ext: ext)
         case .subtitle:
             source = .subtitle(SubtitleSource(url: media.url, name: media.title, language: nil, isPlaylist: false))
-        case .dash:
-            return
         }
         var ctx = media.ctx
         if ctx.userAgent == nil { ctx.userAgent = browser.userAgent }
@@ -378,20 +428,21 @@ final class AppModel {
             ).run()
             async let audio = Self.audioTrack(audioURL, ctx: ctx, dir: dir, stop: stop)
             let (v, a) = try await (video, audio)
-            var subtitles: [SubtitleFile] = []
-            for (i, s) in subtitleSources.enumerated() {
-                item.detail = "Altyazı alınıyor: \(s.name)"
-                do {
-                    subtitles.append(try await Subtitles.fetch(s, ctx: ctx, into: dir.appendingPathComponent("subs"), index: i))
-                } catch is CancellationError {
-                    throw CancellationError()
-                } catch {
-                    continue // a missing subtitle should not fail the video
-                }
-            }
-            item.state = .muxing
-            item.detail = "MP4 hazırlanıyor…"
-            return try await Muxer.finish(video: v, audio: a, subtitles: subtitles, title: item.title)
+            return try await finishTracks(item, video: v, audio: a, subtitleSources: subtitleSources)
+        case .dash(let manifestURL, let videoID, let audioID, let subtitleSources):
+            let manifest = try DASHParser.parse(try await HTTP.data(ctx.request(manifestURL)), url: manifestURL)
+            let videoRep = manifest.representations.first { $0.id == videoID } ?? manifest.videos.first
+            let audioRep = manifest.representations.first { $0.id == audioID }
+            if videoRep?.encrypted == true { throw DownloadError.drm }
+            guard let main = videoRep ?? audioRep else { throw DownloadError.empty }
+            let report: @Sendable (HLSProgress) -> Void = { [weak item] p in Task { @MainActor in item?.apply(p) } }
+            let bytes: @Sendable (Int64, Int64?) -> Void = { [weak item] d, t in Task { @MainActor in item?.apply(bytes: d, total: t) } }
+            async let video = Self.dashTrack(main, manifestURL: manifestURL, ctx: ctx, dir: dir, name: "video",
+                                             stop: stop, progress: report, bytes: bytes)
+            async let audio = Self.dashTrack(videoRep == nil ? nil : audioRep, manifestURL: manifestURL, ctx: ctx, dir: dir,
+                                             name: "audio", stop: stop, progress: { _ in }, bytes: { _, _ in })
+            let (v, a) = try await (video, audio)
+            return try await finishTracks(item, video: v!, audio: a, subtitleSources: subtitleSources)
         case .subtitle(let source):
             let f = try await Subtitles.fetch(source, ctx: ctx, into: dir, index: 0)
             let ext = f.file.pathExtension.lowercased()
@@ -410,6 +461,39 @@ final class AppModel {
             let out = Output.unique(item.title, ext: ext)
             try FileManager.default.moveItem(at: file, to: out)
             return out
+        }
+    }
+
+    private func finishTracks(_ item: DownloadItem, video: URL, audio: URL?, subtitleSources: [SubtitleSource]) async throws -> URL {
+        var subtitles: [SubtitleFile] = []
+        for (i, s) in subtitleSources.enumerated() {
+            item.detail = "Altyazı alınıyor: \(s.name)"
+            do {
+                subtitles.append(try await Subtitles.fetch(s, ctx: item.ctx, into: item.workDir.appendingPathComponent("subs"), index: i))
+            } catch is CancellationError {
+                throw CancellationError()
+            } catch {
+                continue // a missing subtitle should not fail the video
+            }
+        }
+        item.state = .muxing
+        item.detail = "MP4 hazırlanıyor…"
+        return try await Muxer.finish(video: video, audio: audio, subtitles: subtitles, title: item.title)
+    }
+
+    private nonisolated static func dashTrack(
+        _ rep: DASHRepresentation?, manifestURL: URL, ctx: HTTPContext, dir: URL, name: String, stop: StopFlag,
+        progress: @escaping @Sendable (HLSProgress) -> Void, bytes: @escaping @Sendable (Int64, Int64?) -> Void
+    ) async throws -> URL? {
+        guard let rep else { return nil }
+        switch rep.plan {
+        case .segments(let playlist):
+            return try await HLSTrackDownloader(
+                playlistURL: manifestURL, ctx: ctx, workDir: dir, name: name, stop: stop,
+                fixedPlaylist: playlist, onProgress: progress
+            ).run()
+        case .single(let url):
+            return try await FileDownloader(url: url, ctx: ctx, workDir: dir.appendingPathComponent(name), onProgress: bytes).run()
         }
     }
 

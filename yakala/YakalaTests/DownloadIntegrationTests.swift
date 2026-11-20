@@ -191,6 +191,42 @@ final class DownloadIntegrationTests: XCTestCase {
         XCTAssertEqual(try durationOf(out), 8, accuracy: 1.0)
     }
 
+    func testDASHSegmentedAndSingleFile() async throws {
+        let site = root.appendingPathComponent("site")
+        for (dirName, extra) in [("dash", [String]()), ("dash1", ["-single_file", "1"])] {
+            let dir = site.appendingPathComponent(dirName)
+            try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try sh(ffmpeg, [
+                "-hide_banner", "-loglevel", "error",
+                "-f", "lavfi", "-i", "testsrc=duration=8:size=320x240:rate=25",
+                "-f", "lavfi", "-i", "sine=frequency=440:duration=8",
+                "-c:v", "libx264", "-g", "50", "-c:a", "aac", "-shortest",
+                "-map", "0:v", "-map", "1:a", "-seg_duration", "2",
+            ] + extra + ["-f", "dash", dir.appendingPathComponent("manifest.mpd").path])
+
+            let url = URL(string: "http://127.0.0.1:\(port)/\(dirName)/manifest.mpd")!
+            let manifest = try DASHParser.parse(try await HTTP.data(URLRequest(url: url)), url: url)
+            let video = try XCTUnwrap(manifest.videos.first, dirName)
+            let audio = try XCTUnwrap(manifest.bestAudio, dirName)
+            func fetch(_ rep: DASHRepresentation, _ name: String) async throws -> URL {
+                let work = root.appendingPathComponent("w-\(dirName)")
+                switch rep.plan {
+                case .segments(let p):
+                    return try await HLSTrackDownloader(playlistURL: url, ctx: HTTPContext(), workDir: work, name: name,
+                                                        stop: StopFlag(), fixedPlaylist: p, onProgress: { _ in }).run()
+                case .single(let u):
+                    return try await FileDownloader(url: u, ctx: HTTPContext(), workDir: work.appendingPathComponent(name),
+                                                    onProgress: { _, _ in }).run()
+                }
+            }
+            let out = try await Muxer.finish(video: try await fetch(video, "video"), audio: try await fetch(audio, "audio"),
+                                             title: dirName, folder: root)
+            let streams = try probe(out)
+            XCTAssertTrue(streams.contains("codec_type=video") && streams.contains("codec_type=audio"), "\(dirName): \(streams)")
+            XCTAssertEqual(try durationOf(out), 8, accuracy: 0.6, dirName)
+        }
+    }
+
     func testChunkedFileDownloadMatchesSource() async throws {
         let source = root.appendingPathComponent("site/big.mp4")
         let size = try FileManager.default.attributesOfItem(atPath: source.path)[.size] as! Int64

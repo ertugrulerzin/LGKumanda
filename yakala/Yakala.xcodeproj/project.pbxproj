@@ -25,10 +25,13 @@
 		89076403ABBF728DA269C747 /* AdBlocker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E255724755EED4EBCB2C889 /* AdBlocker.swift */; };
 		8989C42701B387F0935BEA13 /* HTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF36D10BD0E7FE10A67821 /* HTTP.swift */; };
 		8C47862F0A9DDFE1BEA019D1 /* HLSParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */; };
+		900CB0DBB8F648D964741D4C /* DASH.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE438FA62672698487C5265 /* DASH.swift */; };
 		A48E42F64A6F6CD926CBBA5C /* Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 317EFA7C73D6BD450044172E /* Recording.swift */; };
 		C1365FA9F851A194BA310E64 /* Subtitles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97DA0C26A6F9E354C7C6E7A /* Subtitles.swift */; };
 		C22AD0A37808F15A1B848FCB /* BrowserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1E236CFB9CFFB46C715A10 /* BrowserModel.swift */; };
+		C23DE3281A2E82ADBC734C3A /* DASH.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5BE438FA62672698487C5265 /* DASH.swift */; };
 		C9B0599892A5BE6B1A38E06E /* range_server.py in Resources */ = {isa = PBXBuildFile; fileRef = 9606259253496EABADE8E354 /* range_server.py */; };
+		CA6F20E8DEC24F0AC0BD031B /* DASHTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5C82399C284C98A16F197671 /* DASHTests.swift */; };
 		D75DE9423247551733911140 /* FilterConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C627C5D6A4F46E9923D94A /* FilterConverterTests.swift */; };
 		DCDB712EA20757C1C1593877 /* Muxer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F284D5783E36B404C4C917 /* Muxer.swift */; };
 		DE454C60795A89F64E552205 /* Recorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 716F21D86FE7B1BC1E7DA1C8 /* Recorder.swift */; };
@@ -46,6 +49,8 @@
 		53FA241B0A8123BB0099D9A2 /* YakalaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YakalaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		54610FB687D65C798682823A /* DownloadIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadIntegrationTests.swift; sourceTree = "<group>"; };
 		55F9D9FD2F0B0939A255B3C6 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		5BE438FA62672698487C5265 /* DASH.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DASH.swift; sourceTree = "<group>"; };
+		5C82399C284C98A16F197671 /* DASHTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DASHTests.swift; sourceTree = "<group>"; };
 		716F21D86FE7B1BC1E7DA1C8 /* Recorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Recorder.swift; sourceTree = "<group>"; };
 		7A8FCF128371A3043B1BEA5C /* Yakala.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Yakala.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		833340F89DE96621CE3640E8 /* HLSDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLSDownloader.swift; sourceTree = "<group>"; };
@@ -73,6 +78,7 @@
 		5441BCD945451437286B8FAA /* YakalaTests */ = {
 			isa = PBXGroup;
 			children = (
+				5C82399C284C98A16F197671 /* DASHTests.swift */,
 				54610FB687D65C798682823A /* DownloadIntegrationTests.swift */,
 				83C627C5D6A4F46E9923D94A /* FilterConverterTests.swift */,
 				2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */,
@@ -115,6 +121,7 @@
 		F02F4C2F7DD2DFD7011013A5 /* Engine */ = {
 			isa = PBXGroup;
 			children = (
+				5BE438FA62672698487C5265 /* DASH.swift */,
 				9783D406043042A654A6877E /* FileDownloader.swift */,
 				C9AE54C848D7A928EFC2344F /* FilterConverter.swift */,
 				9DC4F41053CAAADDE7F64EA4 /* HLS.swift */,
@@ -219,6 +226,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C23DE3281A2E82ADBC734C3A /* DASH.swift in Sources */,
+				CA6F20E8DEC24F0AC0BD031B /* DASHTests.swift in Sources */,
 				53CF57A4C441B67A58AE0DB7 /* DownloadIntegrationTests.swift in Sources */,
 				62F8DFA55B1D399B79985B9F /* FileDownloader.swift in Sources */,
 				4931DE04CF0D69C9333E87E1 /* FilterConverter.swift in Sources */,
@@ -241,6 +250,7 @@
 				89076403ABBF728DA269C747 /* AdBlocker.swift in Sources */,
 				E7FF989AA136B4B77B29778E /* AppModel.swift in Sources */,
 				C22AD0A37808F15A1B848FCB /* BrowserModel.swift in Sources */,
+				900CB0DBB8F648D964741D4C /* DASH.swift in Sources */,
 				2B0A313AF1391C0FFE325328 /* FileDownloader.swift in Sources */,
 				4E31C0EE29D50A689E24E42F /* FilterConverter.swift in Sources */,
 				29405CD48481696A9BD80211 /* HLS.swift in Sources */,

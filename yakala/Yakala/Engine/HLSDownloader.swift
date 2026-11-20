@@ -40,6 +40,8 @@ struct HLSTrackDownloader {
     let name: String
     let stop: StopFlag
     var concurrency = 6
+    /// A ready-made segment list (DASH); when set, nothing is fetched from `playlistURL`.
+    var fixedPlaylist: HLSMediaPlaylist?
     let onProgress: @Sendable (HLSProgress) -> Void
 
     func run() async throws -> URL {
@@ -96,6 +98,7 @@ struct HLSTrackDownloader {
     }
 
     private func fetchMedia() async throws -> HLSMediaPlaylist {
+        if let fixedPlaylist { return fixedPlaylist }
         var url = playlistURL
         for _ in 0..<2 {
             let text = try await HTTP.text(ctx.request(url))
