@@ -1,0 +1,53 @@
+name: Yakala
+options:
+  bundleIdPrefix: com.ertugrul
+  deploymentTarget:
+    macOS: "14.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  Yakala:
+    type: application
+    platform: macOS
+    sources:
+      - Yakala
+    info:
+      path: Yakala/Info.plist
+      properties:
+        CFBundleDisplayName: Yakala
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHumanReadableCopyright: MIT
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ertugrul.yakala
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        ENABLE_HARDENED_RUNTIME: NO
+  YakalaTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - YakalaTests
+      - Yakala/Engine
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.ertugrul.yakala.tests
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+schemes:
+  Yakala:
+    build:
+      targets:
+        Yakala: all
+        YakalaTests: [test]
+    test:
+      targets:
+        - YakalaTests

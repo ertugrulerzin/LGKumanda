@@ -1,0 +1,457 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		29405CD48481696A9BD80211 /* HLS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC4F41053CAAADDE7F64EA4 /* HLS.swift */; };
+		2B0A313AF1391C0FFE325328 /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9783D406043042A654A6877E /* FileDownloader.swift */; };
+		339E0E4B341FD6755D9D6BBC /* HLS.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DC4F41053CAAADDE7F64EA4 /* HLS.swift */; };
+		345B47D48D9F85752C350C27 /* HLSDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833340F89DE96621CE3640E8 /* HLSDownloader.swift */; };
+		351C1E4982A425FDAA73E611 /* Muxer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F284D5783E36B404C4C917 /* Muxer.swift */; };
+		53CF57A4C441B67A58AE0DB7 /* DownloadIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54610FB687D65C798682823A /* DownloadIntegrationTests.swift */; };
+		592FE43E95B4DE676ADAB92C /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A52AC18C3C9412C581AF84C /* Views.swift */; };
+		62F8DFA55B1D399B79985B9F /* FileDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9783D406043042A654A6877E /* FileDownloader.swift */; };
+		6B839ED04593075CD3B28620 /* HLSDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833340F89DE96621CE3640E8 /* HLSDownloader.swift */; };
+		7738681E1471DD77C9113F8B /* Sniffer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73CFD102B32C7177A07ADEE0 /* Sniffer.swift */; };
+		8989C42701B387F0935BEA13 /* HTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF36D10BD0E7FE10A67821 /* HTTP.swift */; };
+		8C47862F0A9DDFE1BEA019D1 /* HLSParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */; };
+		C22AD0A37808F15A1B848FCB /* BrowserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1E236CFB9CFFB46C715A10 /* BrowserModel.swift */; };
+		C9B0599892A5BE6B1A38E06E /* range_server.py in Resources */ = {isa = PBXBuildFile; fileRef = 9606259253496EABADE8E354 /* range_server.py */; };
+		DCDB712EA20757C1C1593877 /* Muxer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F284D5783E36B404C4C917 /* Muxer.swift */; };
+		E7FF989AA136B4B77B29778E /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55F9D9FD2F0B0939A255B3C6 /* AppModel.swift */; };
+		E9C869D9772B1456DD59C2EB /* HTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF36D10BD0E7FE10A67821 /* HTTP.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLSParserTests.swift; sourceTree = "<group>"; };
+		3A52AC18C3C9412C581AF84C /* Views.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Views.swift; sourceTree = "<group>"; };
+		4DA494340F8096E2495DC054 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4F1E236CFB9CFFB46C715A10 /* BrowserModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowserModel.swift; sourceTree = "<group>"; };
+		53FA241B0A8123BB0099D9A2 /* YakalaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YakalaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		54610FB687D65C798682823A /* DownloadIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadIntegrationTests.swift; sourceTree = "<group>"; };
+		55F9D9FD2F0B0939A255B3C6 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		73CFD102B32C7177A07ADEE0 /* Sniffer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sniffer.swift; sourceTree = "<group>"; };
+		7A8FCF128371A3043B1BEA5C /* Yakala.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Yakala.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		833340F89DE96621CE3640E8 /* HLSDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLSDownloader.swift; sourceTree = "<group>"; };
+		9606259253496EABADE8E354 /* range_server.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = range_server.py; sourceTree = "<group>"; };
+		9783D406043042A654A6877E /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
+		9DC4F41053CAAADDE7F64EA4 /* HLS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLS.swift; sourceTree = "<group>"; };
+		B5FF36D10BD0E7FE10A67821 /* HTTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTP.swift; sourceTree = "<group>"; };
+		C7F284D5783E36B404C4C917 /* Muxer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muxer.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		2E89058398B7BE9940816E94 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7A8FCF128371A3043B1BEA5C /* Yakala.app */,
+				53FA241B0A8123BB0099D9A2 /* YakalaTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		5441BCD945451437286B8FAA /* YakalaTests */ = {
+			isa = PBXGroup;
+			children = (
+				54610FB687D65C798682823A /* DownloadIntegrationTests.swift */,
+				2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */,
+				9606259253496EABADE8E354 /* range_server.py */,
+			);
+			path = YakalaTests;
+			sourceTree = "<group>";
+		};
+		7C1B58C148B711ED4948A7E6 /* Yakala */ = {
+			isa = PBXGroup;
+			children = (
+				4DA494340F8096E2495DC054 /* Info.plist */,
+				F02F4C2F7DD2DFD7011013A5 /* Engine */,
+				B34280F34A87E5A25CDA067A /* UI */,
+			);
+			path = Yakala;
+			sourceTree = "<group>";
+		};
+		B34280F34A87E5A25CDA067A /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				55F9D9FD2F0B0939A255B3C6 /* AppModel.swift */,
+				4F1E236CFB9CFFB46C715A10 /* BrowserModel.swift */,
+				73CFD102B32C7177A07ADEE0 /* Sniffer.swift */,
+				3A52AC18C3C9412C581AF84C /* Views.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		DCC7B032A9BDE6B32837E89D = {
+			isa = PBXGroup;
+			children = (
+				7C1B58C148B711ED4948A7E6 /* Yakala */,
+				5441BCD945451437286B8FAA /* YakalaTests */,
+				2E89058398B7BE9940816E94 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F02F4C2F7DD2DFD7011013A5 /* Engine */ = {
+			isa = PBXGroup;
+			children = (
+				9783D406043042A654A6877E /* FileDownloader.swift */,
+				9DC4F41053CAAADDE7F64EA4 /* HLS.swift */,
+				833340F89DE96621CE3640E8 /* HLSDownloader.swift */,
+				B5FF36D10BD0E7FE10A67821 /* HTTP.swift */,
+				C7F284D5783E36B404C4C917 /* Muxer.swift */,
+			);
+			path = Engine;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		86D1BAB59507A86A16072B56 /* Yakala */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F5F1D2E89778AA7D41032441 /* Build configuration list for PBXNativeTarget "Yakala" */;
+			buildPhases = (
+				D04E70020DFCAF8902C93C2B /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Yakala;
+			packageProductDependencies = (
+			);
+			productName = Yakala;
+			productReference = 7A8FCF128371A3043B1BEA5C /* Yakala.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A4C3215E3570BF40C984EA70 /* YakalaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9B2B5C1CE75A399DFBAD987F /* Build configuration list for PBXNativeTarget "YakalaTests" */;
+			buildPhases = (
+				41A334F7AA170E06113B0767 /* Sources */,
+				735AD5AFF6963A4D4382BBD1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = YakalaTests;
+			packageProductDependencies = (
+			);
+			productName = YakalaTests;
+			productReference = 53FA241B0A8123BB0099D9A2 /* YakalaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		53EE3900D87F3556F544EB03 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					86D1BAB59507A86A16072B56 = {
+						ProvisioningStyle = Manual;
+					};
+					A4C3215E3570BF40C984EA70 = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = 9EC33091D6D450FFED086F8B /* Build configuration list for PBXProject "Yakala" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = DCC7B032A9BDE6B32837E89D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 2E89058398B7BE9940816E94 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				86D1BAB59507A86A16072B56 /* Yakala */,
+				A4C3215E3570BF40C984EA70 /* YakalaTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		735AD5AFF6963A4D4382BBD1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C9B0599892A5BE6B1A38E06E /* range_server.py in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		41A334F7AA170E06113B0767 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				53CF57A4C441B67A58AE0DB7 /* DownloadIntegrationTests.swift in Sources */,
+				62F8DFA55B1D399B79985B9F /* FileDownloader.swift in Sources */,
+				339E0E4B341FD6755D9D6BBC /* HLS.swift in Sources */,
+				6B839ED04593075CD3B28620 /* HLSDownloader.swift in Sources */,
+				8C47862F0A9DDFE1BEA019D1 /* HLSParserTests.swift in Sources */,
+				E9C869D9772B1456DD59C2EB /* HTTP.swift in Sources */,
+				351C1E4982A425FDAA73E611 /* Muxer.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D04E70020DFCAF8902C93C2B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7FF989AA136B4B77B29778E /* AppModel.swift in Sources */,
+				C22AD0A37808F15A1B848FCB /* BrowserModel.swift in Sources */,
+				2B0A313AF1391C0FFE325328 /* FileDownloader.swift in Sources */,
+				29405CD48481696A9BD80211 /* HLS.swift in Sources */,
+				345B47D48D9F85752C350C27 /* HLSDownloader.swift in Sources */,
+				8989C42701B387F0935BEA13 /* HTTP.swift in Sources */,
+				DCDB712EA20757C1C1593877 /* Muxer.swift in Sources */,
+				7738681E1471DD77C9113F8B /* Sniffer.swift in Sources */,
+				592FE43E95B4DE676ADAB92C /* Views.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		8C3C8AA2939EE5347F02E4A3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = Yakala/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.yakala;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A91A7E3A298A69829C947764 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.yakala.tests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		CF96354F6B483CAB0F360ACF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
+				INFOPLIST_FILE = Yakala/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.yakala;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		E43F9E052CAE876744F76B3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.ertugrul.yakala.tests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		F357C7790017B44D89DE8431 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		F5C7FBC2FA68A2484C2EC4D6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		9B2B5C1CE75A399DFBAD987F /* Build configuration list for PBXNativeTarget "YakalaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A91A7E3A298A69829C947764 /* Debug */,
+				E43F9E052CAE876744F76B3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9EC33091D6D450FFED086F8B /* Build configuration list for PBXProject "Yakala" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F357C7790017B44D89DE8431 /* Debug */,
+				F5C7FBC2FA68A2484C2EC4D6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F5F1D2E89778AA7D41032441 /* Build configuration list for PBXNativeTarget "Yakala" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8C3C8AA2939EE5347F02E4A3 /* Debug */,
+				CF96354F6B483CAB0F360ACF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 53EE3900D87F3556F544EB03 /* Project object */;
+}
