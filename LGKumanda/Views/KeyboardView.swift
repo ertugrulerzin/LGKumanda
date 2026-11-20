@@ -172,7 +172,8 @@ struct KeyboardView: View {
         Task {
             defer { sending = false }
             do {
-                _ = try await client.request("com.webos.service.ime/insertText", ["text": value, "replace": 0])
+                // `replace` must be a boolean: newer webOS never answers `"replace": 0` (verified on the TV, 2026-11-20).
+                _ = try await client.request("com.webos.service.ime/insertText", ["text": value, "replace": false])
                 // Keep any text entered while awaiting acknowledgement.
                 if text.hasPrefix(value) { text = String(text.dropFirst(value.count)) }
                 result = "Metin TV'ye gönderildi."

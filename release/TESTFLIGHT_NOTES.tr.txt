@@ -1,9 +1,8 @@
-Kumanda 1.1 (25)
+Kumanda 1.1 (26)
 
-Reklamlı sürüm
-- Kumanda, Uygulamalar, Kanallar ve Cihazlar sekmelerinin altında küçük bir Google banner reklamı var. Klavye ve tarayıcıda reklam yok.
-- TestFlight'ta yalnızca Google'ın "Test Ad" etiketli deneme reklamları görünür; gerçek reklam App Store sürümünde çıkar.
-- AB gibi onay gereken bölgelerde ilk açılışta onay formu çıkar; Cihazlar > "Reklam gizlilik seçenekleri" ile değiştirilebilir.
-- Reklam yüklenmezse alan boş kalmaz, kapanır.
+Yenilikler
+- Klavye: TV tarayıcısındaki sitelerin arama kutularına (ör. filmmakinesi) iPhone'dan yazı gidiyor. Önceden bu TV'de hata veriyordu.
+- TV arama: Apple multicast izni verdi; ağdaki TV artık doğrudan SSDP ile de bulunabiliyor.
+- 25'teki reklamlı düzen aynen sürüyor (TestFlight'ta yalnızca "Test Ad" etiketli reklamlar).
 
-Kontrol: reklam kumanda tuşlarını kapatmıyor mu, sekmeler arasında geçişte takılma var mı?
+Kontrol: tarayıcıda bir arama kutusunu seçip iPhone'dan yaz ve Enter'a bas. Cihazlar'dan TV'yi silip "Ara" ile yeniden bul.

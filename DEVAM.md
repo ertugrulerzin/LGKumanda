@@ -46,8 +46,10 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
 
 ## Diğer
 
-- Multicast entitlement talebi (PK7RAMVV73) Apple onayı bekliyor; onaylanınca
-  `Configuration/Multicast.entitlements` eklenip yeni derleme çıkılacak.
+- Multicast entitlement (PK7RAMVV73) 20 Kasım'da onaylandı: App ID'de açıldı, yeni App Store profili
+  "LG Kumanda App Store Multicast" (eskisi geçersiz), `CODE_SIGN_ENTITLEMENTS` project.yml'de. Dışa aktarma: `build/TestFlight/opts-26.plist`.
+- Klavye: webOS `insertText` `"replace": 0` ile hiç yanıt vermiyor (TV tarayıcısında test edildi); `false` gönderiliyor.
+  1.1 (26) TestFlight'a yüklendi.
 - Tanıtım videosu: `ScreenshotTests.testDemoVideo` (önizleme modu, TV gerekmez);
   App Store ekran görüntüleri: `testAppStoreScreenshots` (6.9" simülatör,
   `simctl status_bar` 9:41).

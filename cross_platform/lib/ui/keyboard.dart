@@ -58,7 +58,7 @@ class _KeyboardPageState extends State<KeyboardPage> {
     await widget.client.run(() async {
       await widget.client.request('com.webos.service.ime/insertText', {
         'text': draft,
-        'replace': 0,
+        'replace': false,
       });
       if (mounted) {
         if (text.text == draft) text.clear();
