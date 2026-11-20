@@ -28,7 +28,7 @@ enum DownloadError: LocalizedError, Equatable {
 }
 
 /// Headers a page's own media requests would carry.
-struct HTTPContext: Sendable {
+struct HTTPContext: Sendable, Codable {
     var referer: URL?
     var userAgent: String?
 
@@ -68,21 +68,35 @@ enum HTTP {
         error is CancellationError || (error as? URLError)?.code == .cancelled
     }
 
+    static let gate = HostGate()
+
     static func data(_ request: URLRequest, retries: Int = 3) async throws -> Data {
+        let host = request.url?.host ?? ""
         var attempt = 0
+        var throttled = 0
         while true {
             try Task.checkCancellation()
+            try await gate.acquire(host)
             do {
                 let (data, response) = try await session.data(for: request)
                 if let h = response as? HTTPURLResponse, !(200..<300).contains(h.statusCode) {
+                    if h.statusCode == 429 || h.statusCode == 503 {
+                        let wait = retryAfter(h) ?? min(60, 2 * pow(2, Double(throttled)))
+                        await gate.release(host, throttledFor: wait)
+                        throttled += 1
+                        // Rate limits clear with time; keep waiting rather than failing the download.
+                        if throttled > 8 { throw DownloadError.http(h.statusCode) }
+                        continue
+                    }
+                    await gate.release(host)
                     throw DownloadError.http(h.statusCode)
                 }
+                await gate.release(host, succeeded: true)
                 return data
             } catch {
+                if case DownloadError.http = error {} else { await gate.release(host) }
                 if isCancellation(error) { throw CancellationError() }
-                if case DownloadError.http(let code) = error, (400..<500).contains(code), code != 408, code != 429 {
-                    throw error
-                }
+                if case DownloadError.http(let code) = error, code != 408 { throw error }
                 attempt += 1
                 if attempt > retries { throw error }
                 try await Task.sleep(nanoseconds: UInt64(attempt) * 700_000_000)
@@ -90,9 +104,70 @@ enum HTTP {
         }
     }
 
+    /// Retry-After as seconds or an HTTP date.
+    static func retryAfter(_ h: HTTPURLResponse) -> Double? {
+        guard let v = h.value(forHTTPHeaderField: "Retry-After")?.trimmingCharacters(in: .whitespaces) else { return nil }
+        if let s = Double(v) { return min(max(s, 1), 120) }
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "EEE, dd MMM yyyy HH:mm:ss zzz"
+        return f.date(from: v).map { min(max($0.timeIntervalSinceNow, 1), 120) }
+    }
+
     static func text(_ request: URLRequest) async throws -> String {
         String(decoding: try await data(request), as: UTF8.self)
     }
+}
+
+/// Per-host connection limit that halves on 429/503, honours the cool-down,
+/// and creeps back up after a run of successful requests.
+actor HostGate {
+    static let maxPerHost = 6
+
+    private struct State {
+        var limit = HostGate.maxPerHost
+        var inFlight = 0
+        var until = Date.distantPast
+        var streak = 0
+    }
+
+    private var hosts: [String: State] = [:]
+
+    func acquire(_ host: String) async throws {
+        while true {
+            try Task.checkCancellation()
+            let s = hosts[host, default: State()]
+            let wait = s.until.timeIntervalSinceNow
+            if wait > 0 {
+                try await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+                continue
+            }
+            if s.inFlight < s.limit {
+                hosts[host, default: State()].inFlight += 1
+                return
+            }
+            try await Task.sleep(nanoseconds: 100_000_000)
+        }
+    }
+
+    func release(_ host: String, succeeded: Bool = false, throttledFor: Double? = nil) {
+        var s = hosts[host, default: State()]
+        s.inFlight = max(0, s.inFlight - 1)
+        if let t = throttledFor {
+            s.limit = max(1, s.limit / 2)
+            s.until = max(s.until, Date().addingTimeInterval(t))
+            s.streak = 0
+        } else if succeeded {
+            s.streak += 1
+            if s.streak >= 20, s.limit < Self.maxPerHost {
+                s.limit += 1
+                s.streak = 0
+            }
+        }
+        hosts[host] = s
+    }
+
+    func limit(for host: String) -> Int { hosts[host]?.limit ?? Self.maxPerHost }
 }
 
 enum AES128 {

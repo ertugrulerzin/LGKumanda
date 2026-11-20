@@ -38,20 +38,28 @@ final class DownloadIntegrationTests: XCTestCase {
             site.appendingPathComponent("big.mp4").path,
         ])
 
-        server = Process()
-        server.executableURL = URL(fileURLWithPath: "/usr/bin/env")
+        server = try startServer(port: port)
+    }
+
+    var extraServers: [Process] = []
+
+    func startServer(port: Int, throttle: Int = 0) throws -> Process {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/usr/bin/env")
         let script = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent("range_server.py")
-        server.arguments = ["python3", script.path, site.path, String(port)]
-        try server.run()
+        p.arguments = ["python3", script.path, root.appendingPathComponent("site").path, String(port), String(throttle)]
+        try p.run()
         for _ in 0..<50 {
-            if (try? Data(contentsOf: URL(string: "http://127.0.0.1:\(port)/index.m3u8")!)) != nil { return }
+            if (try? Data(contentsOf: URL(string: "http://127.0.0.1:\(port)/index.m3u8")!)) != nil { return p }
             Thread.sleep(forTimeInterval: 0.1)
         }
         XCTFail("test sunucusu açılmadı")
+        return p
     }
 
     override func tearDown() {
         server?.terminate()
+        extraServers.forEach { $0.terminate() }
         if let root { try? FileManager.default.removeItem(at: root) }
     }
 
@@ -74,6 +82,63 @@ final class DownloadIntegrationTests: XCTestCase {
         // Resume path: segments are cached, a second run gives the same bytes.
         let again = try await downloader.run()
         XCTAssertEqual(try Data(contentsOf: again).count, try Data(contentsOf: ts).count)
+    }
+
+    func testRateLimitedServerStillCompletes() async throws {
+        let throttledPort = port + 1
+        extraServers.append(try startServer(port: throttledPort, throttle: 8))
+        let started = Date()
+        let ts = try await HLSTrackDownloader(
+            playlistURL: URL(string: "http://127.0.0.1:\(throttledPort)/index.m3u8")!,
+            ctx: HTTPContext(), workDir: root.appendingPathComponent("throttled"), name: "video",
+            stop: StopFlag(), onProgress: { _ in }
+        ).run()
+        XCTAssertGreaterThan(try Data(contentsOf: ts).count, 10_000)
+        XCTAssertGreaterThanOrEqual(-started.timeIntervalSinceNow, 1, "Retry-After honoured")
+        let limit = await HTTP.gate.limit(for: "127.0.0.1")
+        XCTAssertLessThan(limit, HostGate.maxPerHost, "parallelism reduced after 429")
+    }
+
+    func testSubtitleEmbeddedAndSidecar() async throws {
+        let ts = try await HLSTrackDownloader(
+            playlistURL: URL(string: "http://127.0.0.1:\(port)/index.m3u8")!,
+            ctx: HTTPContext(), workDir: root.appendingPathComponent("subwork"), name: "video",
+            stop: StopFlag(), onProgress: { _ in }
+        ).run()
+        let vtt = root.appendingPathComponent("tr.vtt")
+        try "WEBVTT\n\n00:00.500 --> 00:02.000\nMerhaba <b>dünya</b>\n\n00:03.000 --> 00:05.000\nİkinci satır\n"
+            .write(to: vtt, atomically: true, encoding: .utf8)
+        let out = try await Muxer.finish(
+            video: ts, audio: nil,
+            subtitles: [SubtitleFile(file: vtt, name: "Türkçe", language: "tr")],
+            title: "altyazi", folder: root
+        )
+        let streams = try probe(out)
+        XCTAssertTrue(streams.contains("codec_type=subtitle"), streams)
+        let srt = try String(contentsOf: root.appendingPathComponent("altyazi.tr.srt"), encoding: .utf8)
+        XCTAssertTrue(srt.hasPrefix("1\n00:00:00,500 --> 00:00:02,000\nMerhaba <b>dünya</b>"), srt)
+    }
+
+    func testCancelledHLSResumesFromSavedSegments() async throws {
+        let url = URL(string: "http://127.0.0.1:\(port)/index.m3u8")!
+        let work = root.appendingPathComponent("resume")
+        let task = Task {
+            try await HLSTrackDownloader(playlistURL: url, ctx: HTTPContext(), workDir: work, name: "video",
+                                         stop: StopFlag(), concurrency: 1, onProgress: { p in
+                if p.done == 2 { withUnsafeCurrentTask { $0?.cancel() } }
+            }).run()
+        }
+        let first = await task.result
+        XCTAssertThrowsError(try first.get(), "first run was cancelled")
+        let saved = try FileManager.default.contentsOfDirectory(atPath: work.path).filter { $0.hasSuffix(".seg") }
+        XCTAssertGreaterThanOrEqual(saved.count, 2)
+
+        let resumed = try await HLSTrackDownloader(playlistURL: url, ctx: HTTPContext(), workDir: work, name: "video",
+                                                   stop: StopFlag(), onProgress: { _ in }).run()
+        let fresh = try await HLSTrackDownloader(playlistURL: url, ctx: HTTPContext(),
+                                                 workDir: root.appendingPathComponent("fresh"), name: "video",
+                                                 stop: StopFlag(), onProgress: { _ in }).run()
+        XCTAssertEqual(try Data(contentsOf: resumed), try Data(contentsOf: fresh))
     }
 
     func testChunkedFileDownloadMatchesSource() async throws {

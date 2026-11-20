@@ -1,11 +1,17 @@
 """Static file server with HTTP Range support, for Yakala integration tests.
 
-Usage: python3 range_server.py <directory> <port>
+Usage: python3 range_server.py <directory> <port> [throttle]
+
+With `throttle` N, the first N requests for .ts segments get 429 + Retry-After: 1.
 """
 import os
 import re
 import sys
+import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+
+THROTTLE = {"left": 0}
+LOCK = threading.Lock()
 
 
 class RangeHandler(SimpleHTTPRequestHandler):
@@ -13,6 +19,17 @@ class RangeHandler(SimpleHTTPRequestHandler):
         pass
 
     def send_head(self):
+        if self.path.endswith(".ts"):
+            with LOCK:
+                limited = THROTTLE["left"] > 0
+                if limited:
+                    THROTTLE["left"] -= 1
+            if limited:
+                self.send_response(429)
+                self.send_header("Retry-After", "1")
+                self.send_header("Content-Length", "0")
+                self.end_headers()
+                return None
         path = self.translate_path(self.path)
         rng = self.headers.get("Range")
         if not rng or not os.path.isfile(path):
@@ -47,4 +64,5 @@ class RangeHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     os.chdir(sys.argv[1])
+    THROTTLE["left"] = int(sys.argv[3]) if len(sys.argv) > 3 else 0
     ThreadingHTTPServer(("127.0.0.1", int(sys.argv[2])), RangeHandler).serve_forever()

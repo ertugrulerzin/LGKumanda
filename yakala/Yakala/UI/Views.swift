@@ -138,6 +138,19 @@ struct Sidebar: View {
                 if model.downloads.isEmpty {
                     EmptyNote(icon: "tray", text: "İndirme yok.\nDosyalar İndirilenler klasörüne kaydedilir.")
                 } else {
+                    let stopped = model.downloads.filter {
+                        if case .failed = $0.state { return true }
+                        return $0.state == .paused
+                    }
+                    if !stopped.isEmpty {
+                        HStack {
+                            Text("\(stopped.count) indirme bekliyor").font(.caption).foregroundStyle(.secondary)
+                            Spacer()
+                            Button("Tümünü sürdür") { model.resumeAll() }.controlSize(.small)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                    }
                     List(model.downloads) { item in
                         DownloadRow(item: item, model: model)
                     }
@@ -216,6 +229,19 @@ struct DetectedRow: View {
                         .labelsHidden()
                         .controlSize(.small)
                         .frame(maxWidth: 180)
+                    }
+                    if !item.subtitleTracks.isEmpty {
+                        Picker("Altyazı", selection: $item.subtitleSelection) {
+                            Text("Tüm altyazılar").tag("all")
+                            Text("Altyazısız").tag("none")
+                            Divider()
+                            ForEach(item.subtitleTracks, id: \.self) { r in
+                                Text(r.name ?? r.language ?? "Altyazı").tag(r.url?.absoluteString ?? "")
+                            }
+                        }
+                        .labelsHidden()
+                        .controlSize(.small)
+                        .frame(maxWidth: 140)
                     }
                     Spacer()
                     Button(item.isLive ? "Kaydet" : "İndir", action: onDownload)

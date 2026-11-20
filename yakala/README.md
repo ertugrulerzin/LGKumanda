@@ -13,7 +13,9 @@ Web sayfalarındaki videoları bulup indiren macOS uygulaması. Kumanda'dan ayr�
 | HLS (`.m3u8`) | Parçalar 6'şar paralel indirilir. AES-128 şifreli parçalar çözülür, ayrı ses izi varsa birleştirilir, ffmpeg ile MP4'e çevrilir. |
 | Canlı HLS | **Kaydet** ile kayıt başlar, **Kaydı bitir** ile MP4 olur. |
 | Düz dosya (MP4, WebM, FLV, MOV) | Sunucu destekliyorsa 8 MB'lık parçalar hâlinde 4 paralel bağlantıyla indirilir. |
-| Duraklat / devam | İnen parçalar diskte kalır; devam edince kalan yerden sürer. |
+| Altyazı | HLS altyazı izleri ve sayfadaki `.vtt`/`.srt`/`<track>` dosyaları bulunur. MP4'e gömülür, yanına `.srt` olarak da kaydedilir. |
+| Kaldığı yerden devam | İnen parçalar `~/Library/Application Support/Yakala` altında saklanır. Duraklatılan ya da uygulama kapanınca yarım kalan indirmeler aynı yerden sürer. |
+| Geçici hatalar | 429'da `Retry-After` kadar beklenir ve o siteye giden paralel bağlantı yarıya iner. Kopan bağlantı ve 5xx hatalarında indirme 6 kez, artan aralıklarla kendiliğinden yeniden dener. |
 
 ## Reklam engelleyici
 
@@ -27,6 +29,8 @@ Video adresleri sayfanın `fetch`/`XHR` istekleri, `<video>`/`<source>` öğeler
 
 - DRM'li yayınlar (FairPlay, Widevine, SAMPLE-AES) indirilmez; uygulama bunu açıkça söyler.
 - DASH (`.mpd`) henüz desteklenmiyor.
+- Süreli imzalı adresler uygulama uzun süre kapalı kaldıktan sonra geçersizleşebilir; o durumda videoyu sayfadan yeniden yakalamak gerekir.
+- Range desteklemeyen sunuculardan inen düz dosyalar baştan başlar.
 - Adresi yakalanamayan videolar için oynatma tamponunu kaydetme (MSE kaydı) henüz yok.
 - MPEG-TS'yi MP4'e çevirmek ve ayrı sesi birleştirmek için ffmpeg gerekir (`brew install ffmpeg`). ffmpeg yoksa tek izli indirmeler `.ts` ya da fMP4 olarak kaydedilir.
 - İndirdiğin içeriğin haklarına ve sitenin kullanım koşullarına uymak senin sorumluluğundadır.

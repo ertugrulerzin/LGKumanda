@@ -13,6 +13,7 @@
 		345B47D48D9F85752C350C27 /* HLSDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833340F89DE96621CE3640E8 /* HLSDownloader.swift */; };
 		351C1E4982A425FDAA73E611 /* Muxer.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F284D5783E36B404C4C917 /* Muxer.swift */; };
 		4931DE04CF0D69C9333E87E1 /* FilterConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AE54C848D7A928EFC2344F /* FilterConverter.swift */; };
+		4B9CD46A5A4D5706603ADB1A /* Subtitles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97DA0C26A6F9E354C7C6E7A /* Subtitles.swift */; };
 		4E31C0EE29D50A689E24E42F /* FilterConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9AE54C848D7A928EFC2344F /* FilterConverter.swift */; };
 		53CF57A4C441B67A58AE0DB7 /* DownloadIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54610FB687D65C798682823A /* DownloadIntegrationTests.swift */; };
 		592FE43E95B4DE676ADAB92C /* Views.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A52AC18C3C9412C581AF84C /* Views.swift */; };
@@ -22,6 +23,7 @@
 		89076403ABBF728DA269C747 /* AdBlocker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E255724755EED4EBCB2C889 /* AdBlocker.swift */; };
 		8989C42701B387F0935BEA13 /* HTTP.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5FF36D10BD0E7FE10A67821 /* HTTP.swift */; };
 		8C47862F0A9DDFE1BEA019D1 /* HLSParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A67AF3965AF99D44B87BB88 /* HLSParserTests.swift */; };
+		C1365FA9F851A194BA310E64 /* Subtitles.swift in Sources */ = {isa = PBXBuildFile; fileRef = A97DA0C26A6F9E354C7C6E7A /* Subtitles.swift */; };
 		C22AD0A37808F15A1B848FCB /* BrowserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F1E236CFB9CFFB46C715A10 /* BrowserModel.swift */; };
 		C9B0599892A5BE6B1A38E06E /* range_server.py in Resources */ = {isa = PBXBuildFile; fileRef = 9606259253496EABADE8E354 /* range_server.py */; };
 		D75DE9423247551733911140 /* FilterConverterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 83C627C5D6A4F46E9923D94A /* FilterConverterTests.swift */; };
@@ -46,6 +48,7 @@
 		9606259253496EABADE8E354 /* range_server.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = range_server.py; sourceTree = "<group>"; };
 		9783D406043042A654A6877E /* FileDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileDownloader.swift; sourceTree = "<group>"; };
 		9DC4F41053CAAADDE7F64EA4 /* HLS.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HLS.swift; sourceTree = "<group>"; };
+		A97DA0C26A6F9E354C7C6E7A /* Subtitles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Subtitles.swift; sourceTree = "<group>"; };
 		B5FF36D10BD0E7FE10A67821 /* HTTP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTP.swift; sourceTree = "<group>"; };
 		C7F284D5783E36B404C4C917 /* Muxer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Muxer.swift; sourceTree = "<group>"; };
 		C9AE54C848D7A928EFC2344F /* FilterConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterConverter.swift; sourceTree = "<group>"; };
@@ -112,6 +115,7 @@
 				833340F89DE96621CE3640E8 /* HLSDownloader.swift */,
 				B5FF36D10BD0E7FE10A67821 /* HTTP.swift */,
 				C7F284D5783E36B404C4C917 /* Muxer.swift */,
+				A97DA0C26A6F9E354C7C6E7A /* Subtitles.swift */,
 			);
 			path = Engine;
 			sourceTree = "<group>";
@@ -216,6 +220,7 @@
 				8C47862F0A9DDFE1BEA019D1 /* HLSParserTests.swift in Sources */,
 				E9C869D9772B1456DD59C2EB /* HTTP.swift in Sources */,
 				351C1E4982A425FDAA73E611 /* Muxer.swift in Sources */,
+				C1365FA9F851A194BA310E64 /* Subtitles.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +238,7 @@
 				8989C42701B387F0935BEA13 /* HTTP.swift in Sources */,
 				DCDB712EA20757C1C1593877 /* Muxer.swift in Sources */,
 				7738681E1471DD77C9113F8B /* Sniffer.swift in Sources */,
+				4B9CD46A5A4D5706603ADB1A /* Subtitles.swift in Sources */,
 				592FE43E95B4DE676ADAB92C /* Views.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

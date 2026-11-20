@@ -49,6 +49,13 @@ struct HLSTrackDownloader {
         let live = playlist.isLive
         var order: [HLSSegment] = []
         var seen = Set<Int>()
+        var earlier: [Int] = []
+        if live {
+            // Segments recorded before a pause or restart may have left the live window.
+            let first = playlist.segments.first?.sequence ?? .max
+            earlier = savedSequences().filter { $0 < first }
+            earlier.forEach { seen.insert($0) }
+        }
         var bytes: Int64 = 0
         var seconds = 0.0
 
@@ -84,8 +91,8 @@ struct HLSTrackDownloader {
             playlist = try await fetchMedia()
         }
 
-        guard !order.isEmpty else { throw DownloadError.empty }
-        return try await assemble(order, initSection: playlist.initSection)
+        guard !order.isEmpty || !earlier.isEmpty else { throw DownloadError.empty }
+        return try await assemble(earlier + order.map(\.sequence), initSection: playlist.initSection)
     }
 
     private func fetchMedia() async throws -> HLSMediaPlaylist {
@@ -104,8 +111,18 @@ struct HLSTrackDownloader {
         throw DownloadError.notPlaylist
     }
 
-    private func segmentFile(_ s: HLSSegment) -> URL {
-        workDir.appendingPathComponent("\(name)-\(s.sequence).seg")
+    private func segmentFile(_ s: HLSSegment) -> URL { segmentFile(s.sequence) }
+
+    private func segmentFile(_ sequence: Int) -> URL {
+        workDir.appendingPathComponent("\(name)-\(sequence).seg")
+    }
+
+    private func savedSequences() -> [Int] {
+        let files = (try? FileManager.default.contentsOfDirectory(atPath: workDir.path)) ?? []
+        return files.compactMap { f -> Int? in
+            guard f.hasPrefix("\(name)-"), f.hasSuffix(".seg") else { return nil }
+            return Int(f.dropFirst(name.count + 1).dropLast(4))
+        }.sorted()
     }
 
     private func fetch(_ s: HLSSegment, keys: KeyStore) async throws -> Int64 {
@@ -125,7 +142,7 @@ struct HLSTrackDownloader {
         return Int64(data.count)
     }
 
-    private func assemble(_ segments: [HLSSegment], initSection: HLSInitSection?) async throws -> URL {
+    private func assemble(_ sequences: [Int], initSection: HLSInitSection?) async throws -> URL {
         let out = workDir.appendingPathComponent("\(name).\(initSection == nil ? "ts" : "mp4")")
         FileManager.default.createFile(atPath: out.path, contents: nil)
         let handle = try FileHandle(forWritingTo: out)
@@ -133,7 +150,7 @@ struct HLSTrackDownloader {
         if let i = initSection {
             try handle.write(contentsOf: try await HTTP.data(ctx.request(i.url, range: i.byteRange)))
         }
-        for s in segments {
+        for s in sequences {
             try handle.write(contentsOf: try Data(contentsOf: segmentFile(s)))
         }
         return out

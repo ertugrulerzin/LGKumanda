@@ -80,6 +80,15 @@ struct HLSMasterPlaylist: Equatable, Sendable {
         let options = renditions.filter { $0.type == "AUDIO" && $0.groupID == group && $0.url != nil }
         return options.first(where: \.isDefault) ?? options.first
     }
+
+    /// Subtitle renditions, one per URL (a track often appears in several groups).
+    var subtitles: [HLSRendition] {
+        var seen = Set<URL>()
+        return renditions.filter { r in
+            guard r.type == "SUBTITLES", let url = r.url else { return false }
+            return seen.insert(url).inserted
+        }
+    }
 }
 
 enum HLSPlaylist: Equatable, Sendable {

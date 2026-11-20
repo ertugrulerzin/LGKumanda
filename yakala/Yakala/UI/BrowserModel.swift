@@ -103,10 +103,11 @@ private final class WebBridge: NSObject, WKScriptMessageHandler, WKNavigationDel
         let hint = body["hint"] as? String ?? ""
         let page = (body["page"] as? String).flatMap(URL.init(string:))
         let title = body["title"] as? String ?? ""
+        let label = body["label"] as? String ?? ""
         MainActor.assumeIsolated {
             guard let model else { return }
             let pageTitle = title.isEmpty ? model.title : title
-            model.app?.report(url: url, hint: hint, page: page ?? model.webView.url, title: pageTitle)
+            model.app?.report(url: url, hint: hint, page: page ?? model.webView.url, title: pageTitle, label: label)
         }
     }
 

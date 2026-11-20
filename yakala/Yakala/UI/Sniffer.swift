@@ -7,10 +7,10 @@ enum Sniffer {
     (() => {
       if (window.__yakala) return;
       window.__yakala = true;
-      const RX = /\.(m3u8|mp4|m4v|webm|flv|mov|mpd)(\?|#|&|$)/i;
-      const CT = /mpegurl|dash\+xml|^video\//i;
+      const RX = /\.(m3u8|mp4|m4v|webm|flv|mov|mpd|vtt|srt|ass|ssa|ttml|dfxp)(\?|#|&|$)/i;
+      const CT = /mpegurl|dash\+xml|^video\/|^text\/vtt/i;
       const seen = new Set();
-      const post = (url, hint) => {
+      const post = (url, hint, label) => {
         try {
           if (!url || typeof url !== 'string') return;
           if (url.startsWith('blob:') || url.startsWith('data:')) return;
@@ -19,7 +19,8 @@ enum Sniffer {
           if (seen.has(abs)) return;
           seen.add(abs);
           window.webkit.messageHandlers.yakala.postMessage({
-            url: abs, hint: hint || '', page: location.href, title: (window.top === window ? document.title : '')
+            url: abs, hint: hint || '', label: label || '', page: location.href,
+            title: (window.top === window ? document.title : '')
           });
         } catch (e) {}
       };
@@ -57,6 +58,9 @@ enum Sniffer {
         document.querySelectorAll('video, audio, source').forEach(el => {
           const src = el.currentSrc || el.src;
           if (src) post(src, el.tagName === 'SOURCE' ? '' : 'media');
+        });
+        document.querySelectorAll('track').forEach(el => {
+          if (el.src) post(el.src, 'subtitle', el.label || el.srclang || '');
         });
       };
       document.addEventListener('loadstart', e => {

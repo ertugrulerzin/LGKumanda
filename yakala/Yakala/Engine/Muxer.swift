@@ -32,30 +32,67 @@ enum Muxer {
         return candidates.first { FileManager.default.isExecutableFile(atPath: $0.path) }
     }
 
-    /// Turns downloaded HLS tracks into one MP4 in `folder`. Without ffmpeg a lone
+    /// Turns downloaded HLS tracks into one MP4 in `folder`. Subtitles are embedded as
+    /// soft tracks and also written next to the video as .srt. Without ffmpeg a lone
     /// track is kept as-is (fragmented MP4 plays everywhere; MPEG-TS stays .ts).
-    static func finish(video: URL, audio: URL?, title: String, folder: URL = Output.folder) async throws -> URL {
-        guard let ffmpeg = ffmpegURL() else {
-            guard audio == nil else { throw DownloadError.ffmpegMissing }
-            let out = Output.unique(title, ext: video.pathExtension, in: folder)
-            try FileManager.default.moveItem(at: video, to: out)
-            return out
-        }
-        let out = Output.unique(title, ext: "mp4", in: folder)
-        var args = ["-hide_banner", "-loglevel", "error", "-y", "-i", video.path]
-        if let audio {
-            args += ["-i", audio.path, "-map", "0:v?", "-map", "1:a?"]
+    static func finish(video: URL, audio: URL?, subtitles: [SubtitleFile] = [], title: String,
+                       folder: URL = Output.folder) async throws -> URL {
+        let out: URL
+        if let ffmpeg = ffmpegURL() {
+            out = Output.unique(title, ext: "mp4", in: folder)
+            do {
+                try await run(ffmpeg, arguments(video: video, audio: audio, subtitles: subtitles, out: out))
+            } catch where !subtitles.isEmpty && !(error is CancellationError) {
+                // A subtitle ffmpeg cannot read must not cost the video.
+                try await run(ffmpeg, arguments(video: video, audio: audio, subtitles: [], out: out))
+            } catch {
+                try? FileManager.default.removeItem(at: out)
+                throw error
+            }
         } else {
-            args += ["-map", "0:v?", "-map", "0:a?"]
+            guard audio == nil else { throw DownloadError.ffmpegMissing }
+            out = Output.unique(title, ext: video.pathExtension, in: folder)
+            try FileManager.default.moveItem(at: video, to: out)
         }
-        args += ["-c", "copy", "-movflags", "+faststart", out.path]
-        do {
-            try await run(ffmpeg, args)
-        } catch {
-            try? FileManager.default.removeItem(at: out)
-            throw error
-        }
+        try writeSidecars(subtitles, next: out)
         return out
+    }
+
+    static func arguments(video: URL, audio: URL?, subtitles: [SubtitleFile], out: URL) -> [String] {
+        var args = ["-hide_banner", "-loglevel", "error", "-y", "-i", video.path]
+        if let audio { args += ["-i", audio.path] }
+        let subBase = audio == nil ? 1 : 2
+        for sub in subtitles { args += ["-i", sub.file.path] }
+        args += ["-map", "0:v?", "-map", audio == nil ? "0:a?" : "1:a?"]
+        for i in subtitles.indices { args += ["-map", "\(subBase + i):s?"] }
+        args += ["-c", "copy"]
+        if !subtitles.isEmpty { args += ["-c:s", "mov_text"] }
+        for (i, sub) in subtitles.enumerated() {
+            if let lang = Subtitles.iso639_2(sub.language) { args += ["-metadata:s:s:\(i)", "language=\(lang)"] }
+            args += ["-metadata:s:s:\(i)", "title=\(sub.name)"]
+        }
+        args += ["-movflags", "+faststart", out.path]
+        return args
+    }
+
+    /// "Film.mp4" + Turkish subtitle → "Film.tr.srt"
+    static func writeSidecars(_ subtitles: [SubtitleFile], next video: URL) throws {
+        let base = video.deletingPathExtension()
+        var used = Set<String>()
+        for (i, sub) in subtitles.enumerated() {
+            var tag = sub.language?.lowercased() ?? (subtitles.count > 1 ? "\(i + 1)" : "")
+            if !tag.isEmpty, !used.insert(tag).inserted { tag += "-\(i + 1)" }
+            let ext = sub.file.pathExtension.lowercased()
+            let name = base.lastPathComponent + (tag.isEmpty ? "" : ".\(tag)")
+            let dest = base.deletingLastPathComponent().appendingPathComponent(name)
+            if ext == "vtt" {
+                let srt = Subtitles.vttToSRT(Subtitles.decode(try Data(contentsOf: sub.file)))
+                try srt.write(to: dest.appendingPathExtension("srt"), atomically: true, encoding: .utf8)
+            } else {
+                try? FileManager.default.removeItem(at: dest.appendingPathExtension(ext))
+                try FileManager.default.copyItem(at: sub.file, to: dest.appendingPathExtension(ext))
+            }
+        }
     }
 
     static func run(_ exe: URL, _ args: [String]) async throws {

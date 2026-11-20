@@ -86,3 +86,34 @@ final class HLSParserTests: XCTestCase {
         XCTAssertEqual(Output.sanitize("  ...  "), "video")
     }
 }
+
+final class SubtitleTests: XCTestCase {
+    func testMergeDropsHeadersAndDuplicates() {
+        let a = "WEBVTT\nX-TIMESTAMP-MAP=MPEGTS:900000,LOCAL:00:00:00.000\n\n1\n00:00:01.000 --> 00:00:03.000\nBir\n\n00:00:05.000 --> 00:00:07.000\nİki"
+        let b = "WEBVTT\n\n2\n00:00:05.000 --> 00:00:07.000\nİki\n\n00:00:08.000 --> 00:00:09.000\nÜç"
+        let merged = Subtitles.mergeVTT([a, b])
+        XCTAssertEqual(merged.components(separatedBy: "WEBVTT").count, 2)
+        XCTAssertEqual(merged.components(separatedBy: "-->").count - 1, 3)
+        XCTAssertFalse(merged.contains("X-TIMESTAMP-MAP"))
+    }
+
+    func testVTTToSRT() {
+        let srt = Subtitles.vttToSRT("WEBVTT\n\ncue-1\n01:02.5 --> 01:04.250 align:start\n<c.yellow>Selam</c>\n\n00:00:10.000 --> 00:00:11.000\n<i>eğik</i>")
+        XCTAssertEqual(srt, "1\n00:01:02,500 --> 00:01:04,250\nSelam\n\n2\n00:00:10,000 --> 00:00:11,000\n<i>eğik</i>\n")
+    }
+
+    func testLanguageAndKinds() {
+        XCTAssertEqual(Subtitles.iso639_2("tr-TR"), "tur")
+        XCTAssertEqual(Subtitles.iso639_2("eng"), "eng")
+        let master = """
+        #EXTM3U
+        #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="s",NAME="Türkçe",LANGUAGE="tr",URI="subs/tr.m3u8"
+        #EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="s2",NAME="Türkçe",LANGUAGE="tr",URI="subs/tr.m3u8"
+        #EXT-X-STREAM-INF:BANDWIDTH=1000,SUBTITLES="s"
+        v.m3u8
+        """
+        guard case .master(let m) = try? HLSParser.parse(master, baseURL: URL(string: "https://x.com/a/m.m3u8")!) else { return XCTFail() }
+        XCTAssertEqual(m.subtitles.count, 1)
+        XCTAssertEqual(m.subtitles.first?.url?.absoluteString, "https://x.com/a/subs/tr.m3u8")
+    }
+}
