@@ -14,6 +14,17 @@ final class BrowserModel {
     var userAgent: String?
     let adBlocker = AdBlocker()
 
+    /// Recording mode copies the player's MediaSource buffers; it applies from the next page load.
+    var recordingMode = false {
+        didSet {
+            guard recordingMode != oldValue else { return }
+            installScripts()
+            if webView.url != nil { webView.reload() }
+        }
+    }
+    var playbackRate = 1.0
+    var recordings: [Recording] = []
+
     weak var app: AppModel?
     @ObservationIgnored private var bridge: WebBridge?
     @ObservationIgnored private var observations: [NSKeyValueObservation] = []
@@ -23,9 +34,6 @@ final class BrowserModel {
         config.mediaTypesRequiringUserActionForPlayback = []
         config.preferences.isElementFullscreenEnabled = true
         config.applicationNameForUserAgent = "Version/18.0 Safari/605.1.15"
-        config.userContentController.addUserScript(
-            WKUserScript(source: Sniffer.source, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        )
         webView = WKWebView(frame: .zero, configuration: config)
         webView.allowsBackForwardNavigationGestures = true
         webView.isInspectable = true
@@ -35,6 +43,7 @@ final class BrowserModel {
         config.userContentController.add(bridge, name: Sniffer.handlerName)
         webView.navigationDelegate = bridge
         webView.uiDelegate = bridge
+        installScripts()
         adBlocker.attach(config.userContentController)
 
         let refresh: (WKWebView) -> Void = { [weak self] _ in
@@ -47,6 +56,55 @@ final class BrowserModel {
             webView.observe(\.canGoForward) { wv, _ in refresh(wv) },
             webView.observe(\.isLoading) { wv, _ in refresh(wv) },
         ]
+    }
+
+    private func installScripts() {
+        let controller = webView.configuration.userContentController
+        controller.removeAllUserScripts()
+        if recordingMode {
+            controller.addUserScript(WKUserScript(source: Sniffer.recordingFlag, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+        }
+        controller.addUserScript(WKUserScript(source: Sniffer.source, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+    }
+
+    func setPlaybackRate(_ rate: Double) {
+        playbackRate = rate
+        webView.evaluateJavaScript(Sniffer.speedScript(rate))
+    }
+
+    // MARK: Recording
+
+    fileprivate func recorderMessage(_ body: [String: Any]) {
+        switch body["type"] as? String {
+        case "mse-track":
+            guard let session = body["session"] as? String, let track = body["track"] as? String else { return }
+            let mime = body["mime"] as? String ?? "video/mp4"
+            var rec = recordings.first { $0.id == session }
+            if rec == nil {
+                let pageTitle = (body["title"] as? String).flatMap { $0.isEmpty ? nil : $0 } ?? title
+                let r = Recording(id: session, title: pageTitle.isEmpty ? "Kayıt" : pageTitle,
+                                  page: (body["page"] as? String).flatMap(URL.init(string:)))
+                recordings.insert(r, at: 0)
+                rec = r
+            }
+            rec?.addTrack(track, mime: mime)
+        case "mse-data":
+            guard let track = body["track"] as? String, let seq = body["seq"] as? Int else { return }
+            let data = Data(base64Encoded: body["data"] as? String ?? "") ?? Data()
+            recordings.first { $0.owns(track) }?.append(track, seq: seq, data: data)
+        case "mse-drm":
+            let page = body["page"] as? String
+            for r in recordings where r.state == .recording && (page == nil || r.page?.absoluteString == page) {
+                r.drm = true
+            }
+        default:
+            break
+        }
+    }
+
+    func discard(_ recording: Recording) {
+        recording.discard()
+        recordings.removeAll { $0.id == recording.id }
     }
 
     private func syncState() {
@@ -97,8 +155,12 @@ private final class WebBridge: NSObject, WKScriptMessageHandler, WKNavigationDel
     init(model: BrowserModel) { self.model = model }
 
     func userContentController(_ controller: WKUserContentController, didReceive message: WKScriptMessage) {
-        guard let body = message.body as? [String: Any],
-              let urlString = body["url"] as? String,
+        guard let body = message.body as? [String: Any] else { return }
+        if body["type"] != nil {
+            MainActor.assumeIsolated { model?.recorderMessage(body) }
+            return
+        }
+        guard let urlString = body["url"] as? String,
               let url = URL(string: urlString) else { return }
         let hint = body["hint"] as? String ?? ""
         let page = (body["page"] as? String).flatMap(URL.init(string:))
@@ -120,7 +182,12 @@ private final class WebBridge: NSObject, WKScriptMessageHandler, WKNavigationDel
     }
 
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-        MainActor.assumeIsolated { model?.app?.pageChanged() }
+        MainActor.assumeIsolated {
+            model?.app?.pageChanged()
+            // A new page starts new players; drop empty recordings from the old one.
+            model?.recordings.removeAll { $0.state == .recording && $0.bytes == 0 }
+            if let rate = model?.playbackRate, rate != 1 { model?.playbackRate = 1 }
+        }
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {

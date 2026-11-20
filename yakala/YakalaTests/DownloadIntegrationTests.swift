@@ -1,3 +1,4 @@
+import WebKit
 import XCTest
 
 /// End-to-end: ffmpeg makes an AES-128 encrypted HLS stream and a large MP4, a local
@@ -141,6 +142,55 @@ final class DownloadIntegrationTests: XCTestCase {
         XCTAssertEqual(try Data(contentsOf: resumed), try Data(contentsOf: fresh))
     }
 
+    /// Recording mode end to end: hls.js plays the local stream through MediaSource in a real
+    /// WKWebView, the sniffer copies the appended buffers, and the result is a playable MP4.
+    @MainActor
+    func testRecordingModeCapturesMediaSource() async throws {
+        let html = """
+        <!doctype html><video id="v" muted autoplay playsinline></video>
+        <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+        <script>
+          if (window.Hls && Hls.isSupported()) {
+            const h = new Hls(); h.loadSource('index.m3u8'); h.attachMedia(document.getElementById('v'));
+          } else { window.webkit.messageHandlers.yakala.postMessage({ type: 'nohls' }); }
+        </script>
+        """
+        try html.write(to: root.appendingPathComponent("site/player.html"), atomically: true, encoding: .utf8)
+
+        let collector = RecordingCollector(directory: root.appendingPathComponent("rec"))
+        let config = WKWebViewConfiguration()
+        config.mediaTypesRequiringUserActionForPlayback = []
+        config.userContentController.addUserScript(WKUserScript(source: Sniffer.recordingFlag, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+        config.userContentController.addUserScript(WKUserScript(source: Sniffer.source, injectionTime: .atDocumentStart, forMainFrameOnly: false))
+        config.userContentController.add(collector, name: Sniffer.handlerName)
+        let window = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 400, height: 300), styleMask: [.titled], backing: .buffered, defer: false)
+        window.isReleasedWhenClosed = false
+        let webView = WKWebView(frame: window.contentView!.bounds, configuration: config)
+        window.contentView!.addSubview(webView)
+        window.orderBack(nil)
+        webView.load(URLRequest(url: URL(string: "http://127.0.0.1:\(port)/player.html")!))
+
+        var lastBytes: Int64 = -1
+        var stable = 0
+        for _ in 0..<150 {
+            try await Task.sleep(nanoseconds: 100_000_000)
+            if collector.noHLS { throw XCTSkip("hls.js yüklenemedi") }
+            let b = collector.bytes
+            stable = (b > 0 && b == lastBytes) ? stable + 1 : 0
+            lastBytes = b
+            if stable >= 15 { break }
+        }
+        window.close()
+        XCTAssertGreaterThan(collector.bytes, 0, "no MediaSource data captured")
+        XCTAssertGreaterThanOrEqual(collector.tracks.count, 1)
+
+        let files = collector.tracks.sorted { $0.isVideo && !$1.isVideo }.map { t -> URL in t.close(); return t.file }
+        let out = try await Muxer.combine(tracks: files, title: "kayit", folder: root)
+        let streams = try probe(out)
+        XCTAssertTrue(streams.contains("codec_type=video"), streams)
+        XCTAssertEqual(try durationOf(out), 8, accuracy: 1.0)
+    }
+
     func testChunkedFileDownloadMatchesSource() async throws {
         let source = root.appendingPathComponent("site/big.mp4")
         let size = try FileManager.default.attributesOfItem(atPath: source.path)[.size] as! Int64
@@ -182,5 +232,30 @@ final class DownloadIntegrationTests: XCTestCase {
     private func durationOf(_ file: URL) throws -> Double {
         Double(try sh(ffprobe, ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", file.path])
             .trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
+    }
+}
+
+final class RecordingCollector: NSObject, WKScriptMessageHandler {
+    let directory: URL
+    var tracks: [RecordedTrack] = []
+    var noHLS = false
+    var bytes: Int64 { tracks.reduce(0) { $0 + $1.bytes } }
+
+    init(directory: URL) { self.directory = directory }
+
+    func userContentController(_ c: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard let body = message.body as? [String: Any] else { return }
+        switch body["type"] as? String {
+        case "nohls": noHLS = true
+        case "mse-track":
+            if let id = body["track"] as? String, let t = try? RecordedTrack(id: id, mime: body["mime"] as? String ?? "", directory: directory) {
+                tracks.append(t)
+            }
+        case "mse-data":
+            guard let id = body["track"] as? String, let seq = body["seq"] as? Int,
+                  let t = tracks.first(where: { $0.id == id }) else { return }
+            try? t.append(seq: seq, data: Data(base64Encoded: body["data"] as? String ?? "") ?? Data())
+        default: break
+        }
     }
 }

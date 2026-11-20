@@ -120,6 +120,8 @@ struct Sidebar: View {
             Divider()
 
             if tab == 0 {
+                RecordingPanel(browser: model.browser)
+                Divider()
                 if model.visibleDetected.isEmpty {
                     EmptyNote(
                         icon: "film",
@@ -382,5 +384,87 @@ struct AdBlockButton: View {
             .padding(14)
             .frame(width: 300)
         }
+    }
+}
+
+struct RecordingPanel: View {
+    @Bindable var browser: BrowserModel
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Toggle(isOn: $browser.recordingMode) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Kayıt modu").font(.subheadline.weight(.semibold))
+                    Text(browser.recordingMode
+                         ? "Videoyu baştan oynat, ileri sarma. Oynatılan kısım kaydedilir."
+                         : "Adresi bulunamayan videoları oynatılırken kaydeder. Açınca sayfa yenilenir.")
+                        .font(.caption).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .toggleStyle(.switch)
+
+            if browser.recordingMode {
+                HStack {
+                    Text("Oynatma hızı").font(.caption)
+                    Picker("", selection: Binding(get: { browser.playbackRate }, set: { browser.setPlaybackRate($0) })) {
+                        Text("1x").tag(1.0)
+                        Text("2x").tag(2.0)
+                        Text("4x").tag(4.0)
+                        Text("8x").tag(8.0)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .controlSize(.small)
+                }
+                ForEach(browser.recordings) { rec in
+                    RecordingRow(rec: rec) { browser.discard(rec) }
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+    }
+}
+
+struct RecordingRow: View {
+    let rec: Recording
+    let discard: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Badge(text: rec.state == .recording ? "● KAYIT" : "KAYIT", color: .red)
+                Text(rec.title).lineLimit(1).truncationMode(.middle).font(.callout)
+                Spacer()
+                Button(action: discard) { Image(systemName: "xmark.circle.fill") }
+                    .buttonStyle(.borderless).foregroundStyle(.secondary).help("Kaydı sil")
+            }
+            if rec.drm {
+                Text("Bu oynatıcı DRM kullanıyor; kayıt oynatılamaz.").font(.caption).foregroundStyle(.red)
+            }
+            HStack {
+                switch rec.state {
+                case .recording:
+                    Text(rec.summary).font(.caption).foregroundStyle(.secondary)
+                    Spacer()
+                    Button("Bitir ve kaydet") { rec.save() }
+                        .controlSize(.small)
+                        .disabled(rec.bytes == 0 || rec.drm)
+                case .saving:
+                    ProgressView().controlSize(.small)
+                    Text("Kaydediliyor…").font(.caption)
+                case .saved(let url):
+                    Text(url.lastPathComponent).font(.caption).foregroundStyle(.secondary).lineLimit(1)
+                    Spacer()
+                    Button("Finder'da göster") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+                        .controlSize(.small)
+                case .failed(let msg):
+                    Text(msg).font(.caption).foregroundStyle(.red)
+                }
+            }
+        }
+        .padding(8)
+        .background(Color.red.opacity(0.06), in: RoundedRectangle(cornerRadius: 6))
     }
 }
