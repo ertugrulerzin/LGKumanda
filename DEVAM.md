@@ -52,3 +52,10 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   App Store ekran görüntüleri: `testAppStoreScreenshots` (6.9" simülatör,
   `simctl status_bar` 9:41).
 - ASC yardımcıları: `node scripts/asc.mjs GET|POST|PATCH /v1|v2/...`.
+
+## 20 Kasım 2026 — 1.0 reddi ve yeniden gönderim
+- Apple 1.0 (24)'ü reddetti: 5.2.5 (ad/alt başlıktaki "webOS" tvOS'a benziyor) ve 2.3.10 (alt başlıkta "Android").
+- Ad/alt başlık markasız yapıldı: TR "Kumanda – TV Uzaktan Kumanda" / "Akıllı TV ve TV kutuları için";
+  EN "Kumanda – TV Remote Control" / "For smart TVs and TV boxes". Açıklama ve anahtar kelimeler aynı.
+- Aynı derleme (24) 20 Kasım 14:28Z'de yeniden gönderildi: WAITING_FOR_REVIEW.
+- 1.1 için de ad/alt başlıkta webOS/Android kullanılmamalı.
