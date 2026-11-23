@@ -1,10 +1,7 @@
-Kumanda 1.1 (28)
+Kumanda 1.1 (30)
 
 Yenilikler
-- Web videoları: TV tarayıcısındayken Kumanda'daki Oynat veya Duraklat tuşu sayfadaki oynatıcıyı yükler, tam ekrana alır ve başlatır; tekrar basınca durdurur. Pembe çerçeve afişteyse önce afiş açılır.
-- Oynatıcı açıkken İleri sar ve Geri sar tuşları filmi ileri ve geri sarar.
-- Fare oku yalnızca ilk Oynat'ta ortaya atlar; Duraklat ve sonraki Oynat oku hareket ettirmeden tıklar (kedi dostu).
-- Yön tuşları tam ekrandan çıkarıp pembe çerçeveye döner.
-- 26'daki düzeltmeler sürüyor: tarayıcı arama kutularına yazma, multicast TV araması.
+- Uygulamadaki yazılarda TV ve kutu markaları geçmiyor (App Store incelemesi için): "Ağda TV ara", "TV kutusu ekle", adı bilinmeyen TV "Akıllı TV" olarak görünür.
+- İşlev değişmedi; 28'deki web videosu oynatma, durdurma ve sarma tuşları sürüyor.
 
-Kontrol: filmmakinesi'de bir film sayfası aç, Oynat'a bas (yaklaşık 2 saniye sürer), sonra Duraklat, İleri sar ve Geri sar tuşlarını dene.
+Kontrol: Cihazlar sekmesinde TV'yi ara ve bağlan; Kumanda sekmesinde TV ve kutu tuşlarını dene.
