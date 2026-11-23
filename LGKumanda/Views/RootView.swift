@@ -97,7 +97,7 @@ struct RemoteView: View {
                         Button { hdmiHelp = true } label: {
                             HStack(alignment: .top, spacing: 10) {
                                 Image(systemName: "exclamationmark.triangle")
-                                Text("\(input.title) girişindeki cihaz SIMPLINK'te görünmüyor. Yön ve OK tuşları bu kutuya ulaşmayabilir. Kutuyu Wi-Fi ile kumanda etmek için dokun.")
+                                Text("\(input.title) girişindeki cihaz HDMI-CEC listesinde görünmüyor. Yön ve OK tuşları bu kutuya ulaşmayabilir. Kutuyu Wi-Fi ile kumanda etmek için dokun.")
                                     .font(.footnote).multilineTextAlignment(.leading)
                                 Spacer(minLength: 0)
                             }.foregroundStyle(.orange).frame(maxWidth: .infinity, alignment: .leading)
@@ -123,7 +123,7 @@ struct RemoteView: View {
                     } else {
                         tvRemote
                     }
-                    Text("LG webOS için bağımsız kumanda.").font(.footnote).foregroundStyle(.secondary).padding(.bottom, 12)
+                    Text("Akıllı TV'ler için bağımsız kumanda.").font(.footnote).foregroundStyle(.secondary).padding(.bottom, 12)
                 }
                 .padding(.horizontal, 20).padding(.top, 8)
                 .frame(maxWidth: 520).frame(maxWidth: .infinity)
@@ -170,13 +170,13 @@ struct RemoteView: View {
                     }
                 }
                 Button { addingBox = true } label: {
-                    Label(box.pairedBoxes.isEmpty ? "Android TV kutusu ekle" : "Ekle", systemImage: "plus")
+                    Label(box.pairedBoxes.isEmpty ? "TV kutusu ekle" : "Ekle", systemImage: "plus")
                         .font(.subheadline.weight(.semibold))
                         .padding(.horizontal, 14).frame(minHeight: 40)
                         .overlay(Capsule().strokeBorder(Theme.accent.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
                 }
                 .foregroundStyle(Theme.accent)
-                .accessibilityLabel("Android TV kutusu ekle")
+                .accessibilityLabel("TV kutusu ekle")
                 .accessibilityIdentifier("remoteTarget.add")
             }
         }

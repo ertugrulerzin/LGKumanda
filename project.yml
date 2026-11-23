@@ -15,7 +15,7 @@ settings:
     SWIFT_VERSION: '5.0'
     DEVELOPMENT_TEAM: PBY9P5GVFB
     MARKETING_VERSION: '1.0'
-    CURRENT_PROJECT_VERSION: '24'
+    CURRENT_PROJECT_VERSION: '29'
     TARGETED_DEVICE_FAMILY: '1'
 targets:
   LGKumanda:
@@ -34,7 +34,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        NSLocalNetworkUsageDescription: LG televizyonunu ve HDMI kutusunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.
+        NSLocalNetworkUsageDescription: Televizyonu ve TV kutusunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.
         NSBonjourServices: [_androidtvremote2._tcp]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
