@@ -61,7 +61,7 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
 - 1.0 (29) `release/1.0` dalında hazırlandı. Dal 1726ea5 + 945e143; build 24'ün reklamsız kodu.
 - Mağaza: açıklama, anahtar kelimeler ve tanıtım metni (tr ve en) markasız. 6-cihazlar ekran görüntüsü yeniden çekildi. İnceleme notu da markasız.
 - Apple'a cevap yazıldı ve 23 Kasım 17:53Z'de yeniden gönderildi: WAITING_FOR_REVIEW.
-- Ana dalda (1.1) aynı metin değişiklikleri var. 1.1 açıklaması ve "Yenilikler" metni de markasız olmalı.
+- Ana dalda (1.1) aynı metin değişiklikleri var. 1.1 (30) TestFlight iç ve dış gruplarda (23 Kasım). 1.1 mağaza açıklaması ve "Yenilikler" metni de markasız olmalı.
 
 ## 20 Kasım 2026 — 1.0 reddi ve yeniden gönderim
 - Apple 1.0 (24)'ü reddetti: 5.2.5 (ad/alt başlıktaki "webOS" tvOS'a benziyor) ve 2.3.10 (alt başlıkta "Android").
