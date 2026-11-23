@@ -54,8 +54,8 @@ final class NavigationTests: XCTestCase {
         let app = XCUIApplication()
         app.launch()
         app.tabBars.buttons["Cihazlar"].tap()
-        app.buttons["Ağda LG TV ara"].tap()
-        let discovered = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "LG webOS TV")).firstMatch
+        app.buttons["Ağda TV ara"].tap()
+        let discovered = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Akıllı TV")).firstMatch
         XCTAssertTrue(discovered.waitForExistence(timeout: 30))
         capture("Ağda LG TV bulundu")
         if app.buttons["Aramayı durdur"].exists { app.buttons["Aramayı durdur"].tap() }
@@ -72,7 +72,7 @@ final class NavigationTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Kanallar"].exists)
         capture("Kanallar")
         app.tabBars.buttons["Cihazlar"].tap()
-        XCTAssertTrue(app.buttons["Ağda LG TV ara"].exists)
+        XCTAssertTrue(app.buttons["Ağda TV ara"].exists)
         app.navigationBars["Cihazlar"].buttons["Televizyon ekle"].tap()
         XCTAssertTrue(app.navigationBars["Televizyon ekle"].waitForExistence(timeout: 3))
         let address = app.textFields["IP adresi · 192.168.1.50"]

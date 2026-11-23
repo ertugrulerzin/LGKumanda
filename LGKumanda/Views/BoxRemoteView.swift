@@ -148,7 +148,7 @@ struct BoxRemoteView: View {
     private var pairingCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Label("Kutuyu bağla", systemImage: "wifi").font(.title3.weight(.bold))
-            Text("Android TV kutuları Wi-Fi ile kumanda edilir. Kutu ve telefon aynı ağda olmalı. Bir kez eşleştirmen yeterli: TV'yi kutunun girişine al, kutunun ekranındaki 6 karakterlik kodu yaz.")
+            Text("TV kutuları Wi-Fi ile kumanda edilir. Kutu ve telefon aynı ağda olmalı. Bir kez eşleştirmen yeterli: TV'yi kutunun girişine al, kutunun ekranındaki 6 karakterlik kodu yaz.")
                 .font(.subheadline).foregroundStyle(.secondary)
             Button { setup = true } label: {
                 Text("Kutuyu bul ve eşleştir").font(.headline).frame(maxWidth: .infinity, minHeight: 50)

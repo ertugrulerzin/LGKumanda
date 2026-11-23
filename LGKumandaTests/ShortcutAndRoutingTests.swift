@@ -94,7 +94,7 @@ final class SimplinkTests: XCTestCase {
         XCTAssertEqual(TVProtocol.simplinkName(withBox), "Tivibu Android")
         XCTAssertNil(TVProtocol.simplinkName(["id": "HDMI_3", "subList": []]))
         XCTAssertNil(TVProtocol.simplinkName(["id": "HDMI_1"]))
-        XCTAssertEqual(TVProtocol.simplinkName(["subList": [["id": "SIMPLINK", "osdName": " "]]]), "SIMPLINK cihazı")
+        XCTAssertEqual(TVProtocol.simplinkName(["subList": [["id": "SIMPLINK", "osdName": " "]]]), "HDMI cihazı")
     }
 }
 

@@ -28,7 +28,7 @@ struct DevicesView: View {
                 Section {
                     Button { Task { await discovery.search(knownHosts: client.televisions.map(\.host)) } } label: {
                         HStack {
-                            Label(discovery.searching ? "Televizyonlar aranıyor…" : "Ağda LG TV ara", systemImage: "magnifyingglass")
+                            Label(discovery.searching ? "Televizyonlar aranıyor…" : "Ağda TV ara", systemImage: "magnifyingglass")
                             Spacer()
                             if discovery.searching { ProgressView() }
                         }.frame(minHeight: 44)
@@ -64,7 +64,7 @@ struct DevicesView: View {
                         ContentUnavailableView {
                             Label("TV'ni bağla", systemImage: "tv.badge.wifi")
                         } description: {
-                            Text("iPhone ve LG webOS televizyonun aynı Wi-Fi ağına bağlı olsun. TV'nin IP adresiyle başlayabilirsin.")
+                            Text("iPhone ve televizyon aynı Wi-Fi ağına bağlı olsun. TV'nin IP adresiyle başlayabilirsin.")
                         } actions: {
                             Button("Televizyon ekle") { adding = true }.buttonStyle(.borderedProminent)
                         }
@@ -121,10 +121,10 @@ struct DevicesView: View {
                             }.frame(minHeight: 44)
                         }.accessibilityIdentifier("devicesBox")
                     }
-                    Button { addingBox = true } label: { Label("Android TV kutusu ekle", systemImage: "plus") }
+                    Button { addingBox = true } label: { Label("TV kutusu ekle", systemImage: "plus") }
                         .frame(minHeight: 44).accessibilityIdentifier("devicesAddBox")
-                } header: { Text("Android TV kutuları") } footer: {
-                    Text("Set üstü kutuları ve Google TV cihazlarını Wi-Fi ile kumanda et. Her kutu Kumanda sekmesinde kendi sekmesini alır.")
+                } header: { Text("TV kutuları") } footer: {
+                    Text("Set üstü kutuları Wi-Fi ile kumanda et. Her kutu Kumanda sekmesinde kendi sekmesini alır.")
                 }
                 Section {
                     Toggle("Tuş titreşimi", isOn: $haptics)
@@ -135,10 +135,10 @@ struct DevicesView: View {
                 Section("Bağlantı yardımı") {
                     help(title: "Aynı ağa bağlan", text: "iPhone ve TV aynı yerel ağda olmalı. iPhone Ayarlar uygulamasından Kumanda için Yerel Ağ iznini aç.")
                     help(title: "TV'nin IP adresini bul", text: "TV Ayarlar → Ağ → Bağlantı bilgileri bölümüne bak. Menü adı modele göre değişebilir.")
-                    help(title: "Mobil bağlantıya izin ver", text: "LG Connect Apps veya Mobil TV Açık ayarını etkinleştir. Uyandırmak için TV'nin MAC adresini ekle ve ağ üzerinden açmayı etkinleştir.")
+                    help(title: "Mobil bağlantıya izin ver", text: "TV ayarlarında mobil cihazlardan bağlantıya izin veren seçeneği etkinleştir (adı modele göre değişir). Uyandırmak için TV'nin MAC adresini ekle ve ağ üzerinden açmayı etkinleştir.")
                 }
                 Section {
-                    Text("Kumanda bağımsız bir uygulamadır; LG Electronics ile bağlantılı değildir. Özellik desteği TV modeli ve webOS sürümüne göre değişir. Kızılötesi ve TV'nin sesli asistanı desteklenmez. iPhone klavyesindeki dikteyi metin girişi için kullanabilirsin.")
+                    Text("Kumanda bağımsız bir uygulamadır. Özellik desteği TV modeli ve yazılım sürümüne göre değişir. Kızılötesi ve TV'nin sesli asistanı desteklenmez. iPhone klavyesindeki dikteyi metin girişi için kullanabilirsin.")
                         .font(.footnote).foregroundStyle(.secondary)
                     Text(Self.versionText).font(.footnote).foregroundStyle(.secondary)
                         .accessibilityIdentifier("appVersion")

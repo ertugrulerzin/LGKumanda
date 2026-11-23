@@ -34,7 +34,7 @@ targets:
         ITSAppUsesNonExemptEncryption: false
         UILaunchScreen: {}
         UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
-        NSLocalNetworkUsageDescription: LG televizyonunu ve HDMI kutusunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.
+        NSLocalNetworkUsageDescription: Televizyonu ve TV kutusunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.
         NSBonjourServices: [_androidtvremote2._tcp]
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true

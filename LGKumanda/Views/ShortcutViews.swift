@@ -164,22 +164,22 @@ struct HDMIHelpView: View {
                         LabeledContent("Wi-Fi ile kutu kumandası", value: box.pairedBoxes.isEmpty ? "Kur" : "\(box.pairedBoxes.count) kutu")
                     }.accessibilityIdentifier("openBoxSetup")
                 } footer: {
-                    Text("Android TV kutuları SIMPLINK olmadan, Wi-Fi üzerinden kumanda edilebilir. Kutuları Cihazlar sekmesinden yönetebilirsin.")
+                    Text("TV kutuları HDMI-CEC olmadan, Wi-Fi üzerinden kumanda edilebilir. Kutuları Cihazlar sekmesinden yönetebilirsin.")
                 }
-                Section("SIMPLINK durumu") {
+                Section("HDMI-CEC durumu") {
                     ForEach(client.inputs.filter { $0.id.uppercased().hasPrefix("HDMI") }) { item in
                         LabeledContent("\(item.title) · \(item.detail)", value: item.simplinkName ?? "Cihaz görünmüyor")
                     }
-                    Text("TV üzerinden HDMI-CEC tuşları, SIMPLINK listesinde görünen kutuya iletilebilir. Cihaz görünmüyorsa kutunun ayarlarında HDMI-CEC'i aç, HDMI kablosunu çıkarıp tak veya TV'de SIMPLINK'i kapatıp aç. SIMPLINK desteği yoksa kutuyu yukarıdaki Wi-Fi eşleştirmesiyle doğrudan kumanda etmeyi dene.")
+                    Text("TV üzerinden HDMI-CEC tuşları, TV'nin HDMI-CEC listesinde görünen kutuya iletilebilir. Cihaz görünmüyorsa kutunun ayarlarında HDMI-CEC'i aç, HDMI kablosunu çıkarıp tak veya TV'de HDMI-CEC ayarını kapatıp aç. HDMI-CEC desteği yoksa kutuyu yukarıdaki Wi-Fi eşleştirmesiyle doğrudan kumanda etmeyi dene.")
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 Section {
-                    Text("TV üzerinden kumanda için TV ve kutuda SIMPLINK (HDMI-CEC) açık olmalı. Wi-Fi ile eşleştirilmiş kutu için bu ayar gerekmez.")
-                    Text("Wi-Fi eşleştirmesi ve giriş seçimi tamamlandıysa tuşlar doğrudan kutuya gider. Diğer durumlarda TV üzerinden iletilir; kutunun SIMPLINK desteğine bağlıdır.")
+                    Text("TV üzerinden kumanda için TV ve kutuda HDMI-CEC açık olmalı. Wi-Fi ile eşleştirilmiş kutu için bu ayar gerekmez.")
+                    Text("Wi-Fi eşleştirmesi ve giriş seçimi tamamlandıysa tuşlar doğrudan kutuya gider. Diğer durumlarda TV üzerinden iletilir; kutunun HDMI-CEC desteğine bağlıdır.")
                     DirectionPad(diameter: 212).frame(maxWidth: .infinity).padding(.vertical, 12).disabled(client.state != .connected || !(client.pointerReady || box.handles(foregroundAppID: client.foregroundAppID)))
                 } header: { Text("Yön ve OK testi") }
                 Section("Çalışmazsa") {
-                    Text("LG'nin fiziksel kumandasıyla da dene. Fiziksel kumanda çalışsa bile kızılötesi kullanıyor olabilir; bu kontrol ağ üzerinden aktarılamayabilir. Kutunun marka ve modeliyle ayrıca kontrol yöntemi belirlenmesi gerekir.")
+                    Text("TV'nin kendi kumandasıyla da dene. Fiziksel kumanda çalışsa bile kızılötesi kullanıyor olabilir; bu kontrol ağ üzerinden aktarılamayabilir. Kutunun marka ve modeliyle ayrıca kontrol yöntemi belirlenmesi gerekir.")
                     Text("HDMI kutusuna TV'nin metin klavyesi veya fare imleci aktarılmaz. Ekrandaki klavyede yön tuşlarıyla gezinebilirsin.")
                 }.font(.subheadline)
                 if let error { Section { Text(error).foregroundStyle(.red) } }

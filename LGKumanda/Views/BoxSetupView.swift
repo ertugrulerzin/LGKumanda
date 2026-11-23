@@ -25,7 +25,7 @@ struct BoxSetupView: View {
                     pairingSection
                 }
             }
-            .navigationTitle(boxID == nil && box.box?.paired != true ? "Android TV kutusu ekle" : "Android TV kutusu").navigationBarTitleDisplayMode(.inline)
+            .navigationTitle(boxID == nil && box.box?.paired != true ? "TV kutusu ekle" : "TV kutusu").navigationBarTitleDisplayMode(.inline)
             .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Bitti") { saveName(); dismiss() } } }
             .task {
                 if !prepared {
@@ -105,7 +105,7 @@ struct BoxSetupView: View {
             .onAppear { codeFocused = true }
         default:
             Section {
-                Text("Android TV kutularını (set üstü kutular, Google TV) HDMI-CEC olmadan Wi-Fi üzerinden kumanda edebilirsin. Kutu ile iPhone aynı ağda olmalı. Eşleştirmeden önce TV'yi kutunun girişine al; kod kutunun ekranında çıkar ve giriş otomatik kaydedilir.")
+                Text("TV kutularını (set üstü kutular) HDMI-CEC olmadan Wi-Fi üzerinden kumanda edebilirsin. Kutu ile iPhone aynı ağda olmalı. Eşleştirmeden önce TV'yi kutunun girişine al; kod kutunun ekranında çıkar ve giriş otomatik kaydedilir.")
                     .font(.subheadline)
                 if case .failed(let reason) = box.pairing { Text(reason).foregroundStyle(.red).font(.footnote) }
                 if box.pairing == .starting { HStack { ProgressView(); Text("Kutuya bağlanılıyor…") } }
@@ -125,7 +125,7 @@ struct BoxSetupView: View {
             Section {
                 TextField("Kutunun IP adresi, örn. 192.168.1.11", text: $manualHost)
                     .keyboardType(.decimalPad).autocorrectionDisabled()
-                Button("Bu adresle eşleştir") { pair(host: manualHost.trimmingCharacters(in: .whitespaces), name: "Android TV kutusu") }
+                Button("Bu adresle eşleştir") { pair(host: manualHost.trimmingCharacters(in: .whitespaces), name: "TV kutusu") }
                     .disabled(!TVProtocol.validHost(manualHost.trimmingCharacters(in: .whitespaces)) || box.pairing == .starting)
             } header: { Text("Elle ekle") }
         }

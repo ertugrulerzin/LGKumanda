@@ -42,7 +42,7 @@ import Security
                 if !label.isEmpty, label.uppercased().replacingOccurrences(of: " ", with: "_") != inputID.uppercased() { return label }
             }
             if !typed.isEmpty { return typed }
-            return inputID.map { $0.replacingOccurrences(of: "_", with: " ") } ?? "Android TV"
+            return inputID.map { $0.replacingOccurrences(of: "_", with: " ") } ?? "TV kutusu"
         }
     }
     enum State: Equatable { case idle, connecting, connected, failed(String) }

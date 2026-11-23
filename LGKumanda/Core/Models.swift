@@ -48,7 +48,7 @@ enum TVProtocol {
         let devices = input["subList"] as? [[String: Any]] ?? []
         guard let device = devices.first(where: { ($0["id"] as? String)?.uppercased() == "SIMPLINK" }) ?? devices.first else { return nil }
         let name = (device["osdName"] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return name.isEmpty ? "SIMPLINK cihazı" : name
+        return name.isEmpty ? "HDMI cihazı" : name
     }
     static let permissions = ["LAUNCH", "CONTROL_AUDIO", "CONTROL_INPUT_MEDIA_PLAYBACK",
         "CONTROL_INPUT_TV", "CONTROL_POWER", "READ_CURRENT_CHANNEL", "READ_INPUT_DEVICE_LIST",

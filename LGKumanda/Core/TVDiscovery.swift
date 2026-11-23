@@ -104,7 +104,7 @@ import CryptoKit
         let certificate = await inspectCertificate(host)
         description.fingerprint = certificate?.fingerprint
         if description.television == nil, certificate?.isLG == true {
-            description.television = Television(name: "LG webOS TV", host: host)
+            description.television = Television(name: "Akıllı TV", host: host)
         }
         if description.television != nil, let certificate, !Task.isCancelled {
             description.television?.deviceUUID = await TVIdentityProbe.read(host: host, fingerprint: certificate.fingerprint)
@@ -207,7 +207,7 @@ import CryptoKit
               delegate.services.contains(where: { $0.contains("urn:lge-com:service:webos-second-screen:") }) else { return nil }
         let name = delegate.name.trimmingCharacters(in: .whitespacesAndNewlines)
         let identity = delegate.identity.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
-        return (name.isEmpty ? "LG webOS TV" : name, identity.isEmpty ? nil : identity)
+        return (name.isEmpty ? "Akıllı TV" : name, identity.isEmpty ? nil : identity)
     }
     nonisolated static func location(from response: String) -> String? {
         let lines = response.components(separatedBy: "\r\n")

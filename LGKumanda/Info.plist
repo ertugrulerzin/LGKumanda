@@ -36,7 +36,7 @@
 		<string>_androidtvremote2._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>LG televizyonunu ve HDMI kutusunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.</string>
+	<string>Televizyonu ve TV kutusunu bulmak ve kumanda etmek için yerel ağ erişimi gerekir.</string>
 	<key>SKAdNetworkItems</key>
 	<array>
 		<dict>
