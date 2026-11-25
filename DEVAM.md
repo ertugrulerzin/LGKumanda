@@ -55,6 +55,12 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   `simctl status_bar` 9:41).
 - ASC yardımcıları: `node scripts/asc.mjs GET|POST|PATCH /v1|v2/...`.
 
+## 25 Kasım 2026 — 5.2.1 ikinci red
+- Apple 1.0 (29)'u yine 5.2.1 ile reddetti ("LG TV içeriği veya LG donanımını kontrol etme"). Uygulama, metinler ve ekran görüntüleri temizdi. LG yalnızca mağazadaki destek ve gizlilik bağlantılarında kalmıştı: bu deponun adı (LGKumanda), tanımı ve PRIVACY.md'si.
+- Markasız yeni herkese açık depo açıldı: github.com/ertugrulerzin/kumanda-app (README = destek, PRIVACY.md; e-posta yok, iletişim Issues). Destek URL'si (tr, en) ve gizlilik URL'si (tr, en) oraya çevrildi.
+- Apple'a cevap yazıldı ve 25 Kasım 18:28Z'de yeniden gönderildi: WAITING_FOR_REVIEW. 1.1'de de bu iki bağlantı kullanılmalı; 1.1 reklam içerdiği için kumanda-app/PRIVACY.md o sürümle birlikte güncellenmeli.
+- Yine reddederse: Meet with Apple randevusu (salı/perşembe). Kalan olası işaret: uygulama renginin LG kırmızısına benzemesi.
+
 ## 23 Kasım 2026 — 5.2.1 (fikri mülkiyet) reddi ve yeniden gönderim
 - Apple 1.0 (24)'ü 5.2.1 ile reddetti. Uygulamada "Ağda LG TV ara" ve "LG webOS" yazıları vardı. LG'den izin belgesi olmadığı için markalar kaldırıldı.
 - Uygulama: LG, webOS, SIMPLINK, Android TV ve Google TV adları kullanıcıya görünen hiçbir metinde yok. Adı bilinmeyen TV "Akıllı TV", kutu "TV kutusu" olarak görünüyor.
