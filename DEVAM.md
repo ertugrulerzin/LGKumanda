@@ -55,6 +55,10 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   `simctl status_bar` 9:41).
 - ASC yardımcıları: `node scripts/asc.mjs GET|POST|PATCH /v1|v2/...`.
 
+## 26 Kasım 2026 — AdMob reddi
+- AdMob hesabı (pub-3117486801133085) 25 Kasım'da e-postayla reddedildi: "program kriterlerine uygun değil", gerekçe yok. Panelde iki uygulama "Add store" bekliyor; büyük olasılıkla yayında uygulama olmadığı için.
+- Yapılacak: 1.0 App Store'da yayınlanınca AdMob > Apps > Kumanda iOS > Add store ile App Store kaydını bağla, sonra hesabın yeniden incelenmesini iste. Onay gelene kadar 1.1'in banner reklamları boş kalır.
+
 ## 25 Kasım 2026 — 5.2.1 ikinci red
 - Apple 1.0 (29)'u yine 5.2.1 ile reddetti ("LG TV içeriği veya LG donanımını kontrol etme"). Uygulama, metinler ve ekran görüntüleri temizdi. LG yalnızca mağazadaki destek ve gizlilik bağlantılarında kalmıştı: bu deponun adı (LGKumanda), tanımı ve PRIVACY.md'si.
 - Markasız yeni herkese açık depo açıldı: github.com/ertugrulerzin/kumanda-app (README = destek, PRIVACY.md; e-posta yok, iletişim Issues). Destek URL'si (tr, en) ve gizlilik URL'si (tr, en) oraya çevrildi.
