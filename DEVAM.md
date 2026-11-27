@@ -57,7 +57,10 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
 
 ## 27 Kasım 2026 — 1.0 onaylandı ve yayınlandı
 - Apple 1.0 (29)'u onayladı (manuel yayın). 27 Kasım'da API ile yayınlandı: READY_FOR_SALE.
-- Sırada: App Store'da görününce AdMob > Apps > Kumanda iOS > Add store, sonra hesabın yeniden incelenmesi (kullanıcı). Ardından 1.1 (30) gönderimi.
+- 27 Kasım 18:28'de TR mağazada göründü. 28 Kasım: AdMob iOS uygulaması App Store kaydına bağlandı (Add store kaydedildi). Android Play'de olmadığı için bağlanmadı.
+- AdMob doğrulaması app-ads.txt bekliyor: dosya https://ertugrulerzin.github.io/app-ads.txt adresinde yayında. Mağazada pazarlama URL'si boş olduğu için AdMob bulamıyor; 1.1'de marketingUrl = https://ertugrulerzin.github.io (tr, en). 1.1 yayınlanınca AdMob > Apps > Kumanda iOS > Check for updates.
+- 1.1 ASC'de hazırlanıyor (PREPARE_FOR_SUBMISSION, derleme 30, manuel yayın): Yenilikler metni (tr, en), marketingUrl, yaş anketinde advertising=true tamam. kumanda-app/PRIVACY.md reklam bölümüyle güncellendi.
+- 1.1 gönderiminden önce kalan: App Privacy'yi reklam verileriyle güncellemek (web arayüzü, kullanıcı); AdMob hesabının yeniden incelenmesini istemek (kullanıcı). Sonra incelemeye gönder.
 
 ## 26 Kasım 2026 — AdMob reddi
 - AdMob hesabı (pub-3117486801133085) 25 Kasım'da e-postayla reddedildi: "program kriterlerine uygun değil", gerekçe yok. Panelde iki uygulama "Add store" bekliyor; büyük olasılıkla yayında uygulama olmadığı için.
