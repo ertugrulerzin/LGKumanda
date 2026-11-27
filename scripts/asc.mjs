@@ -12,8 +12,8 @@ const account = process.env.ASC_ACCOUNT_DIR || path.join(os.homedir(), '.apple',
 const read = name => fs.readFileSync(path.join(account, name), 'utf8').trim();
 const method = (process.argv[2] || 'GET').toUpperCase();
 const route = process.argv[3];
-if (!/^\/v[12]\//.test(route ?? '') || !['GET','POST','PATCH'].includes(method)) {
-  console.error('Usage: node scripts/asc.mjs GET|POST|PATCH /v1|v2/route [body.json]');
+if (!/^\/v[12]\//.test(route ?? '') || !['GET','POST','PATCH','DELETE'].includes(method)) {
+  console.error('Usage: node scripts/asc.mjs GET|POST|PATCH|DELETE /v1|v2/route [body.json]');
   process.exit(2);
 }
 try {
