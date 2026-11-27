@@ -55,6 +55,10 @@ Kaldığımız yer ve sıradaki işler. Yeni oturumda önce bunu oku.
   `simctl status_bar` 9:41).
 - ASC yardımcıları: `node scripts/asc.mjs GET|POST|PATCH /v1|v2/...`.
 
+## 27 Kasım 2026 — 1.0 onaylandı ve yayınlandı
+- Apple 1.0 (29)'u onayladı (manuel yayın). 27 Kasım'da API ile yayınlandı: READY_FOR_SALE.
+- Sırada: App Store'da görününce AdMob > Apps > Kumanda iOS > Add store, sonra hesabın yeniden incelenmesi (kullanıcı). Ardından 1.1 (30) gönderimi.
+
 ## 26 Kasım 2026 — AdMob reddi
 - AdMob hesabı (pub-3117486801133085) 25 Kasım'da e-postayla reddedildi: "program kriterlerine uygun değil", gerekçe yok. Panelde iki uygulama "Add store" bekliyor; büyük olasılıkla yayında uygulama olmadığı için.
 - Yapılacak: 1.0 App Store'da yayınlanınca AdMob > Apps > Kumanda iOS > Add store ile App Store kaydını bağla, sonra hesabın yeniden incelenmesini iste. Onay gelene kadar 1.1'in banner reklamları boş kalır.
